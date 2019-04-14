@@ -1,4 +1,4 @@
-# dbcppp
+# dbcppp (DBC C++ parser)
 A DBC file parser written in C++.
 This library is optimized on speed.
 
