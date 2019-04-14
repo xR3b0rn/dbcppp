@@ -175,7 +175,7 @@ public:
      *
      * @note Multiplexors are not taken into account.
      */
-	int64_t decode(const gsl::span<uint8_t> data);
+	int64_t decode(const gsl::span<uint8_t> data) const;
 
     /**
      * @brief Encodes a signal into the message data
@@ -186,7 +186,7 @@ public:
      *
      * @note Multiplexors are not taken into account.
      */
-	void encode(gsl::span<uint8_t> data, int64_t rawValue);
+	void encode(gsl::span<uint8_t> data, int64_t rawValue) const;
 };
 }
 }

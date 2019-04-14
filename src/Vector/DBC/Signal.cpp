@@ -87,7 +87,7 @@ double Signal::maximumRawValue()
     }
     return maximumRawValue;
 }
-int64_t Signal::decode(const gsl::span<uint8_t> data)
+int64_t Signal::decode(const gsl::span<uint8_t> data) const
 {
 	assert(data.size() > 0);
 	int64_t d = *reinterpret_cast<const int64_t*>(data.data());
@@ -141,7 +141,7 @@ int64_t Signal::decode(const gsl::span<uint8_t> data)
 	}
 	return d; 
 }
-void Signal::encode(gsl::span<uint8_t> data, int64_t rawValue)
+void Signal::encode(gsl::span<uint8_t> data, int64_t rawValue) const
 {
 	assert(bitSize > 0);
     if (byteOrder == ByteOrder::BigEndian)
