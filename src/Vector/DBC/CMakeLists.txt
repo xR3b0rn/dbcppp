@@ -30,7 +30,7 @@ install(
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(
     FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/vector_dbc_export.h
+        ${CMAKE_CURRENT_BINARY_DIR}/dbcppp_export.h
         $<TARGET_PROPERTY:${PROJECT_NAME},INTERFACE_SOURCES>
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Vector/DBC)
 	
