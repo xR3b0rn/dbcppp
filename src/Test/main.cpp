@@ -16,18 +16,19 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <array>
 #include <iostream>
 #include <Vector/DBC/Spirit.h>
 #include <Vector/DBC/Network.h>
-#include <array>
 
 int main()
 {
 	Vector::DBC::Network net;
 	bool result = parse_dbc("your_test_dbc.dbc", net);
-	if (result)
+	if (!result)
 	{
-		std::cout << "Successfully parsed the dbc!" << std::endl;
+		std::cout << "DBC parsing failed!" << std::endl;
+		return 1;
 	}
 	std::array<uint8_t, 8> buff{{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}};
 	uint64_t* val = reinterpret_cast<uint64_t*>(&buff[0]);
@@ -36,7 +37,7 @@ int main()
 	uint64_t ret = sig.decode({(uint8_t*)&raw, 8});
 
 	std::vector<uint8_t> enc(8, 0);
-	sig.encode(enc, ret);
+	sig.encode({&enc[0], 8}, ret);
 
 	std::cout << std::hex << ret << std::endl;
 }

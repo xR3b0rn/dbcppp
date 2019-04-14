@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 #include <array>
-#include <string_view>
+#include <boost/multi_array.hpp>
 
 #include <Vector/DBC/Attribute.h>
 #include <Vector/DBC/ByteOrder.h>
@@ -33,6 +33,7 @@
 #include <Vector/DBC/ValueDescriptions.h>
 #include <Vector/DBC/ValueType.h>
 #include <Vector/DBC/dbcppp_export.h>
+#include <Vector/DBC/span.h>
 
 namespace Vector {
 namespace DBC {
@@ -174,7 +175,7 @@ public:
      *
      * @note Multiplexors are not taken into account.
      */
-	int64_t decode(std::basic_string_view<uint8_t> data);
+	int64_t decode(const gsl::span<uint8_t> data);
 
     /**
      * @brief Encodes a signal into the message data
@@ -185,7 +186,7 @@ public:
      *
      * @note Multiplexors are not taken into account.
      */
-	void encode(std::vector<uint8_t>& data, int64_t rawValue);
+	void encode(gsl::span<uint8_t> data, int64_t rawValue);
 };
 }
 }
