@@ -24,7 +24,7 @@
 int main()
 {
 	Vector::DBC::Network net;
-	bool result = parse_dbc("C:/Users/jh/source/repos/boost_spirit/boost_spirit/test.dbc", net);
+	bool result = parse_dbc("your_test_dbc.dbc", net);
 	if (result)
 	{
 		std::cout << "Successfully parsed the dbc!" << std::endl;
