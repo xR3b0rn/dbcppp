@@ -10,6 +10,7 @@ make install
 ```
 # Usage example
 ```
+#include <Vector/DBC/Spirit.h>
 int main()
 {
     Vector::DBC::Network net;
