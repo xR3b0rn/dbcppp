@@ -174,7 +174,7 @@ public:
      *
      * @note Multiplexors are not taken into account.
      */
-	uint64_t decode(std::basic_string_view<uint8_t> data);
+	int64_t decode(std::basic_string_view<uint8_t> data);
 
     /**
      * @brief Encodes a signal into the message data
@@ -185,7 +185,7 @@ public:
      *
      * @note Multiplexors are not taken into account.
      */
-	void encode(std::vector<uint8_t>& data, uint64_t rawValue);
+	void encode(std::vector<uint8_t>& data, int64_t rawValue);
 };
 }
 }

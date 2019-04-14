@@ -87,10 +87,10 @@ double Signal::maximumRawValue()
     }
     return maximumRawValue;
 }
-uint64_t Signal::decode(std::basic_string_view<uint8_t> data)
+int64_t Signal::decode(std::basic_string_view<uint8_t> data)
 {
 	assert(data.size() > 0);
-	uint64_t d = *reinterpret_cast<const uint64_t*>(data.data());
+	int64_t d = *reinterpret_cast<const int64_t*>(data.data());
 #ifdef BOOST_ENDIAN_LITTLE_BYTE
 #elif BOOST_ENDIAN_BIG_BYTE
 	switch (data.size())
@@ -130,7 +130,7 @@ uint64_t Signal::decode(std::basic_string_view<uint8_t> data)
 		}
 		d >>= (startBit + 1) % 8;
 	}
-	uint64_t mask = (2ull << (bitSize - 1)) - 1;
+	int64_t mask = (2ull << (bitSize - 1)) - 1;
 	d = d & mask;
 	if (valueType == ValueType::Signed)
 	{
@@ -141,7 +141,7 @@ uint64_t Signal::decode(std::basic_string_view<uint8_t> data)
 	}
 	return d; 
 }
-void Signal::encode(std::vector<uint8_t>& data, uint64_t rawValue)
+void Signal::encode(std::vector<uint8_t>& data, int64_t rawValue)
 {
 	assert(bitSize > 0);
     if (byteOrder == ByteOrder::BigEndian)
