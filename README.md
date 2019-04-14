@@ -3,10 +3,11 @@ A DBC file parser written in C++.
 This library is optimized on speed.
 
 # Build and install
+```
 cmake .
 make
 make install
-
+```
 # Usage example
 ```
 int main()
