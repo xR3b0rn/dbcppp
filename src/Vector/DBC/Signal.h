@@ -32,7 +32,7 @@
 #include <Vector/DBC/ExtendedMultiplexor.h>
 #include <Vector/DBC/ValueDescriptions.h>
 #include <Vector/DBC/ValueType.h>
-#include <dbcppp_export.h>
+#include <Vector/DBC/dbcppp_export.h>
 
 namespace Vector {
 namespace DBC {

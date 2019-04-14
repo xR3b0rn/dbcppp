@@ -15,7 +15,7 @@
 #pragma once
 
 #include <string>
-#include <dbcppp_export.h>
+#include <Vector/DBC/dbcppp_export.h>
 #include "Network.h"
 
 bool DBCPPP_EXPORT parse_dbc(const std::string& path, Vector::DBC::Network& m);

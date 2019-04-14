@@ -1,8 +1,4 @@
 ﻿
-add_executable(${PROJECT_NAME}_Test)
-set_property(TARGET ${PROJECT_NAME}_Test PROPERTY CXX_STANDARD 17)
-target_link_libraries(${PROJECT_NAME}_Test ${PROJECT_NAME} ${Boost_LIBRARIES})
-
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_BINARY_DIR}/src
@@ -16,9 +12,13 @@ file(GLOB src
     "*.cpp"
 )
 
-target_sources(${PROJECT_NAME}_Test
-    PUBLIC ${header}
-    PRIVATE ${src}
-)
+#target_sources(${PROJECT_NAME}_Test
+#    PUBLIC ${header}
+#    PRIVATE ${src}
+#)
 
+add_executable(${PROJECT_NAME}_Test ${header} ${src})
+set_property(TARGET ${PROJECT_NAME}_Test PROPERTY CXX_STANDARD 17)
+target_link_libraries(${PROJECT_NAME}_Test ${PROJECT_NAME} ${Boost_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_Test ${PROJECT_NAME})
+
