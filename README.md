@@ -20,7 +20,6 @@ int main()
         std::cout << "DBC parsing failed!" << std::endl;
         return 1;
     }
-    auto& signal = net.messages[1234].signals["Signal_name"];
     can_frame frame;
     while (1)
     {
