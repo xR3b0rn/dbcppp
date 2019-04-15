@@ -104,7 +104,6 @@ int64_t Signal::decode(const gsl::span<uint8_t> data) const
 	case 7: d = reverse_bytes_7(d); break;
 	case 8: d = reverse_bytes_8(d); break;
 	}
-	rawValue = reverse_bytes_8(rawValue);
 #else
 #	error "Vector::DBC::Signal Couldn't determine the systems endianess!"
 #endif
