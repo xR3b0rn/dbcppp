@@ -9,12 +9,13 @@ make install
 ```
 # Usage example
 ```
+#include <fstream>
 #include <Vector/DBC/Spirit.h>
 int main()
 {
-    Vector::DBC::Network net;
-    bool result = parse_dbc("your_test_dbc.dbc", net);
-    if (!result)
+    std::ifstream dbc_file{"your_dbc.dbc"};
+    dbcppp::Network net;
+    if (!(dbc_file >> net)
     {
         std::cout << "DBC parsing failed!" << std::endl;
         return 1;
