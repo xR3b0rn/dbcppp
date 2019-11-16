@@ -1,5 +1,4 @@
-﻿
-include(GNUInstallDirs)
+﻿include(GNUInstallDirs)
 add_library(${PROJECT_NAME} SHARED "")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
@@ -7,7 +6,6 @@ target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_BINARY_DIR}/src
-	${CMAKE_BINARY_DIR}/src/Vector/DBC
 )
 
 file(GLOB header
@@ -35,5 +33,5 @@ install(
     FILES
 		${CMAKE_CURRENT_BINARY_DIR}/dbcppp_export.h
 		$<TARGET_PROPERTY:${PROJECT_NAME},INTERFACE_SOURCES>
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Vector/DBC)
+	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dbcppp)
 	
