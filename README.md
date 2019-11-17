@@ -28,11 +28,14 @@ int main()
         std::cout << "Received message: " << msg.name << std::endl;
         for (auto& signal : msg.signals)
         {
-            int64_t raw = signal.decode({&frame.data, frame.dlc});
-            std::cout << "\t" << signal.name << "=" << signal.physicalToRawValue(raw) << std::endl;
+			uint64_t data =
+            	   (uint64_t)frame.data[0] | ((uint64_t)frame.data[1] << 8) | ((uint64_t)frame.data[2] << 16)
+				| ((uint64_t)frame.data[3] << 24) | ((uint64_t)frame.data[4] << 32) | ((uint64_t)frame.data[5] << 40)
+				| ((uint64_t)frame.data[6] << 48) | ((uint64_t)frame.data[7] << 56);
+            int64_t raw = signal.decode(&frame.data);
+            std::cout << "\t" << signal.name << "=" << signal.raw_to_phys(raw) << std::endl;
         }
     }
-    
 }
 
 ```
