@@ -492,14 +492,16 @@ auto insert_messages_into_network =
 			for (const auto& g_sig : g_msg.signals)
 			{
 				std::shared_ptr<Signal> sig = std::make_shared<Signal>();
-				sig->parent_message = msg;
-				sig->name           = g_sig.name;
-				sig->start_bit      = g_sig.start_bit;
-				sig->bit_size       = g_sig.bit_size;
-				sig->factor         = g_sig.factor;
-				sig->offset         = g_sig.offset;
-				sig->minimum        = g_sig.minimum;
-				sig->unit           = g_sig.unit;
+				sig->parent_message           = msg;
+				sig->name                     = g_sig.name;
+				sig->start_bit                = g_sig.start_bit;
+				sig->bit_size                 = g_sig.bit_size;
+				sig->factor                   = g_sig.factor;
+				sig->offset                   = g_sig.offset;
+				sig->minimum                  = g_sig.minimum;
+				sig->unit                     = g_sig.unit;
+				sig->multiplexer_indicator    = g_sig.multiplexer_indicator;
+				sig->multiplexer_switch_value = g_sig.multiplexer_switch_value;
 				for (const auto& n : g_sig.receivers)
 				{
 					if (n.name != "")
