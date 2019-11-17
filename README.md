@@ -1,5 +1,5 @@
 # dbcppp (DBC C++ parser)
-A DBC file parser written in C++ and based on `boost.spirit`. This library is performance optimized.
+A DBC file parser written in C++ and based on `boost.spirit`. This library designed for performance.
 
 # Build and install
 ```
