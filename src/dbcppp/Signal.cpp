@@ -22,7 +22,7 @@ uint64_t Signal::decode(uint64_t data) const
 	}
 	else
 	{
-		result = (data >> bit_size) & mask;
+		result = (data >> start_bit) & mask;
 	}
 	return result;
 }
