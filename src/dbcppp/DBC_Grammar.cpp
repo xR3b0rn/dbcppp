@@ -496,6 +496,7 @@ auto insert_messages_into_network =
 				sig->name                     = g_sig.name;
 				sig->start_bit                = g_sig.start_bit;
 				sig->bit_size                 = g_sig.bit_size;
+				sig->byte_order               = g_sig.byte_order;
 				sig->factor                   = g_sig.factor;
 				sig->offset                   = g_sig.offset;
 				sig->minimum                  = g_sig.minimum;
