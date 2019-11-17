@@ -10,7 +10,7 @@ make install
 # Usage example
 ```
 #include <fstream>
-#include <Vector/DBC/Spirit.h>
+#include <dbcppp/Spirit.h>
 int main()
 {
     std::ifstream dbc_file{"your_dbc.dbc"};
