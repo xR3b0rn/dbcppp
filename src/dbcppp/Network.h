@@ -36,3 +36,9 @@ namespace dbcppp
 		std::string comment;
 	};
 }
+#ifdef _WIN32
+#   define DBCPPP_EXPORT  __declspec( dllexport )
+#else
+#   define DBCPPP_EXPORT
+#endif
+DBCPPP_EXPORT bool operator>>(std::istream& is, dbcppp::Network& net);

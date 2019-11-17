@@ -339,7 +339,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 
 auto set_bit_timing =
-	[](const boost::optional<fu::vector<uint64_t, uint64_t, uint64_t>>& timing, auto context)
+	[](const boost::optional<fu::vector<uint64_t, uint64_t, uint64_t>>& timing, auto& context)
 	{
 		context.attributes.car.baudrate = 0;
 		context.attributes.car.BTR1 = 0;
@@ -352,21 +352,21 @@ auto set_bit_timing =
 		}
 	};
 auto node_to_pair =
-	[](const std::string& name, auto context)
+	[](const std::string& name, auto& context)
 	{
 		context.attributes.car.first = name;
 		context.attributes.car.second = std::make_shared<Node>();
 		context.attributes.car.second->name = name;
 	};
 auto set_value_table =
-	[](const fu::vector<std::string, std::map<uint64_t, std::string>>& table, auto context)
+	[](const fu::vector<std::string, std::map<uint64_t, std::string>>& table, auto& context)
 	{
 		context.attributes.car.first = fu::at_c<0>(table);
 		context.attributes.car.second.name = fu::at_c<0>(table);
 		context.attributes.car.second.value_descriptions = fu::at_c<1>(table);
 	};
 auto set_multiplexor =
-	[](const boost::optional<std::string>& m, auto context)
+	[](const boost::optional<std::string>& m, auto& context)
 	{
 		if (m)
 		{
@@ -378,9 +378,7 @@ auto set_multiplexor =
 			{
 				context.attributes.car.multiplexer_indicator = Signal::Multiplexer::MuxValue;
 				std::string_view buff{m->c_str() + 1, m->size() - 1};
-				uint64_t mux_value;
-				std::from_chars(m->c_str() + 1, m->c_str() + m->size(), mux_value);
-				context.attributes.car.multiplexer_switch_value = mux_value;
+				std::from_chars(m->c_str() + 1, m->c_str() + m->size(), context.attributes.car.multiplexer_switch_value);
 			}
 		}
 		else
@@ -389,7 +387,7 @@ auto set_multiplexor =
 		}
 	};
 auto set_byte_order =
-	[](char chr, auto context)
+	[](char chr, auto& context)
 	{
 		switch (chr)
 		{
@@ -398,7 +396,7 @@ auto set_byte_order =
 		}
 	};
 auto set_value_type =
-	[](char chr, auto context)
+	[](char chr, auto& context)
 	{
 		switch (chr)
 		{
@@ -407,12 +405,12 @@ auto set_value_type =
 		}
 	};
 auto set_node_name =
-	[](const std::string& node, auto context)
+	[](const std::string& node, auto& context)
 	{
 		context.attributes.car = node == "Vector__XXX" ? "" : node;
 	};
 auto set_env_var_type =
-	[](const uint64_t env_var_type, auto context)
+	[](const uint64_t env_var_type, auto& context)
 	{
 		switch (env_var_type)
 		{
@@ -422,7 +420,7 @@ auto set_env_var_type =
 		}
 	};
 auto set_access_type =
-	[](const uint64_t access_type, auto context)
+	[](const uint64_t access_type, auto& context)
 	{
 		switch (access_type)
 		{
@@ -433,13 +431,13 @@ auto set_access_type =
 		}
 	};
 auto signal_type_to_pair =
-	[](const SignalType& sig_type, auto context)
+	[](const SignalType& sig_type, auto& context)
 	{
 		context.attributes.car.first  = sig_type.name;
 		context.attributes.car.second = sig_type;
 	};
 auto optional_string_to_object_type =
-	[](const boost::optional<std::string>& g_obj_type, auto context)
+	[](const boost::optional<std::string>& g_obj_type, auto& context)
 	{
 		context.attributes.car = AttributeDefinition::ObjectType::Network;
 		if (g_obj_type)
@@ -463,13 +461,13 @@ auto optional_string_to_object_type =
 		}
 	};
 auto attribute_definition_to_pair =
-	[](const AttributeDefinition& attr_def, auto context)
+	[](const AttributeDefinition& attr_def, auto& context)
 	{
 		context.attributes.car.first  = attr_def.name;
 		context.attributes.car.second = attr_def;
 	};
 auto insert_nodes_into_network =
-	[](const std::vector<Node>& g_nodes, auto context)
+	[](const std::vector<Node>& g_nodes, auto& context)
 	{
 		Network& net = context.attributes.car;
 		for (const auto& g_n : g_nodes)
@@ -478,7 +476,7 @@ auto insert_nodes_into_network =
 		}
 	};
 auto insert_messages_into_network =
-	[](const std::vector<G_Message>& g_msgs, auto context)
+	[](const std::vector<G_Message>& g_msgs, auto& context)
 	{
 		Network& net = context.attributes.car;
 		for (const auto& g_msg : g_msgs)
@@ -515,7 +513,7 @@ auto insert_messages_into_network =
 		}
 	};
 auto insert_message_transmitters_into_network =
-	[](const std::vector<G_MessageTransmitter>& message_transmitters, auto context)
+	[](const std::vector<G_MessageTransmitter>& message_transmitters, auto& context)
 	{
 		Network& net = context.attributes.car;
 		for (const auto& msg_trans : message_transmitters)
@@ -528,7 +526,7 @@ auto insert_message_transmitters_into_network =
 		}
 	};
 auto insert_environment_variables_into_network =
-	[](const std::vector<G_EnvironmentVariable>& g_env_vars, auto context)
+	[](const std::vector<G_EnvironmentVariable>& g_env_vars, auto& context)
 	{
 		Network& net = context.attributes.car;
 		for (const auto& g_env_var : g_env_vars)
@@ -549,7 +547,7 @@ auto insert_environment_variables_into_network =
 		}
 	};
 auto insert_environment_variable_datas_into_network =
-	[](const std::vector<G_EnvironmentVariableData>& g_env_datas, auto context)
+	[](const std::vector<G_EnvironmentVariableData>& g_env_datas, auto& context)
 	{
 		Network& net = context.attributes.car;
 		for (const auto& g_env_data : g_env_datas)
@@ -560,7 +558,7 @@ auto insert_environment_variable_datas_into_network =
 		}
 	};
 auto insert_comments_into_network =
-	[](const std::vector<variant_comment_t>& g_comments, auto context)
+	[](const std::vector<variant_comment_t>& g_comments, auto& context)
 	{
 		Network& net = context.attributes.car;
 		struct Visitor
@@ -596,7 +594,7 @@ auto insert_comments_into_network =
 		}
 	};
 auto insert_attribute_defaults_into_network =
-	[](const std::vector<G_Attribute>& g_attrs, auto context)
+	[](const std::vector<G_Attribute>& g_attrs, auto& context)
 	{
 		Network& net = context.attributes.car;
 		for (const auto& g_attr : g_attrs)
@@ -616,7 +614,7 @@ auto insert_attribute_defaults_into_network =
 		}
 	};
 auto insert_attribute_values_into_network =
-	[](const std::vector<variant_attribute_t>& g_attrs, auto context)
+	[](const std::vector<variant_attribute_t>& g_attrs, auto& context)
 	{
 		Network& net = context.attributes.car;
 		struct Visitor
@@ -671,7 +669,7 @@ auto insert_attribute_values_into_network =
 		}
 	};
 auto insert_value_descriptions_into_network =
-	[](const std::vector<boost::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar>>& value_descriptions, auto context)
+	[](const std::vector<boost::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar>>& value_descriptions, auto& context)
 	{
 		Network& net = context.attributes.car;
 		struct Visitor
