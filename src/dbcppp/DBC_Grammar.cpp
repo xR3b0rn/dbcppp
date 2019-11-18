@@ -420,14 +420,23 @@ auto set_env_var_type =
 		}
 	};
 auto set_access_type =
-	[](const uint64_t access_type, auto& context)
+	[](const std::string& access_type, auto& context)
 	{
-		switch (access_type)
+		if (access_type == "DUMMY_NODE_VECTOR0")
 		{
-		case 0: context.attributes.car = EnvironmentVariable::AccessType::Unrestricted; break;
-		case 1: context.attributes.car = EnvironmentVariable::AccessType::Read; break;
-		case 2: context.attributes.car = EnvironmentVariable::AccessType::Write; break;
-		case 3: context.attributes.car = EnvironmentVariable::AccessType::ReadWrite; break;
+			context.attributes.car = EnvironmentVariable::AccessType::Unrestricted;
+		}
+		else if (access_type == "DUMMY_NODE_VECTOR1")
+		{
+			context.attributes.car = EnvironmentVariable::AccessType::Unrestricted;
+		}
+		else if (access_type == "DUMMY_NODE_VECTOR2")
+		{
+			context.attributes.car = EnvironmentVariable::AccessType::Unrestricted;
+		}
+		else if (access_type == "DUMMY_NODE_VECTOR3")
+		{
+			context.attributes.car = EnvironmentVariable::AccessType::Unrestricted;
 		}
 	};
 auto signal_type_to_pair =
@@ -545,7 +554,7 @@ auto insert_environment_variables_into_network =
 			env_var.access_type   = g_env_var.access_type;
 			for (const auto& n : g_env_var.access_nodes)
 			{
-				env_var.access_nodes.insert(net.nodes.at(n));
+				env_var.access_nodes.insert(net.nodes[n]);
 			}
 		}
 	};
@@ -818,7 +827,7 @@ struct NetworkGrammar
 		_env_var_type %= _unsigned_integer[set_env_var_type];
 		_initial_value %= _double;
 		_ev_id %= _unsigned_integer;
-		_access_type = _unsigned_integer[set_access_type];
+		_access_type = _C_identifier[set_access_type];
 		_access_nodes = _node_name % ',';
 
 		_environment_variable_datas %= *_environment_variable_data;
