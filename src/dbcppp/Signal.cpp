@@ -18,7 +18,8 @@ uint64_t Signal::decode(uint64_t data) const
 	if (byte_order == ByteOrder::BigEndian)
 	{
 		data = reverse_byte_order(data);
-		result = (data >> (65 - bit_size + start_bit)) & mask;
+		uint64_t sb = (8 * (7 - (sb / 8))) + (sb % 8) - (bit_size - 1);
+		result = (data >> sb) & mask;
 	}
 	else
 	{
@@ -32,7 +33,7 @@ void Signal::encode(uint64_t* data, uint64_t raw) const
 	raw &= mask;
 	if (byte_order == ByteOrder::BigEndian)
 	{
-		uint64_t sb = 65 - bit_size + start_bit;
+		uint64_t sb = (8 * (7 - (sb / 8))) + (sb % 8) - (bit_size - 1);
 		raw <<= sb;
 		*data &= ~(mask << sb);
 		*data |= raw;
