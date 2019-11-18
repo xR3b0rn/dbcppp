@@ -10,7 +10,7 @@ make install
 # Usage example
 ```
 #include <fstream>
-#include <Vector/DBC/Spirit.h>
+#include <dbcppp/Network.h>
 int main()
 {
     std::ifstream dbc_file{"your_dbc.dbc"};
@@ -28,11 +28,18 @@ int main()
         std::cout << "Received message: " << msg.name << std::endl;
         for (auto& signal : msg.signals)
         {
-            int64_t raw = signal.decode({&frame.data, frame.dlc});
-            std::cout << "\t" << signal.name << "=" << signal.physicalToRawValue(raw) << std::endl;
+            uint64_t data =
+                (uint64_t)frame.data[0] | ((uint64_t)frame.data[1] << 8) | ((uint64_t)frame.data[2] << 16)
+             | ((uint64_t)frame.data[3] << 24) | ((uint64_t)frame.data[4] << 32) | ((uint64_t)frame.data[5] << 40)
+             | ((uint64_t)frame.data[6] << 48) | ((uint64_t)frame.data[7] << 56);
+            int64_t raw = signal.decode(&frame.data);
+            std::cout << "\t" << signal.name << "=" << signal.raw_to_phys(raw) << std::endl;
         }
     }
-    
 }
 
 ```
+### Similar projects
+  * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` as grammar parser
+  * [CAN BUS tools in Python 3 (cantools)](https://github.com/eerimoq/cantools) 
+
