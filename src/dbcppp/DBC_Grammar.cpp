@@ -812,7 +812,7 @@ struct NetworkGrammar
 		_transmitters %= _transmitter % ',';
 
 		_environment_variables %= *_environment_variable;
-		_environment_variable %= qi::lit("EV_") >> _env_var_name >> ':' >> _env_var_type >> '(' >> _minimum >> '|' >> _maximum >> ')'
+		_environment_variable %= qi::lit("EV_") >> _env_var_name >> ':' >> _env_var_type >> '[' >> _minimum >> '|' >> _maximum >> ']'
 			>> _unit >> _initial_value >> _ev_id >> _access_type >> _access_nodes >> ';';
 		_env_var_name %= _C_identifier;
 		_env_var_type %= _unsigned_integer[set_env_var_type];
