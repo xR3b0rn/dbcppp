@@ -36,7 +36,7 @@ void Signal::encode(uint64_t* data, uint64_t raw) const
 		uint64_t sb = (8 * (7 - (start_bit / 8))) + (start_bit % 8) - (bit_size - 1);
 		raw <<= sb;
 		*data &= ~(mask << sb);
-		*data |= raw;
+		*data |= reverse_byte_order(raw);
 	}
 	else
 	{
