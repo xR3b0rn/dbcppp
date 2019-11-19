@@ -6,7 +6,6 @@ using namespace dbcppp;
 
 uint64_t Signal::decode(uint64_t data) const
 {
-	uint64_t result = 0;
 	uint64_t mask = ~((uint64_t)-1 << bit_size);
 	if (byte_order == ByteOrder::BigEndian)
 	{
@@ -59,5 +58,6 @@ double Signal::raw_to_phys(uint64_t raw) const
 }
 uint64_t Signal::phys_to_raw(double phys) const
 {
-	return (phys - offset) / factor;
+	phys = (phys - offset) / factor;
+	return (uint64_t)phys;
 }

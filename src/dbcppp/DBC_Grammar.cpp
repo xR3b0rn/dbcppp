@@ -28,7 +28,45 @@
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi_hold.hpp>
 
+#include "MakeSignal.h"
 #include "Network.h"
+
+std::shared_ptr<dbcppp::Signal> make_signal(uint64_t start_bit, uint64_t bit_size, dbcppp::Signal::ByteOrder byte_order, dbcppp::Signal::ValueType value_type)
+{
+	if (bit_size <= 8)
+	{
+		return dbcppp::make_signal_8(start_bit, bit_size, byte_order, value_type);
+	}
+	if (bit_size <= 16)
+	{
+		return dbcppp::make_signal_16(start_bit, bit_size, byte_order, value_type);
+	}
+	if (bit_size <= 24)
+	{
+		return dbcppp::make_signal_24(start_bit, bit_size, byte_order, value_type);
+	}
+	if (bit_size <= 32)
+	{
+		return dbcppp::make_signal_32(start_bit, bit_size, byte_order, value_type);
+	}
+	if (bit_size <= 40)
+	{
+		return dbcppp::make_signal_40(start_bit, bit_size, byte_order, value_type);
+	}
+	if (bit_size <= 48)
+	{
+		return dbcppp::make_signal_48(start_bit, bit_size, byte_order, value_type);
+	}
+	if (bit_size <= 56)
+	{
+		return dbcppp::make_signal_56(start_bit, bit_size, byte_order, value_type);
+	}
+	if (bit_size <= 64)
+	{
+		return dbcppp::make_signal_64(start_bit, bit_size, byte_order, value_type);
+	}
+	return nullptr;
+}
 
 using namespace dbcppp;
 namespace qi = boost::spirit::qi;
@@ -500,7 +538,7 @@ auto insert_messages_into_network =
 			}
 			for (const auto& g_sig : g_msg.signals)
 			{
-				std::shared_ptr<Signal> sig = std::make_shared<Signal>();
+				std::shared_ptr<Signal> sig = make_signal(g_sig.start_bit, g_sig.bit_size, g_sig.byte_order, g_sig.value_type);
 				sig->parent_message           = msg;
 				sig->name                     = g_sig.name;
 				sig->start_bit                = g_sig.start_bit;

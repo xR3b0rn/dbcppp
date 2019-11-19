@@ -7,13 +7,14 @@
 #include <vector>
 #include <cstddef>
 
+#include "Export.h"
 #include "Helper.h"
 #include "Node.h"
 #include "Attribute.h"
 
 namespace dbcppp
 {
-	struct EnvironmentVariable
+	struct DBCPPP_EXPORT EnvironmentVariable
 	{
 		enum class VarType
 		{

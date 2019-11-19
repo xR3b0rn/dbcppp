@@ -4,10 +4,12 @@
 #include <string>
 #include <memory>
 
+#include "Export.h"
+
 namespace dbcppp
 {
 	struct Node;
-	struct SharedNodeCmp
+	struct DBCPPP_EXPORT SharedNodeCmp
 	{
 		bool operator()(const std::shared_ptr<Node>& lhs, const std::shared_ptr<Node>& rhs) const;
 	};

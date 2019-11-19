@@ -3,9 +3,11 @@
 
 #include <cstddef>
 
+#include "Export.h"
+
 namespace dbcppp
 {
-	struct BitTiming
+	struct DBCPPP_EXPORT BitTiming
 	{
 		uint64_t baudrate;
 		uint64_t BTR1;

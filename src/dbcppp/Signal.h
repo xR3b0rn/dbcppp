@@ -7,15 +7,17 @@
 #include <string>
 #include <cstddef>
 
+#include "Export.h"
 #include "span.h"
 #include "Helper.h"
 #include "Node.h"
 #include "Attribute.h"
 
+
 namespace dbcppp
 {
 	struct Message;
-	struct Signal
+	struct DBCPPP_EXPORT Signal
 	{
 		enum class Multiplexer
 		{
@@ -48,7 +50,7 @@ namespace dbcppp
 		std::map<std::string, Attribute> attribute_values;
 		std::string comment;
 
-		uint64_t decode(uint64_t) const;
+		virtual uint64_t decode(uint64_t data) const;
 		void encode(uint64_t* data, uint64_t raw) const;
 		double raw_to_phys(uint64_t raw) const;
 		uint64_t phys_to_raw(double phys) const;

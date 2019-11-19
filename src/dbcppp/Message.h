@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 
+#include "Export.h"
 #include "Helper.h"
 #include "Node.h"
 #include "Signal.h"
@@ -12,7 +13,7 @@
 
 namespace dbcppp
 {
-	struct Message
+	struct DBCPPP_EXPORT Message
 	{
 		uint64_t id;
 		std::string name;

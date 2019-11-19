@@ -6,9 +6,11 @@
 #include <vector>
 #include <boost/variant.hpp>
 
+#include "Export.h"
+
 namespace dbcppp
 {
-	struct AttributeDefinition
+	struct DBCPPP_EXPORT AttributeDefinition
 	{
 		enum class ObjectType
 		{

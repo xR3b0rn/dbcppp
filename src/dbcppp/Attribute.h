@@ -5,11 +5,12 @@
 #include <cstddef>
 #include <boost/variant.hpp>
 
+#include "Export.h"
 #include "AttributeDefinition.h"
 
 namespace dbcppp
 {
-	struct Attribute
+	struct DBCPPP_EXPORT Attribute
 	{
 		std::string name;
 		AttributeDefinition::ObjectType object_type; // maybe std::shared_ptr to AttributeDefinition

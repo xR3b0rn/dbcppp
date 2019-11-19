@@ -8,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 
+#include "Export.h"
 #include "BitTiming.h"
 #include "ValueTable.h"
 #include "Node.h"
@@ -19,7 +20,7 @@
 
 namespace dbcppp
 {
-	struct Network
+	struct DBCPPP_EXPORT Network
 	{
 		std::string version;
 		std::vector<std::string> new_symbols;
