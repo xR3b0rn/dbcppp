@@ -12,13 +12,29 @@ uint64_t Signal::decode(uint64_t data) const
 	{
 		data = boost::endian::endian_reverse(data);
 		uint64_t sb = (8 * (7 - (start_bit / 8))) + (start_bit % 8) - (bit_size - 1);
-		result = (data >> sb) & mask;
+		data >>= sb;
+		if (value_type == ValueType::Signed && (data & (1ull << (bit_size - 1))))
+		{
+			data |= ~mask;
+		}
+		else
+		{
+			data &= mask;
+		}
 	}
 	else
 	{
-		result = (data >> start_bit) & mask;
+		data >>= start_bit;
+		if (value_type == ValueType::Signed && (data & (1ull << (bit_size - 1))))
+		{
+			data |= ~mask;
+		}
+		else
+		{
+			data &= mask;
+		}
 	}
-	return result;
+	return data;
 }
 void Signal::encode(uint64_t* data, uint64_t raw) const
 {
