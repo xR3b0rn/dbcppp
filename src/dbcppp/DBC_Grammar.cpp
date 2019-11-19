@@ -64,7 +64,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 
 struct G_Signal
 {
-    std::string name;
+	std::string name;
 	Signal::Multiplexer multiplexer_indicator;
 	uint64_t multiplexer_switch_value;
 	uint64_t start_bit;
@@ -97,7 +97,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 BOOST_FUSION_ADAPT_STRUCT(
 	G_Signal,
-    name,
+	name,
 	start_bit,
 	bit_size,
 	byte_order,
@@ -124,12 +124,12 @@ BOOST_FUSION_ADAPT_STRUCT(
 	G_ValueDescriptionSignal,
 	message_id,
 	signal_name,
-    value_description
+	value_description
 )
 BOOST_FUSION_ADAPT_STRUCT(
 	G_ValueDescriptionEnvVar,
 	env_var_name,
-    value_description
+	value_description
 )
 struct G_MessageTransmitter
 {
@@ -139,19 +139,19 @@ struct G_MessageTransmitter
 BOOST_FUSION_ADAPT_STRUCT(
 	G_MessageTransmitter,
 	message_id,
-    transmitters
+	transmitters
 )
 struct G_EnvironmentVariable
 {
-		std::string name;
-		EnvironmentVariable::VarType var_type;
-		double minimum;
-		double maximum;
-		std::string unit;
-		double initial_value;
-		uint64_t ev_id;
-		EnvironmentVariable::AccessType access_type;
-		std::vector<std::string> access_nodes;
+	std::string name;
+	EnvironmentVariable::VarType var_type;
+	double minimum;
+	double maximum;
+	std::string unit;
+	double initial_value;
+	uint64_t ev_id;
+	EnvironmentVariable::AccessType access_type;
+	std::vector<std::string> access_nodes;
 };
 BOOST_FUSION_ADAPT_STRUCT(
 	G_EnvironmentVariable,
