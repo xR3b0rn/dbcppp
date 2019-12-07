@@ -8,7 +8,7 @@ make
 make install
 ```
 # Usage example
-```
+```C++
 #include <fstream>
 #include <dbcppp/Network.h>
 int main()
