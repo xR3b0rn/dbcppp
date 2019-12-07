@@ -40,6 +40,6 @@ int main()
 
 ```
 ### Similar projects
-  * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` as grammar parser
+  * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` for grammar parsing
   * [CAN BUS tools in Python 3 (cantools)](https://github.com/eerimoq/cantools) 
 
