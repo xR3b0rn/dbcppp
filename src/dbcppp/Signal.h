@@ -48,9 +48,9 @@ namespace dbcppp
 		std::map<std::string, Attribute> attribute_values;
 		std::string comment;
 
-		uint64_t decode(uint64_t) const;
-		void encode(uint64_t* data, uint64_t raw) const;
-		double raw_to_phys(uint64_t raw) const;
-		uint64_t phys_to_raw(double phys) const;
+		int64_t decode(uint64_t) const;
+		void encode(uint64_t* data, int64_t raw) const;
+		double raw_to_phys(int64_t raw) const;
+		int64_t phys_to_raw(double phys) const;
 	};
 }

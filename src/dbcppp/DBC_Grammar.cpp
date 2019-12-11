@@ -496,7 +496,7 @@ auto insert_messages_into_network =
 			msg->message_size = g_msg.message_size;
 			if (g_msg.transmitter.name != "")
 			{
-				msg->transmitter  = net.nodes.at(g_msg.transmitter.name);
+				msg->transmitter  = net.nodes[g_msg.transmitter.name];
 			}
 			for (const auto& g_sig : g_msg.signals)
 			{
@@ -512,11 +512,12 @@ auto insert_messages_into_network =
 				sig->unit                     = g_sig.unit;
 				sig->multiplexer_indicator    = g_sig.multiplexer_indicator;
 				sig->multiplexer_switch_value = g_sig.multiplexer_switch_value;
+				sig->value_type               = g_sig.value_type;
 				for (const auto& n : g_sig.receivers)
 				{
 					if (n.name != "")
 					{
-						sig->receivers.insert(net.nodes.at(n.name));
+						sig->receivers.insert(net.nodes[n.name]);
 					}
 				}
 				msg->signals[g_sig.name] = sig;
@@ -530,10 +531,10 @@ auto insert_message_transmitters_into_network =
 		Network& net = context.attributes.car;
 		for (const auto& msg_trans : message_transmitters)
 		{
-			std::shared_ptr<Message>& msg = net.messages.at(msg_trans.message_id);
+			std::shared_ptr<Message>& msg = net.messages[msg_trans.message_id];
 			for (const auto& trans : msg_trans.transmitters)
 			{
-				msg->transmitters.insert(net.nodes.at(trans));
+				msg->transmitters.insert(net.nodes[trans]);
 			}
 		}
 	};
@@ -564,7 +565,7 @@ auto insert_environment_variable_datas_into_network =
 		Network& net = context.attributes.car;
 		for (const auto& g_env_data : g_env_datas)
 		{
-			EnvironmentVariable& env_var = net.environment_variables.at(g_env_data.name);
+			EnvironmentVariable& env_var = net.environment_variables[g_env_data.name];
 			env_var.var_type  = EnvironmentVariable::VarType::Data;
 			env_var.data_size = g_env_data.data_size;
 		}
@@ -584,19 +585,19 @@ auto insert_comments_into_network =
 			}
 			void operator()(const G_CommentNode& c) const
 			{
-				_net.nodes.at(c.node_name)->comment = c.comment;
+				_net.nodes[c.node_name]->comment = c.comment;
 			}
 			void operator()(const G_CommentMessage& c) const
 			{
-				_net.messages.at(c.message_id)->comment = c.comment;
+				_net.messages[c.message_id]->comment = c.comment;
 			}
 			void operator()(const G_CommentSignal& c) const
 			{
-				_net.messages.at(c.message_id)->signals.at(c.signal_name)->comment = c.comment;
+				_net.messages[c.message_id]->signals[c.signal_name]->comment = c.comment;
 			}
 			void operator()(const G_CommentEnvVar& c) const
 			{
-				_net.environment_variables.at(c.env_var_name).comment = c.comment;
+				_net.environment_variables[c.env_var_name].comment = c.comment;
 			}
 			Network& _net;
 		};
@@ -611,7 +612,7 @@ auto insert_attribute_defaults_into_network =
 		Network& net = context.attributes.car;
 		for (const auto& g_attr : g_attrs)
 		{
-			AttributeDefinition& attr_def = net.attribute_definitions.at(g_attr.name);
+			AttributeDefinition& attr_def = net.attribute_definitions[g_attr.name];
 			Attribute& attr = net.attribute_defaults[g_attr.name];
 			attr.name = g_attr.name;
 			attr.object_type = attr_def.object_type;
@@ -636,7 +637,7 @@ auto insert_attribute_values_into_network =
 			{}
 			void assign(const std::string& attr_name, const attr_value_t& value, Attribute& attr)
 			{
-				AttributeDefinition& attr_def = _net.attribute_definitions.at(attr_name);
+				AttributeDefinition& attr_def = _net.attribute_definitions[attr_name];
 				attr.name = attr_name;
 				attr.object_type = AttributeDefinition::ObjectType::Network;
 				switch (attr_def.value_type.which())
@@ -655,22 +656,22 @@ auto insert_attribute_values_into_network =
 			}
 			void operator()(const G_AttributeNode& g_attr)
 			{
-				Attribute& attr = _net.nodes.at(g_attr.node_name)->attribute_values[g_attr.attribute_name];
+				Attribute& attr = _net.nodes[g_attr.node_name]->attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
 			void operator()(const G_AttributeMessage& g_attr)
 			{
-				Attribute& attr = _net.messages.at(g_attr.message_id)->attribute_values[g_attr.attribute_name];
+				Attribute& attr = _net.messages[g_attr.message_id]->attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
 			void operator()(const G_AttributeSignal& g_attr)
 			{
-				Attribute& attr = _net.messages.at(g_attr.message_id)->signals.at(g_attr.signal_name)->attribute_values[g_attr.attribute_name];
+				Attribute& attr = _net.messages[g_attr.message_id]->signals[g_attr.signal_name]->attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
 			void operator()(const G_AttributeEnvVar& g_attr)
 			{
-				Attribute& attr = _net.environment_variables.at(g_attr.env_var_name).attribute_values[g_attr.attribute_name];
+				Attribute& attr = _net.environment_variables[g_attr.env_var_name].attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
 			Network& _net;
@@ -691,7 +692,7 @@ auto insert_value_descriptions_into_network =
 			{}
 			void operator()(const G_ValueDescriptionSignal& desc)
 			{
-				_net.messages.at(desc.message_id)->signals.at(desc.signal_name)->value_descriptions = desc.value_description;
+				_net.messages[desc.message_id]->signals[desc.signal_name]->value_descriptions = desc.value_description;
 			}
 			void operator()(const G_ValueDescriptionEnvVar& desc)
 			{
@@ -1009,5 +1010,9 @@ DBCPPP_EXPORT bool operator>>(std::istream& is, dbcppp::Network& net)
 	auto begin{str.begin()}, end{str.end()};
 	NetworkGrammar<std::string::iterator> g;
 	result = phrase_parse(begin, end, g, ascii::space, net);
+	if (begin != end)
+	{
+		std::cout << std::string(begin, end) << std::endl;
+	}
  	return result & (begin == end);
 }
