@@ -807,8 +807,8 @@ struct NetworkGrammar
 		_multiplexer_indicator %= -_C_identifier;
 		_start_bit %= _unsigned_integer;
 		_signal_size %= _unsigned_integer;
-		_byte_order %= qi::lexeme[qi::char_('0') | qi::char_('1')][set_byte_order];
-		_value_type %= qi::lexeme[qi::char_('-') | qi::char_('+')][set_value_type];
+		_byte_order = qi::lexeme[qi::char_('0') | qi::char_('1')][set_byte_order];
+		_value_type = qi::lexeme[qi::char_('-') | qi::char_('+')][set_value_type];
 		_factor %= _double;
 		_offset %= _double;
 		_minimum %= _double;

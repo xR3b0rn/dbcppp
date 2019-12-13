@@ -23,7 +23,7 @@ namespace dbcppp
 		};
 		enum class ByteOrder
 		{
-			BigEndian, LittleEndian
+			LittleEndian, BigEndian
 		};
 		enum class ValueType
 		{
