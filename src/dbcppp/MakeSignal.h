@@ -45,9 +45,11 @@ namespace dbcppp
 			return data;
 		}
 	};
-	// I splitted the signal generation functions into more compilation units, because elsewise the Compiler will run out of Memory
-	// which prolong the process of compilation (the 8 functions are used to make the compiler generate 64 * 64 * 2 * 2 = 16.384
-	// decoding functions, so the decoding is as fast as code generated)
+	// The 8 functions below are used to make the compiler generate 64 * 64 * 2 * 2 = 16.384 decoding functions for any possible combination
+	// of aStartBit, aBitSize, aByteOrder and aValueType. The decoding is then as fast as code generated.
+	// To reduce the memory usage per compilation unit and so improve the overall perfomance, the signal generation functions are splitted
+	// into more compilation units. Doing this only impacts the performance of DBC parsing a bit, since a if is needed to invoke the correct
+	// make_signal_x function.
 	std::shared_ptr<dbcppp::Signal> make_signal_8(uint64_t start_bit, uint64_t bit_size, Signal::ByteOrder byte_order, Signal::ValueType value_type);
 	std::shared_ptr<dbcppp::Signal> make_signal_16(uint64_t start_bit, uint64_t bit_size, Signal::ByteOrder byte_order, Signal::ValueType value_type);
 	std::shared_ptr<dbcppp::Signal> make_signal_24(uint64_t start_bit, uint64_t bit_size, Signal::ByteOrder byte_order, Signal::ValueType value_type);
