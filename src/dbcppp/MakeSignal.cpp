@@ -21,7 +21,6 @@ struct MakeSignal
 		{
 			return MakeSignal<dbcppp::Signal::ByteOrder::LittleEndian, dbcppp::Signal::ValueType::Signed>::signal(byte_order, value_type);
 		}
-		return std::make_shared<dbcppp::Signal>();
 	}
 };
 

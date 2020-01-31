@@ -11,7 +11,7 @@ namespace dbcppp
 	struct TemplateSignal
 		: dbcppp::Signal
 	{
-		virtual uint64_t decode(uint64_t data) const override
+		virtual int64_t decode(uint64_t data) const override
 		{
 			if constexpr (aByteOrder == ByteOrder::BigEndian)
 			{
