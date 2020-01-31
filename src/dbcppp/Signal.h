@@ -25,7 +25,7 @@ namespace dbcppp
 		};
 		enum class ByteOrder
 		{
-			BigEndian, LittleEndian
+			LittleEndian, BigEndian
 		};
 		enum class ValueType
 		{
@@ -50,9 +50,14 @@ namespace dbcppp
 		std::map<std::string, Attribute> attribute_values;
 		std::string comment;
 
-		virtual uint64_t decode(uint64_t data) const;
-		void encode(uint64_t* data, uint64_t raw) const;
-		double raw_to_phys(uint64_t raw) const;
-		uint64_t phys_to_raw(double phys) const;
+		virtual int64_t decode(uint64_t) const;
+		void encode(uint64_t* data, int64_t raw) const;
+		double raw_to_phys(int64_t raw) const;
+		int64_t phys_to_raw(double phys) const;
+		
+		// for performance
+		uint64_t mask;
+		uint64_t mask_signed;
+		uint64_t fixed_start_bit;
 	};
 }

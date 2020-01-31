@@ -25,61 +25,66 @@
 #include <chrono>
 #include <random>
 
-#include <Vector/DBC.h>
-#include <Vector/DBC/Network.h>
+#include <boost/endian/conversion.hpp>
 
 #include "../dbcppp/Network.h"
 #include "../dbcppp/DBC_Grammar.h"
 
-template<typename TimeT = std::chrono::milliseconds>
-struct measure
-{
-    template<typename F, typename ...Args>
-    static typename TimeT::rep execution(F&& func, Args&&... args)
-    {
-        auto start = std::chrono::steady_clock::now();
-        std::forward<decltype(func)>(func)(std::forward<Args>(args)...);
-        auto duration = std::chrono::duration_cast< TimeT> 
-            (std::chrono::steady_clock::now() - start);
-        return duration.count();
-    }
-};
-void repeat_n_times(std::size_t n, std::function<void()> func)
-{
-    for (std::size_t i = 0; i < n; i++)
-    {
-        func();
-    }
-}
+//template<typename TimeT = std::chrono::milliseconds>
+//struct measure
+//{
+//    template<typename F, typename ...Args>
+//    static typename TimeT::rep execution(F&& func, Args&&... args)
+//    {
+//        auto start = std::chrono::steady_clock::now();
+//        std::forward<decltype(func)>(func)(std::forward<Args>(args)...);
+//        auto duration = std::chrono::duration_cast< TimeT> 
+//            (std::chrono::steady_clock::now() - start);
+//        return duration.count();
+//    }
+//};
+//void repeat_n_times(std::size_t n, std::function<void()> func)
+//{
+//    for (std::size_t i = 0; i < n; i++)
+//    {
+//        func();
+//    }
+//}
+
+
+
+
+
 
 #include <ctime>
 
 int main()
 {
+	std::cout << "test" << std::endl;
 	{
-		std::ifstream idbc{"C:/hij/github/dbcppp/src/Test/new_test.dbc"};
-		dbcppp::Network net;
-		std::clock_t begin = std::clock();
-		idbc >> net;
-		std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
+	//	std::ifstream idbc{"C:/hij/github/dbcppp/src/Test/new_test.dbc"};
+	//	dbcppp::Network net;
+	//	std::clock_t begin = std::clock();
+	//	idbc >> net;
+	//	std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
 
 
 
-		//for (const auto& msg : net.messages)
-		//{
-		//	for (const auto& sig : msg.second->signals)
-		//	{
-		//		std::cout << sig.second->comment << std::endl;
-		//	}
-		//}
-		std::cout << "break" << std::endl;
-	}
-	{
-		std::ifstream idbc{"C:/hij/github/dbcppp/src/Test/new_test.dbc"};
-		Vector::DBC::Network net;
-		std::clock_t begin = std::clock();
-		idbc >> net;
-		std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
+	//	//for (const auto& msg : net.messages)
+	//	//{
+	//	//	for (const auto& sig : msg.second->signals)
+	//	//	{
+	//	//		std::cout << sig.second->comment << std::endl;
+	//	//	}
+	//	//}
+	//	std::cout << "break" << std::endl;
+	//}
+	//{
+	//	std::ifstream idbc{"C:/hij/github/dbcppp/src/Test/new_test.dbc"};
+	//	Vector::DBC::Network net;
+	//	std::clock_t begin = std::clock();
+	//	idbc >> net;
+	//	std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
 	}
 
 	//bool result = parse_dbc("C:/hij/github/dbcppp/src/Test/test.dbc", net);
