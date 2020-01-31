@@ -520,6 +520,21 @@ auto insert_messages_into_network =
 					  g_sig.byte_order == dbcppp::Signal::ByteOrder::BigEndian
 					? (8 * (7 - (g_sig.start_bit / 8))) + (g_sig.start_bit % 8) - (g_sig.bit_size - 1)
 					: g_sig.start_bit;
+				sig->fixed_start_bit_fd		  =
+					  (g_sig.byte_order == dbcppp::Signal::ByteOrder::BigEndian
+					? (8 * (63 - (g_sig.start_bit / 8))) + (g_sig.start_bit % 8) - (g_sig.bit_size - 1)
+					: g_sig.start_bit);
+				sig->big_endian_byte_pos_fd	  = sig->fixed_start_bit_fd / 8;
+				sig->fixed_start_bit_fd -= sig->big_endian_byte_pos_fd * 8;
+				if (sig->fixed_start_bit + sig->bit_size > 64)
+				{
+					std::cout <<
+						"Warning: Signal " << msg->name << "::" << sig->name << "\n" <<
+						"The signals byte aligned start bit + the signals bit size exceeds the 64 bit mark,"
+						" this means that the decode function of this signal wont work correctly!\n"
+						"To fix this make sure that you are only using signals with size < 64 bit.\n"
+						"If the warning still appears, it's because (size + (start_bit % 8)) > 64 bit." << std::endl;
+				}
 				for (const auto& n : g_sig.receivers)
 				{
 					if (n.name != "")
