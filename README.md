@@ -1,5 +1,5 @@
 # dbcppp (DBC C++ parser)
-A DBC file parser written in C++ and based on `boost.spirit`. This library designed for performance.
+A DBC file parser written in C++ and based on `boost.spirit`. This library is designed for performance.
 
 # Build and install
 ```
@@ -8,7 +8,7 @@ make
 make install
 ```
 # Usage example
-```
+```C++
 #include <fstream>
 #include <dbcppp/Network.h>
 int main()
@@ -40,6 +40,6 @@ int main()
 
 ```
 ### Similar projects
-  * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` as grammar parser
+  * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` for grammar parsing
   * [CAN BUS tools in Python 3 (cantools)](https://github.com/eerimoq/cantools) 
 
