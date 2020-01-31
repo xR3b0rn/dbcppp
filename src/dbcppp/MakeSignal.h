@@ -21,7 +21,7 @@ namespace dbcppp
 			if constexpr (aValueType == ValueType::Signed)
 			{
 				// bit extending
-				data |= ~(data & mask_signed);
+				data |= ~((data & mask_signed) - 1);
 			}
 			else
 			{
