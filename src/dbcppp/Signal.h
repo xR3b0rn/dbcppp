@@ -92,7 +92,6 @@ namespace dbcppp
 		void fix_performance_attributes();
 		uint64_t mask;
 		uint64_t mask_signed;
-		uint64_t mask_signed_fd;
 		uint64_t fixed_start_bit;
 		uint64_t fixed_start_bit_fd;
 		uint64_t byte_pos_fd;
