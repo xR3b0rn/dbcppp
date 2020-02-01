@@ -73,7 +73,7 @@ namespace dbcppp
 		/// This function uses a optimized method of reversing the byte order and extracting
 		/// the value from the given data. In case of byte order missmatch, this function is much slower
 		/// than decode8. A missmatch happens, e.g. when the Signal's byte order is BigEndian but the 
-		/// systems byte order is LittleEndian. Then the byte reversing of decode 64 will take some more
+		/// systems byte order is LittleEndian. Then the byte reversing of decode64 will take some more
 		/// instructions than the byte reversing of decode8.
 		/// Note: Only data types with 64 bits are supported.
 		/// @param _64byte a 64 byte array (exactly 64 byte) which is representing the can data.
@@ -89,10 +89,12 @@ namespace dbcppp
 		raw_t phys_to_raw(double phys) const;
 		
 		// for performance
+		void fix_performance_attributes();
 		uint64_t mask;
 		uint64_t mask_signed;
+		uint64_t mask_signed_fd;
 		uint64_t fixed_start_bit;
 		uint64_t fixed_start_bit_fd;
-		uint64_t big_endian_byte_pos_fd;
+		uint64_t byte_pos_fd;
 	};
 }

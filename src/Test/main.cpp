@@ -29,112 +29,265 @@
 
 #include "../dbcppp/Network.h"
 #include "../dbcppp/DBC_Grammar.h"
+#include "../dbcppp/MakeSignal.h"
 
-//template<typename TimeT = std::chrono::milliseconds>
-//struct measure
-//{
-//    template<typename F, typename ...Args>
-//    static typename TimeT::rep execution(F&& func, Args&&... args)
-//    {
-//        auto start = std::chrono::steady_clock::now();
-//        std::forward<decltype(func)>(func)(std::forward<Args>(args)...);
-//        auto duration = std::chrono::duration_cast< TimeT> 
-//            (std::chrono::steady_clock::now() - start);
-//        return duration.count();
-//    }
-//};
-//void repeat_n_times(std::size_t n, std::function<void()> func)
-//{
-//    for (std::size_t i = 0; i < n; i++)
-//    {
-//        func();
-//    }
-//}
+#define BOOST_TEST_MODULE test
+#include <boost/test/included/unit_test.hpp>
+namespace utf = boost::unit_test;
 
-
-
-
-
-
-#include <ctime>
-
-int main()
+int64_t easy_decode(const dbcppp::Signal& sig, std::vector<uint8_t> & data)
 {
-	std::cout << "test" << std::endl;
-	{
-	//	std::ifstream idbc{"C:/hij/github/dbcppp/src/Test/new_test.dbc"};
-	//	dbcppp::Network net;
-	//	std::clock_t begin = std::clock();
-	//	idbc >> net;
-	//	std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
-
-
-
-	//	//for (const auto& msg : net.messages)
-	//	//{
-	//	//	for (const auto& sig : msg.second->signals)
-	//	//	{
-	//	//		std::cout << sig.second->comment << std::endl;
-	//	//	}
-	//	//}
-	//	std::cout << "break" << std::endl;
-	//}
-	//{
-	//	std::ifstream idbc{"C:/hij/github/dbcppp/src/Test/new_test.dbc"};
-	//	Vector::DBC::Network net;
-	//	std::clock_t begin = std::clock();
-	//	idbc >> net;
-	//	std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
-	}
-
-	//bool result = parse_dbc("C:/hij/github/dbcppp/src/Test/test.dbc", net);
-	//if (!result)
-	//{
-	//	std::cout << "DBC parsing failed!" << std::endl;
-	//	return 1;
-	//}
-	//std::array<uint8_t, 8> buff{{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}};
-	//uint64_t* val = reinterpret_cast<uint64_t*>(&buff[0]);
-	//uint64_t raw = 0x8877665544332211;
-	//auto& sig = net.messages[2633880062].signals["FMSstandardSWversionSupported"];
-	//std::random_device rd;
- //   auto s = rd();
-	//std::uniform_int_distribution<uint64_t> dis(0, uint64_t(-1));
- //   {
- //       std::mt19937 gen{s};
- //       auto old_time = measure<>::execution(
- //           repeat_n_times,
- //           99999999,
- //           [&gen, &dis, &sig]()
- //           {
- //               uint64_t val = dis(gen);
- //               volatile uint64_t raw = sig->decode({(uint8_t*)&val, 8});
- //           });
- //       std::cout << "decode: " << old_time << std::endl;
- //   }
- //   {
- //       std::mt19937 gen{s};
- //       auto old_time = measure<>::execution(
- //           repeat_n_times,
- //           99999999,
- //           [&gen, &dis, &sig]()
- //           {
- //               uint64_t val = dis(gen);
- //               volatile uint64_t raw = sig->decode_({(uint8_t*)&val, 8});
- //           });
- //       std::cout << "decode_: " << old_time << std::endl;
- //   }
-
-
-	//uint64_t ret1 = sig->decode({(uint8_t*)&raw, 8});
-	//uint64_t ret2 = sig->decode_({(uint8_t*)&raw, 8});
-	//std::vector<uint8_t> vec;
-	//vec.resize(8);
-	//memcpy((char*)&vec[0], (char*)&raw, 8);
-	//uint64_t ret3 = sig->old_decode(vec);
-
-	//std::vector<uint8_t> enc(8, 0);
-	//sig->encode({&enc[0], 8}, ret1);
-
-	//std::cout << std::hex << ret1 << std::endl;
+    if (sig.bit_size == 0)
+    {
+        return 0;
+    }
+    int64_t retVal = 0;
+    if (sig.byte_order == dbcppp::Signal::ByteOrder::BigEndian)
+    {
+        unsigned int srcBit = sig.start_bit;
+        unsigned int dstBit = sig.bit_size - 1;
+        for (auto i = 0; i < sig.bit_size; ++i)
+        {
+            if (data[srcBit / 8] & (1ull << (srcBit % 8)))
+            {
+                retVal |= (1ULL << dstBit);
+            }
+            if ((srcBit % 8) == 0)
+            {
+                srcBit += 15;
+            }
+            else
+            {
+                --srcBit;
+            }
+            --dstBit;
+        }
+    }
+    else
+    {
+        unsigned int srcBit = sig.start_bit;
+        unsigned int dstBit = 0;
+        for (auto i = 0; i < sig.bit_size; ++i)
+        {
+            if (data[srcBit / 8] & (1 << (srcBit % 8)))
+            {
+                retVal |= (1ULL << dstBit);
+            }
+            ++srcBit;
+            ++dstBit;
+        }
+    }
+    if (sig.value_type == dbcppp::Signal::ValueType::Signed)
+    {
+        if (retVal & (1ull << (sig.bit_size - 1)))
+        {
+            for (auto i = sig.bit_size; i < 64; ++i)
+            {
+                retVal |= (1ULL << i);
+            }
+        }
+    }
+    return retVal;
 }
+BOOST_AUTO_TEST_CASE(SignalLittleEndian)
+{
+    auto sig = dbcppp::make_signal(dbcppp::Signal::ByteOrder::LittleEndian, dbcppp::Signal::ValueType::Signed);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> dis(0, -1);
+    std::chrono::milliseconds sum_t_1(0);
+    std::chrono::milliseconds sum_t_2(0);
+    for (std::size_t i = 0; i < 100000; i++)
+    {
+        sig->byte_order = dbcppp::Signal::ByteOrder::LittleEndian;
+        sig->value_type = dbcppp::Signal::ValueType::Signed;
+        sig->start_bit = dis(gen) % 62;
+        sig->bit_size = dis(gen) % (64 - sig->start_bit);
+        sig->fix_performance_attributes();
+        uint64_t data64 = dis(gen);
+        uint8_t data1[8];
+        std::vector<uint8_t> data2;
+        for (std::size_t i = 0; i < 8; i++)
+        {
+            data1[i] = data64 >> (i * 8);
+            data2.push_back(data64 >> (i * 8));
+        }
+        auto start = std::chrono::system_clock::now().time_since_epoch().count();
+        auto raw1 = sig->decode8(data1);
+        sum_t_1 += std::chrono::milliseconds((std::chrono::system_clock::now().time_since_epoch().count() - start));
+        start = std::chrono::system_clock::now().time_since_epoch().count();
+        auto raw2 = easy_decode(*sig, data2);
+        sum_t_2 += std::chrono::milliseconds((std::chrono::system_clock::now().time_since_epoch().count() - start));
+        BOOST_CHECK_EQUAL(raw1, raw2);
+    }
+    std::cout << "SignalLittleEndian" << std::endl;
+    std::cout << "New method: " << sum_t_1.count() << "ms" << std::endl;
+    std::cout << "Easy method: " << sum_t_2.count() << "ms" << std::endl;
+    std::cout << "Factor: " << double(sum_t_2.count()) / sum_t_1.count() << std::endl;
+}
+BOOST_AUTO_TEST_CASE(SignalLittleEndianFd)
+{
+    auto sig = dbcppp::make_signal(dbcppp::Signal::ByteOrder::LittleEndian, dbcppp::Signal::ValueType::Signed);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> dis(0, -1);
+    std::chrono::milliseconds sum_t_1(0);
+    std::chrono::milliseconds sum_t_2(0);
+    for (std::size_t i = 0; i < 100000; i++)
+    {
+        sig->byte_order = dbcppp::Signal::ByteOrder::LittleEndian;
+        sig->value_type = dbcppp::Signal::ValueType::Signed;
+        sig->start_bit = dis(gen) % 62;
+        sig->bit_size = dis(gen) % (64 - sig->start_bit);
+        sig->fix_performance_attributes();
+        uint8_t data1[64];
+        std::vector<uint8_t> data2;
+        for (std::size_t j = 0; j < 8; j++)
+        {
+            uint64_t data64 = dis(gen);
+            for (std::size_t i = 0; i < 8; i++)
+            {
+                data1[j * 8 + i] = (data64 >> (i * 8)) & 0xFFu;
+                data2.push_back((data64 >> (i * 8)) & 0xFFu);
+            }
+        }
+        auto start = std::chrono::system_clock::now().time_since_epoch().count();
+        auto raw1 = sig->decode64(data1);
+        sum_t_1 += std::chrono::milliseconds((std::chrono::system_clock::now().time_since_epoch().count() - start));
+        start = std::chrono::system_clock::now().time_since_epoch().count();
+        auto raw2 = easy_decode(*sig, data2);
+        sum_t_2 += std::chrono::milliseconds((std::chrono::system_clock::now().time_since_epoch().count() - start));
+        BOOST_CHECK_EQUAL(raw1, raw2);
+    }
+    std::cout << "SignalLittleEndianFd" << std::endl;
+    std::cout << "New method: " << sum_t_1.count() << "ms" << std::endl;
+    std::cout << "Easy method: " << sum_t_2.count() << "ms" << std::endl;
+    std::cout << "Factor: " << double(sum_t_2.count()) / sum_t_1.count() << std::endl;
+}
+BOOST_AUTO_TEST_CASE(SignalBigEndian)
+{
+    auto sig = dbcppp::make_signal(dbcppp::Signal::ByteOrder::BigEndian, dbcppp::Signal::ValueType::Signed);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> dis(10, -1);
+    std::chrono::milliseconds sum_t_1(0);
+    std::chrono::milliseconds sum_t_2(0);
+    for (std::size_t i = 0; i < 100000; i++)
+    {
+        sig->byte_order = dbcppp::Signal::ByteOrder::BigEndian;
+        sig->value_type = dbcppp::Signal::ValueType::Signed;
+        bool done = false;
+        bool retry = false;
+        while (!done)
+        {
+            done = true;
+            sig->start_bit = dis(gen) % 62;
+            sig->bit_size = dis(gen) % (64 - sig->start_bit);
+            auto start = sig->start_bit;
+            for (std::size_t i = 0; i < sig->bit_size; i++)
+            {
+                if (start % 8 == 0)
+                {
+                    start += 15;
+                }
+                else
+                {
+                    start--;
+                }
+                if (start > 63)
+                {
+                    done = false;
+                    break;
+                }
+            }
+        }
+        sig->fix_performance_attributes();
+        uint64_t data64 = dis(gen);
+        uint8_t data1[8];
+        std::vector<uint8_t> data2;
+        for (std::size_t i = 0; i < 8; i++)
+        {
+            data1[i] = data64 >> (i * 8);
+            data2.push_back(data64 >> (i * 8));
+        }
+        auto start = std::chrono::system_clock::now().time_since_epoch().count();
+        auto raw1 = sig->decode8(data1);
+        sum_t_1 += std::chrono::milliseconds((std::chrono::system_clock::now().time_since_epoch().count() - start));
+        start = std::chrono::system_clock::now().time_since_epoch().count();
+        auto raw2 = easy_decode(*sig, data2);
+        sum_t_2 += std::chrono::milliseconds((std::chrono::system_clock::now().time_since_epoch().count() - start));
+        BOOST_CHECK_EQUAL(raw1, raw2);
+    }
+    std::cout << "SignalBigEndian" << std::endl;
+    std::cout << "New method: " << sum_t_1.count() << "ms" << std::endl;
+    std::cout << "Easy method: " << sum_t_2.count() << "ms" << std::endl;
+    std::cout << "Factor: " << double(sum_t_2.count()) / sum_t_1.count() << std::endl;
+}
+BOOST_AUTO_TEST_CASE(SignalBigEndianFd)
+{
+    auto sig = dbcppp::make_signal(dbcppp::Signal::ByteOrder::BigEndian, dbcppp::Signal::ValueType::Signed);
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<uint64_t> dis(10, -1);
+    std::chrono::milliseconds sum_t_1(0);
+    std::chrono::milliseconds sum_t_2(0);
+    for (std::size_t i = 0; i < 100000; i++)
+    {
+        sig->byte_order = dbcppp::Signal::ByteOrder::BigEndian;
+        sig->value_type = dbcppp::Signal::ValueType::Signed;
+        bool done = false;
+        bool retry = false;
+        while (!done)
+        {
+            done = true;
+            sig->start_bit = dis(gen) % 62;
+            sig->bit_size = dis(gen) % (64 - sig->start_bit);
+            auto start = sig->start_bit;
+            for (std::size_t i = 0; i < sig->bit_size; i++)
+            {
+                if (start % 8 == 0)
+                {
+                    start += 15;
+                }
+                else
+                {
+                    start--;
+                }
+                if (start > 63)
+                {
+                    done = false;
+                    break;
+                }
+            }
+        }
+        sig->fix_performance_attributes();
+        uint64_t data64 = dis(gen);
+        uint8_t data1[64];
+        std::vector<uint8_t> data2;
+        for (std::size_t j = 0; j < 8; j++)
+        {
+            uint64_t data64 = dis(gen);
+            for (std::size_t i = 0; i < 8; i++)
+            {
+                data1[j * 8 + i] = (data64 >> (i * 8)) & 0xFFu;
+                data2.push_back((data64 >> (i * 8)) & 0xFFu);
+            }
+        }
+        auto start = std::chrono::system_clock::now().time_since_epoch().count();
+        auto raw1 = sig->decode64(data1);
+        sum_t_1 += std::chrono::milliseconds((std::chrono::system_clock::now().time_since_epoch().count() - start));
+        start = std::chrono::system_clock::now().time_since_epoch().count();
+        auto raw2 = easy_decode(*sig, data2);
+        sum_t_2 += std::chrono::milliseconds((std::chrono::system_clock::now().time_since_epoch().count() - start));
+        BOOST_CHECK_EQUAL(raw1, raw2);
+    }
+    std::cout << "SignalBigEndianFd" << std::endl;
+    std::cout << "New method: " << sum_t_1.count() << "ms" << std::endl;
+    std::cout << "Easy method: " << sum_t_2.count() << "ms" << std::endl;
+    std::cout << "Factor: " << double(sum_t_2.count()) / sum_t_1.count() << std::endl;
+}
+
+//int main()
+//{
+//	std::cout << "test" << std::endl;
+//}

@@ -36,3 +36,18 @@ int64_t Signal::phys_to_raw(double phys) const
 {
 	return (phys - offset) / factor;
 }
+void Signal::fix_performance_attributes()
+{
+	mask = (1ull << bit_size) - 1;
+	mask_signed = (1ull << (bit_size - 1));
+	fixed_start_bit =
+		  byte_order == dbcppp::Signal::ByteOrder::BigEndian
+		? (8 * (7 - (start_bit / 8))) + (start_bit % 8) - (bit_size - 1)
+		: start_bit;
+	fixed_start_bit_fd =
+		  (byte_order == dbcppp::Signal::ByteOrder::BigEndian
+		? (8 * (63 - (start_bit / 8))) + (start_bit % 8) - (bit_size - 1)
+		: start_bit);
+	byte_pos_fd = fixed_start_bit_fd / 8;
+	fixed_start_bit_fd -= byte_pos_fd * 8;
+}
