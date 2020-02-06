@@ -20,7 +20,7 @@ namespace dbcppp
 	struct DBCPPP_EXPORT Signal
 	{
 		using buffer_t = uint64_t;
-		using raw_t = int64_t;
+		using raw_t = double;
 
 		enum class Multiplexer
 		{
