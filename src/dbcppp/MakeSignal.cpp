@@ -70,7 +70,6 @@ Signal::raw_t template_decode8(const Signal& sig, const void* _8byte) noexcept
 		// convert int64_t to raw_t
 		return *reinterpret_cast<int64_t*>(&data);
 	}
-	// ignore the case bit size == 64 and ValueType == Unsigned
 	return data;
 }
 template <dbcppp::Signal::ByteOrder aByteOrder, dbcppp::Signal::ValueType aValueType>
@@ -98,7 +97,6 @@ Signal::raw_t template_decode64(const Signal& sig, const void* _64byte) noexcept
 		// convert int64_t to raw_t
 		return *reinterpret_cast<int64_t*>(&data);
 	}
-	// ignore the case bit size == 64 and ValueType == Unsigned
 	return data;
 }
 
