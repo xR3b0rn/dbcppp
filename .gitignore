@@ -8,3 +8,6 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 *.dbc
+/.vs
+/build
+/out/build/x64-Debug
