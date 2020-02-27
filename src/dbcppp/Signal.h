@@ -61,6 +61,18 @@ namespace dbcppp
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
 		virtual const std::string& getComment() const = 0;
 		
+		/// \brief Extracts the raw value from a given 8 byte array
+		///
+		/// This function uses a optimized method of reversing the byte order and extracting
+		/// the value from the given data
+		/// @param _8byte a 8 byte array (exactly 8 byte) which is representing the can data.
+		///               the data must be in this order:
+		///               bit0  - bit7:  _8byte[0]
+		///               bit8  - bit15: _8byte[1]
+		///               ...
+		///               bit56 - bit63: _8byte[7]
+		///               (like the Unix can_frame does store the data)
+		inline double decode8(const void* _8byte) const noexcept { return _decode8(this, _8byte); }
 		/// \brief Extracts the raw value from a given 64 byte array
 		///
 		/// This function uses a optimized method of reversing the byte order and extracting
@@ -76,18 +88,6 @@ namespace dbcppp
 		///               ...
 		///               bit504 - bit511: _64byte[63]
 		///               (like the Unix canfd_frame does store the data)
-		inline double decode8(const void* _8byte) const noexcept { return _decode8(this, _8byte); }
-		/// \brief Extracts the raw value from a given 8 byte array
-		///
-		/// This function uses a optimized method of reversing the byte order and extracting
-		/// the value from the given data
-		/// @param _8byte a 8 byte array (exactly 8 byte) which is representing the can data.
-		///               the data must be in this order:
-		///               bit0  - bit7:  _8byte[0]
-		///               bit8  - bit15: _8byte[1]
-		///               ...
-		///               bit56 - bit63: _8byte[7]
-		///               (like the Unix can_frame does store the data)
 		inline double decode64(const void* _64byte) const noexcept { return _decode64(this, _64byte); }
 		//void encode8(Signal::buffer_t* data, Signal::raw_t raw) const;
 		//void encode64(Signal::buffer_t* data, Signal::raw_t raw) const;
