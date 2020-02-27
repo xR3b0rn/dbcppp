@@ -41,7 +41,7 @@ int main()
 
 ```
 # Decode-function
-The signals decode function is using prestored masks and fixed offsets to speed up the calculation. The assembly of the `decode8` on its critical path (signed and byte swap must happen) looks similar to this:
+The signals decode function is using prestored masks and fixed offsets to speed up calculation. The assembly of the `decode8` on its critical path (signed and byte swap must happen) looks similar to this:
 ```
 template_decode8(Signal const*, void const*):
         mov     rax, QWORD PTR [rsi]
