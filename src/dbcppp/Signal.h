@@ -7,6 +7,7 @@
 #include <string>
 #include <cstddef>
 
+
 #include "Export.h"
 #include "span.h"
 #include "Helper.h"
@@ -16,12 +17,15 @@
 
 namespace dbcppp
 {
-	struct Message;
-	struct DBCPPP_EXPORT Signal
+	class Message;
+	class DBCPPP_API Signal
 	{
-		using buffer_t = uint64_t;
-		using raw_t = int64_t;
-
+	public:
+		enum class ErrorCode
+		{
+			NoError,
+			SignalExceedsMessageSize
+		};
 		enum class Multiplexer
 		{
 			NoMux, MuxSwitch, MuxValue
@@ -34,40 +38,29 @@ namespace dbcppp
 		{
 			Signed, Unsigned
 		};
-
-		std::shared_ptr<Message> parent_message;
-		std::string name;
-		Multiplexer multiplexer_indicator;
-		uint64_t multiplexer_switch_value;
-		uint64_t start_bit;
-		uint64_t bit_size;
-		ByteOrder byte_order;
-		ValueType value_type;
-		double factor;
-		double offset;
-		double minimum;
-		double maximum;
-		std::string unit;
-		std::set<std::shared_ptr<Node>, SharedNodeCmp> receivers;
-		std::map<uint64_t, std::string> value_descriptions;
-		std::map<std::string, Attribute> attribute_values;
-		std::string comment;
-
-		// instead of using virtuals dynamic dispatching use function pointers
-		raw_t (*_decode8)(const Signal& sig, const void* _8byte) noexcept;
-		raw_t (*_decode64)(const Signal& sig, const void* _64byte) noexcept;
-		/// \brief Extracts the raw value from a given 8 byte array
-		///
-		/// This function uses a optimized method of reversing the byte order and extracting
-		/// the value from the given data
-		/// @param _8byte a 8 byte array (exactly 8 byte) which is representing the can data.
-		///               the data must be in this order:
-		///               bit0  - bit7:  _8byte[0]
-		///               bit8  - bit15: _8byte[1]
-		///               ...
-		///               bit56 - bit63: _8byte[7]
-		///               (like the Unix can_frame does store the data)
-		inline raw_t decode8(const void* _8byte) const noexcept;
+		
+		virtual ~Signal() = default;
+		virtual const Message* getParentMessage() const = 0;
+		virtual const std::string& getName() const = 0;
+		virtual Multiplexer getMultiplexerIndicator() const = 0;
+		virtual uint64_t getMultiplexerSwitchValue() const = 0;
+		virtual uint64_t getStartBit() const = 0;
+		virtual uint64_t getBitSize() const = 0;
+		virtual ByteOrder getByteOrder() const = 0;
+		virtual ValueType getValueType() = 0;
+		virtual double getFactor() const = 0;
+		virtual double getOffset() const = 0;
+		virtual double getMinimum() const = 0;
+		virtual double getMaximum() const = 0;
+		virtual std::string getUnit() const = 0;
+		virtual bool hasReceiver(const std::string& name) const = 0;
+		virtual std::vector<const Node*> getReceivers() const = 0;
+		virtual const std::string* getValueDescriptionById(uint64_t id) const = 0;
+		virtual std::vector<std::pair<uint64_t, const std::string*>> getValueDescriptions() const = 0;
+		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
+		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
+		virtual const std::string& getComment() const = 0;
+		
 		/// \brief Extracts the raw value from a given 64 byte array
 		///
 		/// This function uses a optimized method of reversing the byte order and extracting
@@ -83,18 +76,30 @@ namespace dbcppp
 		///               ...
 		///               bit504 - bit511: _64byte[63]
 		///               (like the Unix canfd_frame does store the data)
-		inline raw_t decode64(const void* _64byte) const noexcept;
-		void encode(buffer_t* data, raw_t raw) const;
-		double raw_to_phys(raw_t raw) const;
-		raw_t phys_to_raw(double phys) const;
-		
-		// for performance
-		void fix_performance_attributes();
-		uint64_t mask;
-		uint64_t mask_signed;
-		uint64_t mask_signed_fd;
-		uint64_t fixed_start_bit;
-		uint64_t fixed_start_bit_fd;
-		uint64_t byte_pos_fd;
+		inline double decode8(const void* _8byte) const noexcept { return _decode8(this, _8byte); }
+		/// \brief Extracts the raw value from a given 8 byte array
+		///
+		/// This function uses a optimized method of reversing the byte order and extracting
+		/// the value from the given data
+		/// @param _8byte a 8 byte array (exactly 8 byte) which is representing the can data.
+		///               the data must be in this order:
+		///               bit0  - bit7:  _8byte[0]
+		///               bit8  - bit15: _8byte[1]
+		///               ...
+		///               bit56 - bit63: _8byte[7]
+		///               (like the Unix can_frame does store the data)
+		inline double decode64(const void* _64byte) const noexcept { return _decode64(this, _64byte); }
+		//void encode8(Signal::buffer_t* data, Signal::raw_t raw) const;
+		//void encode64(Signal::buffer_t* data, Signal::raw_t raw) const;
+
+		inline double raw_to_phys(double raw) const { return _raw_to_phys(this, raw); }
+		inline double phys_to_raw(double phys) const { return _phys_to_raw(this, phys); }
+
+	protected:
+		// instead of using virtuals dynamic dispatching use function pointers
+		double (*_decode8)(const Signal* sig, const void* _8byte) noexcept;
+		double (*_decode64)(const Signal* sig, const void* _64byte) noexcept;
+		double (*_raw_to_phys)(const Signal* sig, double raw) noexcept;
+		double (*_phys_to_raw)(const Signal* sig, double phys) noexcept;
 	};
 }

@@ -1,7 +1,10 @@
-﻿include(GNUInstallDirs)
+﻿
+include(GNUInstallDirs)
 add_library(${PROJECT_NAME} SHARED "")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+
+add_compile_definitions(DBCPPP_EXPORT)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
@@ -22,8 +25,6 @@ target_sources(${PROJECT_NAME}
 
 include(GenerateExportHeader)
 generate_export_header(${PROJECT_NAME})
-
-message(${CMAKE_INSTALL_LIBDIR})
 
 # install
 install(

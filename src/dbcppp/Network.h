@@ -20,26 +20,43 @@
 
 namespace dbcppp
 {
-	struct DBCPPP_EXPORT Network
+	class DBCPPP_API Network
 	{
-		std::string version;
-		std::vector<std::string> new_symbols;
-		BitTiming bit_timing;
-		std::map<std::string, std::shared_ptr<Node>> nodes;
-		std::map<std::string, ValueTable> value_tables;
-		std::unordered_map<uint64_t, std::shared_ptr<Message>> messages;
-		std::map<std::string, EnvironmentVariable> environment_variables;
-		std::map<std::string, SignalType> signal_types;
-		std::map<std::string, AttributeDefinition> attribute_definitions;
-		std::map<std::string, Attribute> attribute_defaults;
-		std::map<std::string, Attribute> attribute_values;
-		//std::map<std::string, AttributeRelation> attribute_relation_values;
-		std::string comment;
+	public:
+		using new_symbols_t = std::vector<std::string>;
+		using nodes_t = std::map<std::string, Node>;
+		using value_tables_t = std::map<std::string, ValueTable>;
+		using messages_t = std::unordered_map<uint64_t, Message>;
+		using environment_variable_t = std::map<std::string, EnvironmentVariable>;
+		using signal_types_t = std::map<std::string, SignalType>;
+		using attribute_definitions_t = std::map<std::string, AttributeDefinition>;
+		using attribute_defaults_t = std::map<std::string, Attribute>;
+		using attribute_values_t = std::map<std::string, Attribute>;
+
+		static std::unique_ptr<Network> create();
+		virtual ~Network() = default;
+		virtual const std::string& getVersion() const = 0;
+		virtual bool hasNewSymbol(const std::string& name) const = 0;
+		virtual std::vector<const std::string*> getNewSymbols() const = 0;
+		virtual const BitTiming& getBitTiming() const = 0;
+		virtual const Node* getNodeByName(const std::string& name) const = 0;
+		virtual std::vector<std::pair<std::string, const Node*>> getNodes() const = 0;
+		virtual const ValueTable* getValueTableByName(const std::string& name) const = 0;
+		virtual std::vector<std::pair<std::string, const ValueTable*>> getValueTables() const = 0;
+		virtual const Message* getMessageById(uint64_t id) const = 0;
+		virtual std::vector<std::pair<uint64_t, const Message*>> getMessages() const = 0;
+		virtual const EnvironmentVariable* getEnvironmentVariableByName(const std::string& name) const = 0;
+		virtual std::vector<std::pair<std::string, const EnvironmentVariable*>> getEnvironmentVariables() const = 0;
+		virtual const SignalType* getSignalTypeByName(const std::string& name) const = 0;
+		virtual std::vector<std::pair<std::string, const SignalType*>> getSignalTypes() const = 0;
+		virtual const AttributeDefinition* getAttributeDefinitionByName(const std::string& name) const = 0;
+		virtual std::vector<std::pair<std::string, const AttributeDefinition*>> getAttributeDefinitions() const = 0;
+		virtual const Attribute* getAttributeDefaultByName(const std::string& name) const = 0;
+		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeDefaults() const = 0;
+		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
+		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
+		virtual const std::string& getComment() const = 0;
 	};
 }
-#ifdef _WIN32
-#   define DBCPPP_EXPORT  __declspec(dllexport)
-#else
-#   define DBCPPP_EXPORT
-#endif
-DBCPPP_EXPORT bool operator>>(std::istream& is, dbcppp::Network& net);
+
+DBCPPP_API bool operator>>(std::istream& is, dbcppp::Network& net);

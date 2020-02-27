@@ -3,4 +3,3 @@
 
 #include <istream>
 #include "Network.h"
-
