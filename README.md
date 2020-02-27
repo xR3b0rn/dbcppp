@@ -57,7 +57,7 @@ template_decode8(Signal const*, void const*):
         cvtsi2sd        xmm0, rax
         ret
 ```
-Binary was generated with Copmpiler Explorer: https://godbolt.org/z/8YFjok
+Binary was generated with Compiler Explorer: https://godbolt.org/z/8YFjok
 ### Similar projects
   * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` for grammar parsing
   * [CAN BUS tools in Python 3 (cantools)](https://github.com/eerimoq/cantools) 
