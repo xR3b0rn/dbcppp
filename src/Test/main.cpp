@@ -29,7 +29,6 @@
 
 #include "../dbcppp/Network.h"
 #include "../dbcppp/DBC_Grammar.h"
-#include "../dbcppp/MakeSignal.h"
 #include "../dbcppp/SignalImpl.h"
 
 #define BOOST_TEST_MODULE test
