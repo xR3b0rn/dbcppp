@@ -1,10 +1,4 @@
 
-#include "Signal.h"
-#include "DBC_Grammar.h"
-
-#define BOOST_SPIRIT_DEBUG
-#define BOOST_SPIRIT_DEBUG_OUT std::cout
-
 #include <cstdint>
 #include <charconv>
 #include <ostream>
@@ -28,9 +22,19 @@
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi_hold.hpp>
 
+#include "DBC_Grammar.h"
 #include "Network.h"
+#include "NetworkImpl.h"
+#include "SignalTypeImpl.h"
+#include "NodeImpl.h"
+#include "AttributeImpl.h"
+#include "valueTableImpl.h"
+#include "AttributeDefinitionImpl.h"
+#include "EnvironmentVariableImpl.h"
+#include "MessageImpl.h"
 
 using namespace dbcppp;
+
 namespace qi = boost::spirit::qi;
 namespace ascii = boost::spirit::ascii;
 namespace sp = boost::spirit::labels;
@@ -38,28 +42,28 @@ namespace ph = boost::phoenix;
 namespace fu = boost::fusion;
 
 BOOST_FUSION_ADAPT_STRUCT(
-	Network,
-	version,
-	new_symbols,
-	bit_timing,
-	nodes,
-	value_tables,
-	signal_types,
-	attribute_definitions
+	NetworkImpl,
+	_version,
+	_new_symbols,
+	_bit_timing,
+	_nodes,
+	_value_tables,
+	_signal_types,
+	_attribute_definitions
 	//attributeValues,
 	//attributeRelationValues
 )
 BOOST_FUSION_ADAPT_STRUCT(
-	Node,
-	name
+	NodeImpl,
+	_name
 )
 BOOST_FUSION_ADAPT_STRUCT(
-	BitTiming,
-	baudrate, BTR1, BTR2
+	BitTimingImpl,
+	_baudrate, _BTR1, _BTR2
 )
 BOOST_FUSION_ADAPT_STRUCT(
-	ValueTable,
-	name, value_descriptions
+	ValueTableImpl,
+	_name, _value_descriptions
 )
 
 struct G_Signal
@@ -76,14 +80,14 @@ struct G_Signal
 	double minimum;
 	double maximum;
 	std::string unit;
-	std::vector<Node> receivers;
+	std::vector<NodeImpl> receivers;
 };
 struct G_Message
 {
 	uint64_t id;
 	std::string name;
 	uint64_t message_size;
-	Node transmitter;
+	NodeImpl transmitter;
 	std::vector<G_Signal> signals;
 };
 
@@ -176,18 +180,18 @@ BOOST_FUSION_ADAPT_STRUCT(
 	data_size
 )
 BOOST_FUSION_ADAPT_STRUCT(
-	SignalType,
-	name,
-	signal_size,
-	byte_order,
-	value_type,
-	factor,
-	offset,
-	minimum,
-	maximum,
-	unit,
-	default_value,
-	value_table
+	SignalTypeImpl,
+	_name,
+	_signal_size,
+	_byte_order,
+	_value_type,
+	_factor,
+	_offset,
+	_minimum,
+	_maximum,
+	_unit,
+	_default_value,
+	_value_table
 )
 struct G_CommentNetwork
 {
@@ -241,10 +245,10 @@ BOOST_FUSION_ADAPT_STRUCT(
 	comment
 )
 BOOST_FUSION_ADAPT_STRUCT(
-	AttributeDefinition,
-	object_type,
-	name,
-	value_type
+	AttributeDefinitionImpl,
+	_object_type,
+	_name,
+	_value_type
 )
 BOOST_FUSION_ADAPT_STRUCT(
 	AttributeDefinition::ValueTypeInt,
@@ -341,29 +345,29 @@ BOOST_FUSION_ADAPT_STRUCT(
 auto set_bit_timing =
 	[](const boost::optional<fu::vector<uint64_t, uint64_t, uint64_t>>& timing, auto& context)
 	{
-		context.attributes.car.baudrate = 0;
-		context.attributes.car.BTR1 = 0;
-		context.attributes.car.BTR2 = 0;
+		BitTimingImpl& bit_timing = context.attributes.car;
+		bit_timing._baudrate = 0;
+		bit_timing._BTR1 = 0;
+		bit_timing._BTR2 = 0;
 		if (timing)
 		{
-			context.attributes.car.baudrate = fu::at_c<0>(*timing);
-			context.attributes.car.BTR1 = fu::at_c<1>(*timing);
-			context.attributes.car.BTR2 = fu::at_c<2>(*timing);
+			bit_timing._baudrate = fu::at_c<0>(*timing);
+			bit_timing._BTR1 = fu::at_c<1>(*timing);
+			bit_timing._BTR2 = fu::at_c<2>(*timing);
 		}
 	};
 auto node_to_pair =
 	[](const std::string& name, auto& context)
 	{
 		context.attributes.car.first = name;
-		context.attributes.car.second = std::make_shared<Node>();
-		context.attributes.car.second->name = name;
+		context.attributes.car.second._name = name;
 	};
 auto set_value_table =
 	[](const fu::vector<std::string, std::map<uint64_t, std::string>>& table, auto& context)
 	{
 		context.attributes.car.first = fu::at_c<0>(table);
-		context.attributes.car.second.name = fu::at_c<0>(table);
-		context.attributes.car.second.value_descriptions = fu::at_c<1>(table);
+		context.attributes.car.second._name = fu::at_c<0>(table);
+		context.attributes.car.second._value_descriptions = fu::at_c<1>(table);
 	};
 auto set_multiplexor =
 	[](const boost::optional<std::string>& m, auto& context)
@@ -440,9 +444,9 @@ auto set_access_type =
 		}
 	};
 auto signal_type_to_pair =
-	[](const SignalType& sig_type, auto& context)
+	[](const SignalTypeImpl& sig_type, auto& context)
 	{
-		context.attributes.car.first  = sig_type.name;
+		context.attributes.car.first  = sig_type._name;
 		context.attributes.car.second = sig_type;
 	};
 auto optional_string_to_object_type =
@@ -470,136 +474,131 @@ auto optional_string_to_object_type =
 		}
 	};
 auto attribute_definition_to_pair =
-	[](const AttributeDefinition& attr_def, auto& context)
+	[](const AttributeDefinitionImpl& attr_def, auto& context)
 	{
-		context.attributes.car.first  = attr_def.name;
+		context.attributes.car.first  = attr_def._name;
 		context.attributes.car.second = attr_def;
 	};
 auto insert_nodes_into_network =
-	[](const std::vector<Node>& g_nodes, auto& context)
+	[](const std::vector<NodeImpl>& g_nodes, auto& context)
 	{
-		Network& net = context.attributes.car;
+		auto& net = context.attributes.car;
 		for (const auto& g_n : g_nodes)
 		{
-			net.nodes.insert(std::make_pair(g_n.name, std::make_shared<Node>(g_n)));
+			net->_nodes.insert(std::make_pair(g_n.name, NodeImpl()));
 		}
 	};
 auto insert_messages_into_network =
 	[](const std::vector<G_Message>& g_msgs, auto& context)
 	{
-		Network& net = context.attributes.car;
+		auto& net = context.attributes.car;
 		for (const auto& g_msg : g_msgs)
 		{
-			std::shared_ptr<Message> msg = std::make_shared<Message>();
-			msg->id           = g_msg.id;
-			msg->name         = g_msg.name;
-			msg->message_size = g_msg.message_size;
-			if (g_msg.transmitter.name != "")
+			MessageImpl& msg = net._messages[g_msg.id];
+			msg._id           = g_msg.id;
+			msg._name         = g_msg.name;
+			msg._message_size = g_msg.message_size;
+			if (g_msg.transmitter._name != "")
 			{
-				msg->transmitter  = net.nodes[g_msg.transmitter.name];
+				msg._transmitter  = &net._nodes[g_msg.transmitter._name];
 			}
 			for (const auto& g_sig : g_msg.signals)
 			{
-				std::shared_ptr<Signal> sig = std::make_shared<Signal>();
-				sig->parent_message           = msg;
-				sig->name                     = g_sig.name;
-				sig->start_bit                = g_sig.start_bit;
-				sig->bit_size                 = g_sig.bit_size;
-				sig->byte_order               = g_sig.byte_order;
-				sig->factor                   = g_sig.factor;
-				sig->offset                   = g_sig.offset;
-				sig->minimum                  = g_sig.minimum;
-				sig->unit                     = g_sig.unit;
-				sig->multiplexer_indicator    = g_sig.multiplexer_indicator;
-				sig->multiplexer_switch_value = g_sig.multiplexer_switch_value;
-				sig->value_type               = g_sig.value_type;
+				SignalImpl sig(g_sig.byte_order, g_sig.value_type, g_sig.bit_size, g_sig.start_bit, msg._message_size);
+				sig._parent_message           = &msg;
+				sig._name                     = g_sig.name;
+				sig._factor                   = g_sig.factor;
+				sig._offset                   = g_sig.offset;
+				sig._minimum                  = g_sig.minimum;
+				sig._unit                     = g_sig.unit;
+				sig._multiplexer_indicator    = g_sig.multiplexer_indicator;
+				sig._multiplexer_switch_value = g_sig.multiplexer_switch_value;
 				for (const auto& n : g_sig.receivers)
 				{
-					if (n.name != "")
+					if (n._name != "")
 					{
-						sig->receivers.insert(net.nodes[n.name]);
+						sig._receivers.insert(&net._nodes[n._name]);
 					}
 				}
-				msg->signals[g_sig.name] = sig;
+				msg._signals.insert(std::make_pair(sig._name, std::move(sig)));
 			}
-			context.attributes.car.messages[msg->id] = msg;
 		}
 	};
 auto insert_message_transmitters_into_network =
 	[](const std::vector<G_MessageTransmitter>& message_transmitters, auto& context)
 	{
-		Network& net = context.attributes.car;
+		NetworkImpl& net = context.attributes.car;
 		for (const auto& msg_trans : message_transmitters)
 		{
-			std::shared_ptr<Message>& msg = net.messages[msg_trans.message_id];
+			MessageImpl& msg = net._messages[msg_trans.message_id];
 			for (const auto& trans : msg_trans.transmitters)
 			{
-				msg->transmitters.insert(net.nodes[trans]);
+				msg._transmitters.insert(&net._nodes[trans]);
 			}
 		}
 	};
 auto insert_environment_variables_into_network =
 	[](const std::vector<G_EnvironmentVariable>& g_env_vars, auto& context)
 	{
-		Network& net = context.attributes.car;
+		NetworkImpl& net = context.attributes.car;
 		for (const auto& g_env_var : g_env_vars)
 		{
-			EnvironmentVariable& env_var = net.environment_variables[g_env_var.name];
-			env_var.name          = g_env_var.name;
-			env_var.var_type      = g_env_var.var_type;
-			env_var.minimum       = g_env_var.minimum;
-			env_var.maximum       = g_env_var.maximum;
-			env_var.unit          = g_env_var.unit;
-			env_var.initial_value = g_env_var.initial_value;
-			env_var.ev_id         = g_env_var.ev_id;
-			env_var.access_type   = g_env_var.access_type;
+			EnvironmentVariableImpl& env_var = net._environment_variables[g_env_var.name];
+			env_var._name          = g_env_var.name;
+			env_var._var_type      = g_env_var.var_type;
+			env_var._minimum       = g_env_var.minimum;
+			env_var._maximum       = g_env_var.maximum;
+			env_var._unit          = g_env_var.unit;
+			env_var._initial_value = g_env_var.initial_value;
+			env_var._ev_id         = g_env_var.ev_id;
+			env_var._access_type   = g_env_var.access_type;
 			for (const auto& n : g_env_var.access_nodes)
 			{
-				env_var.access_nodes.insert(net.nodes[n]);
+				env_var._access_nodes.insert(&net._nodes[n]);
 			}
 		}
 	};
 auto insert_environment_variable_datas_into_network =
 	[](const std::vector<G_EnvironmentVariableData>& g_env_datas, auto& context)
 	{
-		Network& net = context.attributes.car;
+		NetworkImpl& net = context.attributes.car;
 		for (const auto& g_env_data : g_env_datas)
 		{
-			EnvironmentVariable& env_var = net.environment_variables[g_env_data.name];
-			env_var.var_type  = EnvironmentVariable::VarType::Data;
-			env_var.data_size = g_env_data.data_size;
+			EnvironmentVariableImpl& env_var = net._environment_variables[g_env_data.name];
+			env_var._var_type  = EnvironmentVariable::VarType::Data;
+			env_var._data_size = g_env_data.data_size;
 		}
 	};
 auto insert_comments_into_network =
 	[](const std::vector<variant_comment_t>& g_comments, auto& context)
 	{
-		Network& net = context.attributes.car;
+		NetworkImpl& net = context.attributes.car;
 		struct Visitor
 		{
-			Visitor(Network& net)
+			Visitor(NetworkImpl& net)
 				: _net{net}
 			{}
 			void operator()(const G_CommentNetwork& c) const
 			{
-				_net.comment = c.comment;
+				_net._comment = c.comment;
 			}
 			void operator()(const G_CommentNode& c) const
 			{
-				_net.nodes[c.node_name]->comment = c.comment;
+				_net._nodes[c.node_name]._comment = c.comment;
 			}
 			void operator()(const G_CommentMessage& c) const
 			{
-				_net.messages[c.message_id]->comment = c.comment;
+				_net._messages[c.message_id]._comment = c.comment;
 			}
 			void operator()(const G_CommentSignal& c) const
 			{
-				_net.messages[c.message_id]->signals[c.signal_name]->comment = c.comment;
+				_net._messages[c.message_id]._signals[c.signal_name]._comment = c.comment;
 			}
 			void operator()(const G_CommentEnvVar& c) const
 			{
-				_net.environment_variables[c.env_var_name].comment = c.comment;
+				_net._environment_variables[c.env_var_name]._comment = c.comment;
 			}
-			Network& _net;
+			NetworkImpl& _net;
 		};
 		for (const auto& comment : g_comments)
 		{
@@ -609,72 +608,72 @@ auto insert_comments_into_network =
 auto insert_attribute_defaults_into_network =
 	[](const std::vector<G_Attribute>& g_attrs, auto& context)
 	{
-		Network& net = context.attributes.car;
+		NetworkImpl& net = context.attributes.car;
 		for (const auto& g_attr : g_attrs)
 		{
-			AttributeDefinition& attr_def = net.attribute_definitions[g_attr.name];
-			Attribute& attr = net.attribute_defaults[g_attr.name];
-			attr.name = g_attr.name;
-			attr.object_type = attr_def.object_type;
-			switch (attr_def.value_type.which())
+			AttributeDefinitionImpl& attr_def = net._attribute_definitions[g_attr.name];
+			AttributeImpl& attr = net._attribute_defaults[g_attr.name];
+			attr._name = g_attr.name;
+			attr._object_type = attr_def._object_type;
+			switch (attr_def._value_type.which())
 			{
-			case 0: attr.value = Attribute::IntegerValue { boost::get<int64_t>     (g_attr.value) }; break;
-			case 1: attr.value = Attribute::HexValue     { boost::get<int64_t>     (g_attr.value) }; break;
-			case 2: attr.value = Attribute::FloatValue   { boost::get<double>      (g_attr.value) }; break;
-			case 3: attr.value = Attribute::StringValue  { boost::get<std::string> (g_attr.value) }; break;
-			case 4: attr.value = Attribute::StringValue  { boost::get<std::string> (g_attr.value) }; break;
+			case 0: attr._value = Attribute::IntegerValue { boost::get<int64_t>     (g_attr.value) }; break;
+			case 1: attr._value = Attribute::HexValue     { boost::get<int64_t>     (g_attr.value) }; break;
+			case 2: attr._value = Attribute::FloatValue   { boost::get<double>      (g_attr.value) }; break;
+			case 3: attr._value = Attribute::StringValue  { boost::get<std::string> (g_attr.value) }; break;
+			case 4: attr._value = Attribute::StringValue  { boost::get<std::string> (g_attr.value) }; break;
 			}
 		}
 	};
 auto insert_attribute_values_into_network =
 	[](const std::vector<variant_attribute_t>& g_attrs, auto& context)
 	{
-		Network& net = context.attributes.car;
+		NetworkImpl& net = context.attributes.car;
 		struct Visitor
 		{
-			Visitor(Network& net)
+			Visitor(NetworkImpl& net)
 				: _net{net}
 			{}
-			void assign(const std::string& attr_name, const attr_value_t& value, Attribute& attr)
+			void assign(const std::string& attr_name, const attr_value_t& value, AttributeImpl& attr)
 			{
-				AttributeDefinition& attr_def = _net.attribute_definitions[attr_name];
-				attr.name = attr_name;
-				attr.object_type = AttributeDefinition::ObjectType::Network;
-				switch (attr_def.value_type.which())
+				AttributeDefinitionImpl& attr_def = _net._attribute_definitions[attr_name];
+				attr._name = attr_name;
+				attr._object_type = AttributeDefinition::ObjectType::Network;
+				switch (attr_def._value_type.which())
 				{
-					case 0: attr.value = Attribute::IntegerValue { boost::get<int64_t>     (value) }; break;
-					case 1: attr.value = Attribute::HexValue     { boost::get<int64_t>     (value) }; break;
-					case 2: attr.value = Attribute::FloatValue   { boost::get<double>      (value) }; break;
-					case 3: attr.value = Attribute::StringValue  { boost::get<std::string> (value) }; break;
-					case 4: attr.value = Attribute::EnumValue    { boost::get<int64_t>     (value) }; break;
+					case 0: attr._value = Attribute::IntegerValue { boost::get<int64_t>     (value) }; break;
+					case 1: attr._value = Attribute::HexValue     { boost::get<int64_t>     (value) }; break;
+					case 2: attr._value = Attribute::FloatValue   { boost::get<double>      (value) }; break;
+					case 3: attr._value = Attribute::StringValue  { boost::get<std::string> (value) }; break;
+					case 4: attr._value = Attribute::EnumValue    { boost::get<int64_t>     (value) }; break;
 				}
 			}
 			void operator()(const G_AttributeNetwork& g_attr)
 			{
-				Attribute& attr = _net.attribute_values[g_attr.attribute_name];
+				AttributeImpl& attr = _net._attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
 			void operator()(const G_AttributeNode& g_attr)
 			{
-				Attribute& attr = _net.nodes[g_attr.node_name]->attribute_values[g_attr.attribute_name];
+				AttributeImpl& attr = _net._nodes[g_attr.node_name]._attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
 			void operator()(const G_AttributeMessage& g_attr)
 			{
-				Attribute& attr = _net.messages[g_attr.message_id]->attribute_values[g_attr.attribute_name];
+				AttributeImpl& attr = _net._messages[g_attr.message_id]._attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
 			void operator()(const G_AttributeSignal& g_attr)
 			{
-				Attribute& attr = _net.messages[g_attr.message_id]->signals[g_attr.signal_name]->attribute_values[g_attr.attribute_name];
+				AttributeImpl& attr = _net._messages[g_attr.message_id]._signals[g_attr.signal_name]._attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
 			void operator()(const G_AttributeEnvVar& g_attr)
 			{
-				Attribute& attr = _net.environment_variables[g_attr.env_var_name].attribute_values[g_attr.attribute_name];
+				AttributeImpl& attr = _net._environment_variables[g_attr.env_var_name]._attribute_values[g_attr.attribute_name];
 				assign(g_attr.attribute_name, g_attr.value, attr);
 			}
-			Network& _net;
+			NetworkImpl& _net;
 		};
 		for (const auto& g_attr : g_attrs)
 		{
@@ -684,21 +683,21 @@ auto insert_attribute_values_into_network =
 auto insert_value_descriptions_into_network =
 	[](const std::vector<boost::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar>>& value_descriptions, auto& context)
 	{
-		Network& net = context.attributes.car;
+		NetworkImpl& net = context.attributes.car;
 		struct Visitor
 		{
-			Visitor(Network& net)
+			Visitor(NetworkImpl& net)
 				: _net{net}
 			{}
 			void operator()(const G_ValueDescriptionSignal& desc)
 			{
-				_net.messages[desc.message_id]->signals[desc.signal_name]->value_descriptions = desc.value_description;
+				_net._messages[desc.message_id]._signals[desc.signal_name]._value_descriptions = std::move(desc.value_description);
 			}
 			void operator()(const G_ValueDescriptionEnvVar& desc)
 			{
-				_net.environment_variables[desc.env_var_name].value_descriptions = desc.value_description;
+				_net._environment_variables[desc.env_var_name]._value_descriptions = std::move(desc.value_description);
 			}
-			Network& _net;
+			NetworkImpl& _net;
 		};
 		for (const auto& desc : value_descriptions)
 		{
@@ -708,7 +707,7 @@ auto insert_value_descriptions_into_network =
 
 template <class Iter>
 struct NetworkGrammar
-	: public qi::grammar<Iter, Network(), ascii::space_type>
+	: public qi::grammar<Iter, NetworkImpl(), ascii::space_type>
 {
 	using Skipper = ascii::space_type;
 	NetworkGrammar()
@@ -889,7 +888,7 @@ struct NetworkGrammar
 		_value_description_env_var %= qi::lit("VAL_") >> _env_var_name >> _value_encoding_descriptions >> ';';
 	}
 
-	qi::rule<Iter, Network(), Skipper> _DBC_file;
+	qi::rule<Iter, NetworkImpl(), Skipper> _DBC_file;
 	
 	qi::rule<Iter, uint64_t(), Skipper> _unsigned_integer;
 	qi::rule<Iter, int64_t(), Skipper> _signed_integer;
@@ -902,19 +901,19 @@ struct NetworkGrammar
 	qi::rule<Iter, std::string(), Skipper> _new_symbol;
 	qi::rule<Iter, std::vector<std::string>(), Skipper> _new_symbols;
 	qi::rule<Iter, std::vector<std::string>(), Skipper> _new_symbol_values;
-	qi::rule<Iter, BitTiming(), Skipper> _bit_timing;
+	qi::rule<Iter, BitTimingImpl(), Skipper> _bit_timing;
 	qi::rule<Iter, uint64_t(), Skipper> _baudrate;
 	qi::rule<Iter, uint64_t(), Skipper> _BTR1;
 	qi::rule<Iter, uint64_t(), Skipper> _BTR2;
 
-	qi::rule<Iter, std::map<std::string, std::shared_ptr<Node>>(), Skipper> _nodes;
+	qi::rule<Iter, std::map<std::string, NodeImpl>(), Skipper> _nodes;
 	qi::rule<Iter, std::string(), Skipper> _node_name;
-	qi::rule<Iter, std::pair<std::string, std::shared_ptr<Node>>(), ascii::blank_type> _node_;
+	qi::rule<Iter, std::pair<std::string, NodeImpl>(), ascii::blank_type> _node_;
 	qi::rule<Iter, std::vector<std::string>(), ascii::blank_type> _node_names;
 	qi::rule<Iter, std::string(), ascii::blank_type> _node_name_;
 
-	qi::rule<Iter, std::map<std::string, ValueTable>(), Skipper> _value_tables;
-	qi::rule<Iter, std::pair<std::string, ValueTable>(), Skipper> _value_table;
+	qi::rule<Iter, std::map<std::string, ValueTableImpl>(), Skipper> _value_tables;
+	qi::rule<Iter, std::pair<std::string, ValueTableImpl>(), Skipper> _value_table;
 	qi::rule<Iter, std::string(), Skipper> _value_table_name;
 	qi::rule<Iter, std::map<uint64_t, std::string>(), Skipper> _value_encoding_descriptions;
 	qi::rule<Iter, std::pair<uint64_t, std::string>(), Skipper> _value_encoding_description;
@@ -939,8 +938,8 @@ struct NetworkGrammar
 	qi::rule<Iter, double(), Skipper> _maximum;
 	qi::rule<Iter, double(), Skipper> _minimum;
 	qi::rule<Iter, std::string(), Skipper> _unit;
-	qi::rule<Iter, std::vector<Node>(), Skipper> _receivers;
-	qi::rule<Iter, Node(), ascii::blank_type> _receiver_;
+	qi::rule<Iter, std::vector<NodeImpl>(), Skipper> _receivers;
+	qi::rule<Iter, NodeImpl(), ascii::blank_type> _receiver_;
 
 	qi::rule<Iter, std::vector<G_MessageTransmitter>(), Skipper> _message_transmitters;
 	qi::rule<Iter, G_MessageTransmitter(), Skipper> _message_transmitter;
@@ -959,9 +958,9 @@ struct NetworkGrammar
 	qi::rule<Iter, G_EnvironmentVariableData(), Skipper> _environment_variable_data;
 	qi::rule<Iter, uint64_t(), Skipper> _data_size;
 	
-	qi::rule<Iter, std::map<std::string, SignalType>(), Skipper> _signal_types;
-	qi::rule<Iter, std::pair<std::string, SignalType>(), Skipper> _signal_type_inter;
-	qi::rule<Iter, SignalType(), Skipper> _signal_type;
+	qi::rule<Iter, std::map<std::string, SignalTypeImpl>(), Skipper> _signal_types;
+	qi::rule<Iter, std::pair<std::string, SignalTypeImpl>(), Skipper> _signal_type_inter;
+	qi::rule<Iter, SignalTypeImpl(), Skipper> _signal_type;
 	qi::rule<Iter, std::string(), Skipper> _signal_type_name;
 	qi::rule<Iter, double(), Skipper> _default_value;
 
@@ -973,9 +972,9 @@ struct NetworkGrammar
 	qi::rule<Iter, G_CommentSignal(), Skipper> _comment_signal;
 	qi::rule<Iter, G_CommentEnvVar(), Skipper> _comment_env_var;
 
-	qi::rule<Iter, std::map<std::string, AttributeDefinition>(), Skipper> _attribute_definitions;
-	qi::rule<Iter, std::pair<std::string, AttributeDefinition>(), Skipper> _attribute_definition_inter;
-	qi::rule<Iter, AttributeDefinition(), Skipper> _attribute_definition;
+	qi::rule<Iter, std::map<std::string, AttributeDefinitionImpl>(), Skipper> _attribute_definitions;
+	qi::rule<Iter, std::pair<std::string, AttributeDefinitionImpl>(), Skipper> _attribute_definition_inter;
+	qi::rule<Iter, AttributeDefinitionImpl(), Skipper> _attribute_definition;
 	qi::rule<Iter, AttributeDefinition::ObjectType(), Skipper> _object_type;
 	qi::rule<Iter, std::string(), Skipper> _attribute_name;
 	qi::rule<Iter, AttributeDefinition::value_type_t(), Skipper> _attribute_value_type;
@@ -1003,13 +1002,13 @@ struct NetworkGrammar
 	qi::rule<Iter, G_ValueDescriptionEnvVar(), Skipper> _value_description_env_var;
 };
 
-DBCPPP_EXPORT bool operator>>(std::istream& is, dbcppp::Network& net)
+DBCPPP_API bool operator>>(std::istream& is, Network& net)
 {
 	bool result = false;
 	std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 	auto begin{str.begin()}, end{str.end()};
 	NetworkGrammar<std::string::iterator> g;
-	result = phrase_parse(begin, end, g, ascii::space, net);
+	result = phrase_parse(begin, end, g, ascii::space, static_cast<NetworkImpl&>(net));
 	if (begin != end)
 	{
 		std::cout << std::string(begin, end) << std::endl;

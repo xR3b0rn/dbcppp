@@ -1,10 +1,10 @@
 
 #include "Helper.h"
-#include "Node.h"
+#include "NodeImpl.h"
 
 using namespace dbcppp;
 
-bool SharedNodeCmp::operator()(const std::shared_ptr<Node>& lhs, const std::shared_ptr<Node>& rhs) const
+bool SharedNodeCmp::operator()(const NodeImpl& lhs, const NodeImpl& rhs) const
 {
-	return lhs->name < rhs->name;
+	return lhs._name < rhs._name;
 }

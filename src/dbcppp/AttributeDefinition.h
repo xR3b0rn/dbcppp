@@ -6,10 +6,14 @@
 #include <vector>
 #include <boost/variant.hpp>
 
+#include "Export.h"
+
+
 namespace dbcppp
 {
-	struct AttributeDefinition
+	class DBCPPP_API AttributeDefinition
 	{
+	public:
 		enum class ObjectType
 		{
 			Network,
@@ -42,8 +46,9 @@ namespace dbcppp
 		};
 		using value_type_t = boost::variant<ValueTypeInt, ValueTypeHex, ValueTypeFloat, ValueTypeString, ValueTypeEnum>;
 		
-		ObjectType object_type;
-		std::string name;
-		value_type_t value_type;
+		virtual ~AttributeDefinition() = default;
+		virtual ObjectType getObjectType() const = 0;
+		virtual const std::string& getName() const = 0;
+		virtual const value_type_t& getValueType() const = 0;
 	};
 }

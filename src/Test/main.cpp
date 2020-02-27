@@ -25,111 +25,140 @@
 #include <chrono>
 #include <random>
 
-#include <Vector/DBC.h>
-#include <Vector/DBC/Network.h>
+#include <boost/endian/conversion.hpp>
 
 #include "../dbcppp/Network.h"
 #include "../dbcppp/DBC_Grammar.h"
+#include "../dbcppp/MakeSignal.h"
+#include "../dbcppp/SignalImpl.h"
 
-template<typename TimeT = std::chrono::milliseconds>
-struct measure
+#define BOOST_TEST_MODULE test
+#include <boost/test/included/unit_test.hpp>
+namespace utf = boost::unit_test;
+
+double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 {
-    template<typename F, typename ...Args>
-    static typename TimeT::rep execution(F&& func, Args&&... args)
+    if (sig.getBitSize() == 0)
     {
-        auto start = std::chrono::steady_clock::now();
-        std::forward<decltype(func)>(func)(std::forward<Args>(args)...);
-        auto duration = std::chrono::duration_cast< TimeT> 
-            (std::chrono::steady_clock::now() - start);
-        return duration.count();
+        return 0;
     }
-};
-void repeat_n_times(std::size_t n, std::function<void()> func)
-{
-    for (std::size_t i = 0; i < n; i++)
+    uint64_t retVal = 0;
+    if (sig.getByteOrder() == dbcppp::Signal::ByteOrder::BigEndian)
     {
-        func();
+        auto srcBit = sig.getStartBit();
+        auto dstBit = sig.getBitSize() - 1;
+        for (auto i = 0; i < sig.getBitSize(); ++i)
+        {
+            if (data[srcBit / 8] & (1ull << (srcBit % 8)))
+            {
+                retVal |= (1ULL << dstBit);
+            }
+            if ((srcBit % 8) == 0)
+            {
+                srcBit += 15;
+            }
+            else
+            {
+                --srcBit;
+            }
+            --dstBit;
+        }
+    }
+    else
+    {
+        auto srcBit = sig.getStartBit();
+        auto dstBit = 0;
+        for (auto i = 0; i < sig.getBitSize(); ++i)
+        {
+            if (data[srcBit / 8] & (1 << (srcBit % 8)))
+            {
+                retVal |= (1ULL << dstBit);
+            }
+            ++srcBit;
+            ++dstBit;
+        }
+    }
+    if (sig.getValueType() == dbcppp::Signal::ValueType::Signed)
+    {
+        if (retVal & (1ull << (sig.getBitSize() - 1)))
+        {
+            for (auto i = sig.getBitSize(); i < 64; ++i)
+            {
+                retVal |= (1ULL << i);
+            }
+        }
+        return double(*reinterpret_cast<int64_t*>(&retVal));
+    }
+    return double(retVal);
+}
+BOOST_AUTO_TEST_CASE(Test_Parsing)
+{
+    auto net = dbcppp::Network::create();
+    // TODO: create test DBC-file
+}
+BOOST_AUTO_TEST_CASE(Test_Decoding8)
+{
+    std::cout << "Testing decode8-function with 99999 randomly generated tests..." << std::endl;
+
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
+
+    using namespace dbcppp;
+    SignalImpl sig(Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, 56, 5, 8);
+    std::vector<uint8_t> data;
+    for (std::size_t i = 0; i < 99999; i++)
+    {
+        auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
+        auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
+        auto rnd_start_bit = dist(rng) % 54;
+        do
+        {
+            auto rnd_bit_size = dist(rng) % (64 - rnd_start_bit);
+            sig = SignalImpl(rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 8);
+        } while (sig.getError() != Signal::ErrorCode::NoError);
+
+        data.clear();
+        for (std::size_t j = 0; j < 8; j++)
+        {
+            data.push_back(uint8_t(dist(rng) % 0xFF));
+        }
+        auto dec_easy = easy_decode(sig, data);
+        auto dec_sig = sig.decode8(&data[0]);
+
+        BOOST_CHECK(dec_easy == dec_sig);
     }
 }
-
-#include <ctime>
-
-int main()
+BOOST_AUTO_TEST_CASE(Test_Decoding64)
 {
-	{
-		std::ifstream idbc{"C:/hij/github/dbcppp/src/Test/new_test.dbc"};
-		dbcppp::Network net;
-		std::clock_t begin = std::clock();
-		idbc >> net;
-		std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
+    std::cout << "Testing decode64-function with 99999 randomly generated tests..." << std::endl;
 
+    std::random_device dev;
+    std::mt19937 rng(dev());
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
+    using namespace dbcppp;
+    SignalImpl sig(Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, 56, 5, 8);
+    std::vector<uint8_t> data;
+    for (std::size_t i = 0; i < 99999; i++)
+    {
+        auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
+        auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
+        auto rnd_start_bit = dist(rng) % 54;
+        do
+        {
+            auto rnd_bit_size = dist(rng) % (64 - rnd_start_bit);
+            sig = SignalImpl(rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 8);
+        } while (sig.getError() != Signal::ErrorCode::NoError);
 
-		//for (const auto& msg : net.messages)
-		//{
-		//	for (const auto& sig : msg.second->signals)
-		//	{
-		//		std::cout << sig.second->comment << std::endl;
-		//	}
-		//}
-		std::cout << "break" << std::endl;
-	}
-	{
-		std::ifstream idbc{"C:/hij/github/dbcppp/src/Test/new_test.dbc"};
-		Vector::DBC::Network net;
-		std::clock_t begin = std::clock();
-		idbc >> net;
-		std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
-	}
+        data.clear();
+        for (std::size_t j = 0; j < 64; j++)
+        {
+            data.push_back(uint8_t(dist(rng) % 0xFF));
+        }
+        auto dec_easy = easy_decode(sig, data);
+        auto dec_sig = sig.decode8(&data[0]);
 
-	//bool result = parse_dbc("C:/hij/github/dbcppp/src/Test/test.dbc", net);
-	//if (!result)
-	//{
-	//	std::cout << "DBC parsing failed!" << std::endl;
-	//	return 1;
-	//}
-	//std::array<uint8_t, 8> buff{{0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88}};
-	//uint64_t* val = reinterpret_cast<uint64_t*>(&buff[0]);
-	//uint64_t raw = 0x8877665544332211;
-	//auto& sig = net.messages[2633880062].signals["FMSstandardSWversionSupported"];
-	//std::random_device rd;
- //   auto s = rd();
-	//std::uniform_int_distribution<uint64_t> dis(0, uint64_t(-1));
- //   {
- //       std::mt19937 gen{s};
- //       auto old_time = measure<>::execution(
- //           repeat_n_times,
- //           99999999,
- //           [&gen, &dis, &sig]()
- //           {
- //               uint64_t val = dis(gen);
- //               volatile uint64_t raw = sig->decode({(uint8_t*)&val, 8});
- //           });
- //       std::cout << "decode: " << old_time << std::endl;
- //   }
- //   {
- //       std::mt19937 gen{s};
- //       auto old_time = measure<>::execution(
- //           repeat_n_times,
- //           99999999,
- //           [&gen, &dis, &sig]()
- //           {
- //               uint64_t val = dis(gen);
- //               volatile uint64_t raw = sig->decode_({(uint8_t*)&val, 8});
- //           });
- //       std::cout << "decode_: " << old_time << std::endl;
- //   }
-
-
-	//uint64_t ret1 = sig->decode({(uint8_t*)&raw, 8});
-	//uint64_t ret2 = sig->decode_({(uint8_t*)&raw, 8});
-	//std::vector<uint8_t> vec;
-	//vec.resize(8);
-	//memcpy((char*)&vec[0], (char*)&raw, 8);
-	//uint64_t ret3 = sig->old_decode(vec);
-
-	//std::vector<uint8_t> enc(8, 0);
-	//sig->encode({&enc[0], 8}, ret1);
-
-	//std::cout << std::hex << ret1 << std::endl;
+        BOOST_CHECK(dec_easy == dec_sig);
+    }
 }

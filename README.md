@@ -14,26 +14,27 @@ make install
 int main()
 {
     std::ifstream dbc_file{"your_dbc.dbc"};
-    dbcppp::Network net;
-    if (!(dbc_file >> net)
+    std::unique_ptr<dbcppp::Network> net = dbcppp::Network::Create();
+    if (!(dbc_file >> *net))
     {
         std::cout << "DBC parsing failed!" << std::endl;
         return 1;
     }
     can_frame frame;
+    canfd_frame fd_frame;
     while (1)
     {
         receive_can_frame_from_somewhere(&frame);
-        auto& msg = net.messages[frame.id];
-        std::cout << "Received message: " << msg.name << std::endl;
-        for (auto& signal : msg.signals)
+        receive_canfd_frame_from_somewhere(&fd_frame);
+        auto& msg = net->getMessageById(frame.id);
+        std::cout << "Received message: " << msg->getName() << std::endl;
+        for (auto* signal : msg->getSignals())
         {
-            uint64_t data =
-                (uint64_t)frame.data[0] | ((uint64_t)frame.data[1] << 8) | ((uint64_t)frame.data[2] << 16)
-             | ((uint64_t)frame.data[3] << 24) | ((uint64_t)frame.data[4] << 32) | ((uint64_t)frame.data[5] << 40)
-             | ((uint64_t)frame.data[6] << 48) | ((uint64_t)frame.data[7] << 56);
-            int64_t raw = signal.decode(&frame.data);
-            std::cout << "\t" << signal.name << "=" << signal.raw_to_phys(raw) << std::endl;
+            // either this for standard CAN frames
+            int64_t raw = signal->decode8(frame.data);
+            // or this for FD CAN frames
+            // int64_t raw = signal->decode64(fd_frame.data);
+            std::cout << "\t" << signal->name << "=" << signal->raw_to_phys(raw) << std::endl;
         }
     }
 }
