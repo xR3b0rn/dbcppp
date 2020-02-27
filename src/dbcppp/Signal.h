@@ -80,7 +80,7 @@ namespace dbcppp
 		/// than decode8. A missmatch happens, e.g. when the Signal's byte order is BigEndian but the 
 		/// systems byte order is LittleEndian. Then the byte reversing of decode64 will take some more
 		/// instructions than the byte reversing of decode8.
-		/// Note: Only data types with 64 bits are supported.
+		/// Note: Only DBC data types with max 64 bits are supported.
 		/// @param _64byte a 64 byte array (exactly 64 byte) which is representing the can data.
 		///               the data must be in this order:
 		///               bit0   - bit7:   _64yte[0]
