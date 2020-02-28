@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="dbcppp"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="msvc8"/>
+		<Option virtualFolders="CMake Files\;CMake Files\src\;CMake Files\src\dbcppp\;CMake Files\src\Test\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 all"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install/local">
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 install/local"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="install">
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 install"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 edit_cache"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="list_install_components">
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 list_install_components"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="dbcppp">
+				<Option output="D:/github_private/dbcppp/cmake-build-debug/bin/dbcppp.dll" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug/src/dbcppp"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="msvc8"/>
+				<Compiler>
+					<Add option="-DDBCPPP_EXPORT"/>
+					<Add directory="D:/boost_1_69_0"/>
+					<Add directory="D:/github_private/dbcppp/src"/>
+					<Add directory="D:/github_private/dbcppp/cmake-build-debug/src"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\include"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\dbcppp\Makefile VERBOSE=1 dbcppp"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\dbcppp\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\dbcppp\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\dbcppp\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="dbcppp/fast">
+				<Option output="D:/github_private/dbcppp/cmake-build-debug/bin/dbcppp.dll" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug/src/dbcppp"/>
+				<Option object_output="./"/>
+				<Option type="3"/>
+				<Option compiler="msvc8"/>
+				<Compiler>
+					<Add option="-DDBCPPP_EXPORT"/>
+					<Add directory="D:/boost_1_69_0"/>
+					<Add directory="D:/github_private/dbcppp/src"/>
+					<Add directory="D:/github_private/dbcppp/cmake-build-debug/src"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\include"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\dbcppp\Makefile VERBOSE=1 dbcppp/fast"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\dbcppp\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\dbcppp\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\dbcppp\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="dbcppp_Test">
+				<Option output="D:/github_private/dbcppp/cmake-build-debug/bin/dbcppp_Test.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="msvc8"/>
+				<Compiler>
+					<Add directory="D:/boost_1_69_0"/>
+					<Add directory="D:/github_private/dbcppp/src"/>
+					<Add directory="D:/github_private/dbcppp/cmake-build-debug/src"/>
+					<Add directory="D:/github_private/dbcppp/cmake-build-debug/src/Vector/DBC"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\include"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\Test\Makefile VERBOSE=1 dbcppp_Test"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\Test\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\Test\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\Test\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="dbcppp_Test/fast">
+				<Option output="D:/github_private/dbcppp/cmake-build-debug/bin/dbcppp_Test.exe" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="D:/github_private/dbcppp/cmake-build-debug/bin"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="msvc8"/>
+				<Compiler>
+					<Add directory="D:/boost_1_69_0"/>
+					<Add directory="D:/github_private/dbcppp/src"/>
+					<Add directory="D:/github_private/dbcppp/cmake-build-debug/src"/>
+					<Add directory="D:/github_private/dbcppp/cmake-build-debug/src/Vector/DBC"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\ATLMFC\include"/>
+					<Add directory="C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\VC\Tools\MSVC\14.16.27023\include"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\NETFXSDK\4.6.1\include\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\shared"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\um"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\winrt"/>
+					<Add directory="C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\cppwinrt"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\Test\Makefile VERBOSE=1 dbcppp_Test/fast"/>
+					<CompileFile command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\Test\Makefile VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\Test\Makefile VERBOSE=1 clean"/>
+					<DistClean command="nmake /NOLOGO /f D:\github_private\dbcppp\cmake-build-debug\src\Test\Makefile VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="D:/github_private/dbcppp/src/Test/main.cpp">
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Attribute.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/AttributeDefinition.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/AttributeDefinitionImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/AttributeDefinitionImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/AttributeImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/AttributeImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/BitTiming.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/BitTimingImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/BitTimingImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/CApi.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/DBC_Grammar.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/DBC_Grammar.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/EnvironmentVariable.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/EnvironmentVariableImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/EnvironmentVariableImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Export.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Helper.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Helper.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Message.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/MessageImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/MessageImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Network.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Network.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/NetworkImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/NetworkImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Node.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/NodeImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/NodeImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/Signal.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/SignalImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/SignalImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/SignalType.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/SignalTypeImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/SignalTypeImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/ValueTable.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/ValueTableImpl.cpp">
+			<Option target="dbcppp"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/ValueTableImpl.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/span.h">
+			<Option target="dbcppp"/>
+			<Option target="dbcppp_Test"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/dbcppp/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\dbcppp\"/>
+		</Unit>
+		<Unit filename="D:/github_private/dbcppp/src/Test/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\src\Test\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

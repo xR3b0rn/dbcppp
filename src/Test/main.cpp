@@ -27,6 +27,8 @@
 
 #include <boost/endian/conversion.hpp>
 
+
+#include "../dbcppp/DBC_Grammar.h"
 #include "../dbcppp/Network.h"
 #include "../dbcppp/DBC_Grammar.h"
 #include "../dbcppp/SignalImpl.h"
@@ -35,7 +37,7 @@
 #include <boost/test/included/unit_test.hpp>
 namespace utf = boost::unit_test;
 
-double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
+    double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 {
     if (sig.getBitSize() == 0)
     {
@@ -90,10 +92,94 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
     }
     return double(retVal);
 }
+/*
 BOOST_AUTO_TEST_CASE(Test_Parsing)
 {
     auto net = dbcppp::Network::create();
     // TODO: create test DBC-file
+}*/
+
+BOOST_AUTO_TEST_CASE(DBCParsing)
+{
+    std::ifstream idbc{"D:/Core_Lanes_Host_protocol.dbc"};
+    auto net = dbcppp::Network::create();
+    std::clock_t begin = std::clock();
+
+    if (!(idbc >> *net))
+    {
+        std::cout << "DBC parsing failed!" << std::endl;
+        //return 1;
+    }
+    std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
+
+    std::cout << "Network" << std::endl;
+    std::cout
+            << "version: " << net->getVersion() << "\n"
+            << "bit timing " << net->getBitTiming().getBaudrate()
+            << std::endl;
+
+    std::cout << " signal_extended_value_types (" << net->getSignalExtendedValues().size() << ")" << std::endl;
+    for (auto element : net->getSignalExtendedValues())
+    {
+        std::cout << "      " << element->getMessageId() << " " << element->getSignalName() << " " << element->getValue() << std::endl;
+    }
+/*
+    for (auto& message : net->getMessages())
+    {
+        std::cout << message.first
+                  << " name: " << message.second->getName()
+                  << std::endl;
+
+        for (auto& signal : message.second->getSignals())
+        {
+            message.second->ordered_by_start_bit_signals[signal.second->fixed_start_bit] = signal.second;
+
+            for(auto& valtype : net.signal_extended_value_types)
+            {
+                if(valtype.message_id == message.first && signal.second->name == valtype.signal_name)
+                {
+                    std::cout << valtype.message_id <<   " "  << valtype.signal_name << " " << valtype.value  << std::endl;
+                }
+                else
+                {
+                    std::cout << "default" << std::endl;
+                }
+            }
+
+        }
+
+
+
+        for (auto& signal : message.second->ordered_by_start_bit_signals)
+        {
+            std::cout << "     "
+                      << signal.first
+                      << " name: " << signal.second->name
+                      << ", start bit: " << signal.second->start_bit
+                      << ", fixed start bit: " << signal.second->fixed_start_bit
+                      << ", value type: " << std::string((signal.second->value_type == dbcppp::Signal::ValueType::Signed) ? "Signed" : "Unsigned")
+                      << ", bit size : " << signal.second->bit_size
+                      << ", mask " << signal.second->mask
+                      << ", mask signed " << signal.second->mask_signed
+                      << ", factor " << signal.second->factor
+                      << ", offset " << signal.second->offset
+                      << ", min " << signal.second->minimum
+                      << ", max " << signal.second->maximum
+                      << ", comment" << signal.second->comment
+                      << std::endl;
+
+            std::cout << "Attributes values" ;
+            for (auto& element : signal.second->attribute_values) {
+                std::cout << element.first << std::endl;
+            }
+            std::cout << std::endl;
+            std::cout << "value desciptions" ;
+            for (auto& element : signal.second->value_descriptions) {
+                std::cout << element.first << std::endl;
+            }
+            std::cout << std::endl;
+        }
+    } */
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding8)
 {
