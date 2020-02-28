@@ -32,7 +32,6 @@ extern "C"
 	int dbcppp_network_get_num_messages(struct dbcppp_Network* net);
 	struct dbcppp_Message* dbcppp_network_get_message_by_index(struct dbcppp_Network* net, int index);
 	struct dbcppp_Message* dbcppp_network_get_message_by_id(struct dbcppp_Network* net, int id);
-
 	
 	unsigned long int dbcppp_message_get_id(struct dbcppp_Message* msg);
 	const char* dbcppp_message_get_name(struct dbcppp_Message* msg);
@@ -48,6 +47,5 @@ extern "C"
 	struct dbcppp_Attribute* dbcppp_message_get_attribute_value_by_index(struct dbcppp_Message* msg, int index);
 	struct dbcppp_Attribute* dbcppp_message_get_attribute_value_by_name(struct dbcppp_Message* msg, const char* name);
 	const char* dbcppp_message_get_comment(struct dbcppp_Message* msg);
-
 
 }

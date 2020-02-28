@@ -17,6 +17,7 @@
 #include "SignalType.h"
 #include "AttributeDefinition.h"
 #include "Attribute.h"
+#include "SignalExtendedValueType.h"
 
 namespace dbcppp
 {
@@ -32,6 +33,7 @@ namespace dbcppp
 		using attribute_definitions_t = std::map<std::string, AttributeDefinition>;
 		using attribute_defaults_t = std::map<std::string, Attribute>;
 		using attribute_values_t = std::map<std::string, Attribute>;
+		using signal_extended_value_types_t = std::vector<SignalExtendedValueType>;
 
 		static std::unique_ptr<Network> create();
 		virtual ~Network() = default;
@@ -55,6 +57,7 @@ namespace dbcppp
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeDefaults() const = 0;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
+		virtual std::vector<const SignalExtendedValueType*> getSignalExtendedValues() const = 0;
 		virtual const std::string& getComment() const = 0;
 	};
 }

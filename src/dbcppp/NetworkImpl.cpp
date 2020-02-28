@@ -176,7 +176,19 @@ std::vector<std::pair<std::string, const Attribute*>> NetworkImpl::getAttributeV
 	}
 	return result;
 }
+
+std::vector<const SignalExtendedValueType*> NetworkImpl::getSignalExtendedValues() const
+{
+    std::vector<const SignalExtendedValueType*> result;
+    for (auto& sigval : _signal_extended_value_types)
+    {
+       result.emplace_back(&sigval);
+    }
+    return result;
+}
+
 const std::string& NetworkImpl::getComment() const
 {
 	return _comment;
 }
+

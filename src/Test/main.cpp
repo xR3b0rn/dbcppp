@@ -27,6 +27,8 @@
 
 #include <boost/endian/conversion.hpp>
 
+
+#include "../dbcppp/DBC_Grammar.h"
 #include "../dbcppp/Network.h"
 #include "../dbcppp/DBC_Grammar.h"
 #include "../dbcppp/SignalImpl.h"
@@ -35,7 +37,7 @@
 #include <boost/test/included/unit_test.hpp>
 namespace utf = boost::unit_test;
 
-double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
+    double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 {
     if (sig.getBitSize() == 0)
     {
@@ -90,10 +92,80 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
     }
     return double(retVal);
 }
+/*
 BOOST_AUTO_TEST_CASE(Test_Parsing)
 {
     auto net = dbcppp::Network::create();
     // TODO: create test DBC-file
+}*/
+
+BOOST_AUTO_TEST_CASE(DBCParsing)
+{
+    std::ifstream idbc{"D:/sample.dbc"};
+    auto net = dbcppp::Network::create();
+    std::clock_t begin = std::clock();
+
+    if (!(idbc >> *net))
+    {
+        std::cout << "DBC parsing failed!" << std::endl;
+        //return 1;
+    }
+    std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
+
+    std::cout << "Network" << std::endl;
+    std::cout
+            << "version: " << net->getVersion() << "\n"
+            << "bit timing " << net->getBitTiming().getBaudrate()
+            << std::endl;
+
+    std::cout << " signal_extended_value_types (" << net->getSignalExtendedValues().size() << ")" << std::endl;
+    for (auto element : net->getSignalExtendedValues())
+    {
+        std::cout << "      " << element->getMessageId() << " " << element->getSignalName() << " " << element->getValue() << std::endl;
+    }
+
+    for (auto& message : net->getMessages())
+    {
+        std::cout << message.first
+                  << " name: " << message.second->getName()
+                  << std::endl;
+
+        for (auto& signal : message.second->getSignals())
+        {
+            for(auto& valtype : net->getSignalExtendedValues())
+            {
+                if(valtype->getMessageId() == message.first && signal.second->getName() == valtype->getSignalName())
+                {
+                    std::cout << valtype->getMessageId() <<   " "  << valtype->getSignalName() << " " << valtype->getValue()  << std::endl;
+                }
+                else
+                {
+                    std::cout << "default" << std::endl;
+                }
+            }
+        }
+
+        for (auto& signal : message.second->getSignals())
+        {
+            std::cout << "     "
+                      << signal.first
+                      << " name: " << signal.second->getName()
+                      << ", start bit: " << signal.second->getStartBit()
+                      << ", start bit: " << signal.second->getStartBit()
+                      << ", bit size : " << signal.second->getBitSize()
+                      << ", factor " << signal.second->getFactor()
+                      << ", offset " << signal.second->getOffset()
+                      << ", min " << signal.second->getMinimum()
+                      << ", max " << signal.second->getMaximum()
+                      << ", comment" << signal.second->getComment()
+                      << std::endl;
+
+            std::cout << "Attributes values" ;
+            for (auto& element : signal.second->getAttributeValues()) {
+                std::cout << element.first << std::endl;
+            }
+        }
+    }
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding8)
 {
