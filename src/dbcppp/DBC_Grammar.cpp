@@ -738,7 +738,7 @@ struct NetworkGrammar
 			>> qi::omit[_attribute_defaults[insert_attribute_defaults_into_network]]
 			>> qi::omit[_attribute_values[insert_attribute_values_into_network]]
 			>> qi::omit[_value_descriptions[insert_value_descriptions_into_network]]
-            >> _signal_extended_value_types;
+			>> _signal_extended_value_types;
 
 		_unsigned_integer %= qi::uint_;
 		_signed_integer %= qi::int_;
@@ -893,8 +893,8 @@ struct NetworkGrammar
 		_value_description_signal %= qi::lit("VAL_") >> _message_id >> _signal_name >> _value_encoding_descriptions >> ';';
 		_value_description_env_var %= qi::lit("VAL_") >> _env_var_name >> _value_encoding_descriptions >> ';';
 
-        _signal_extended_value_types %= *_signal_extended_value_type;
-        _signal_extended_value_type %= qi::lit("SIG_VALTYPE_") >> _message_id >> _signal_name >> ':' >>  _unsigned_integer >> ';';
+		_signal_extended_value_types %= *_signal_extended_value_type;
+		_signal_extended_value_type %= qi::lit("SIG_VALTYPE_") >> _message_id >> _signal_name >> ':' >>  _unsigned_integer >> ';';
 	}
 
 	qi::rule<Iter, NetworkImpl(), Skipper> _DBC_file;
@@ -1010,8 +1010,8 @@ struct NetworkGrammar
 	qi::rule<Iter, G_ValueDescriptionSignal(), Skipper> _value_description_signal;
 	qi::rule<Iter, G_ValueDescriptionEnvVar(), Skipper> _value_description_env_var;
 
-    qi::rule<Iter, std::vector<SignalExtendedValueTypeImpl>(), Skipper> _signal_extended_value_types;
-    qi::rule<Iter, SignalExtendedValueTypeImpl(), Skipper> _signal_extended_value_type;
+	qi::rule<Iter, std::vector<SignalExtendedValueTypeImpl>(), Skipper> _signal_extended_value_types;
+	qi::rule<Iter, SignalExtendedValueTypeImpl(), Skipper> _signal_extended_value_type;
 };
 
 DBCPPP_API bool operator>>(std::istream& is, Network& net)
