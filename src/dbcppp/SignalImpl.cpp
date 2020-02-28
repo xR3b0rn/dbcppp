@@ -82,7 +82,6 @@ SignalImpl::SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_
 		if ((start_bit + bit_size) >= message_size * 8)
 		{
 			_error = ErrorCode::SignalExceedsMessageSize;
-			return;
 		}
 		break;
 	case ByteOrder::BigEndian:
@@ -91,7 +90,6 @@ SignalImpl::SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_
 		if (fstart + ((fsize - 1) / 8) * 8 >= message_size * 8)
 		{
 			_error = ErrorCode::SignalExceedsMessageSize;
-			return;
 		}
 		break;
 	}
