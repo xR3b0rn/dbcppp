@@ -343,13 +343,7 @@ BOOST_FUSION_ADAPT_STRUCT(
 	env_var_name,
 	value
 )
-/*
-struct G_SignalExtendedValueType{
-    uint64_t message_id;
-    std::string signal_name;
-    uint64_t value;
-};
-*/
+
 BOOST_FUSION_ADAPT_STRUCT(
     SignalExtendedValueTypeImpl,
     _message_id,

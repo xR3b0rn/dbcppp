@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(Test_Parsing)
 
 BOOST_AUTO_TEST_CASE(DBCParsing)
 {
-    std::ifstream idbc{"D:/Core_Lanes_Host_protocol.dbc"};
+    std::ifstream idbc{"D:/sample.dbc"};
     auto net = dbcppp::Network::create();
     std::clock_t begin = std::clock();
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
     {
         std::cout << "      " << element->getMessageId() << " " << element->getSignalName() << " " << element->getValue() << std::endl;
     }
-/*
+
     for (auto& message : net->getMessages())
     {
         std::cout << message.first
@@ -132,54 +132,40 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
 
         for (auto& signal : message.second->getSignals())
         {
-            message.second->ordered_by_start_bit_signals[signal.second->fixed_start_bit] = signal.second;
-
-            for(auto& valtype : net.signal_extended_value_types)
+            for(auto& valtype : net->getSignalExtendedValues())
             {
-                if(valtype.message_id == message.first && signal.second->name == valtype.signal_name)
+                if(valtype->getMessageId() == message.first && signal.second->getName() == valtype->getSignalName())
                 {
-                    std::cout << valtype.message_id <<   " "  << valtype.signal_name << " " << valtype.value  << std::endl;
+                    std::cout << valtype->getMessageId() <<   " "  << valtype->getSignalName() << " " << valtype->getValue()  << std::endl;
                 }
                 else
                 {
                     std::cout << "default" << std::endl;
                 }
             }
-
         }
 
-
-
-        for (auto& signal : message.second->ordered_by_start_bit_signals)
+        for (auto& signal : message.second->getSignals())
         {
             std::cout << "     "
                       << signal.first
-                      << " name: " << signal.second->name
-                      << ", start bit: " << signal.second->start_bit
-                      << ", fixed start bit: " << signal.second->fixed_start_bit
-                      << ", value type: " << std::string((signal.second->value_type == dbcppp::Signal::ValueType::Signed) ? "Signed" : "Unsigned")
-                      << ", bit size : " << signal.second->bit_size
-                      << ", mask " << signal.second->mask
-                      << ", mask signed " << signal.second->mask_signed
-                      << ", factor " << signal.second->factor
-                      << ", offset " << signal.second->offset
-                      << ", min " << signal.second->minimum
-                      << ", max " << signal.second->maximum
-                      << ", comment" << signal.second->comment
+                      << " name: " << signal.second->getName()
+                      << ", start bit: " << signal.second->getStartBit()
+                      << ", start bit: " << signal.second->getStartBit()
+                      << ", bit size : " << signal.second->getBitSize()
+                      << ", factor " << signal.second->getFactor()
+                      << ", offset " << signal.second->getOffset()
+                      << ", min " << signal.second->getMinimum()
+                      << ", max " << signal.second->getMaximum()
+                      << ", comment" << signal.second->getComment()
                       << std::endl;
 
             std::cout << "Attributes values" ;
-            for (auto& element : signal.second->attribute_values) {
+            for (auto& element : signal.second->getAttributeValues()) {
                 std::cout << element.first << std::endl;
             }
-            std::cout << std::endl;
-            std::cout << "value desciptions" ;
-            for (auto& element : signal.second->value_descriptions) {
-                std::cout << element.first << std::endl;
-            }
-            std::cout << std::endl;
         }
-    } */
+    }
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding8)
 {
