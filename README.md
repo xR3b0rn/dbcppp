@@ -31,9 +31,9 @@ int main()
         for (auto* signal : msg->getSignals())
         {
             // either this for standard CAN frames
-            int64_t raw = signal->decode8(frame.data);
+            double raw = signal->decode8(frame.data);
             // or this for FD CAN frames
-            // int64_t raw = signal->decode64(fd_frame.data);
+            // double raw = signal->decode64(fd_frame.data);
             std::cout << "\t" << signal->name << "=" << signal->raw_to_phys(raw) << std::endl;
         }
     }
