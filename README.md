@@ -31,15 +31,33 @@ int main()
         for (auto* signal : msg->getSignals())
         {
             // either this for standard CAN frames
-            int64_t raw = signal->decode8(frame.data);
+            double raw = signal->decode8(frame.data);
             // or this for FD CAN frames
-            // int64_t raw = signal->decode64(fd_frame.data);
+            // double raw = signal->decode64(fd_frame.data);
             std::cout << "\t" << signal->name << "=" << signal->raw_to_phys(raw) << std::endl;
         }
     }
 }
 
 ```
+# Decode-function
+The signals decode function is using prestored masks and fixed offsets to speed up calculation. The assembly of the `decode8` on its critical path (signed and byte swap must happen) looks similar to this:
+```
+template_decode8(Signal const*, void const*):
+        mov     rax, QWORD PTR [rsi]
+        mov     rcx, QWORD PTR [rdi]
+        pxor    xmm0, xmm0
+        mov     rdx, QWORD PTR [rdi+16]
+        bswap   rax
+        shr     rax, cl
+        and     rax, QWORD PTR [rdi+8]
+        and     rdx, rax
+        neg     rdx
+        or      rax, rdx
+        cvtsi2sd        xmm0, rax
+        ret
+```
+Binary was generated using Compiler Explorer: https://godbolt.org/z/8YFjok
 ### Similar projects
   * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` for grammar parsing
   * [CAN BUS tools in Python 3 (cantools)](https://github.com/eerimoq/cantools) 

@@ -23,15 +23,7 @@
 #include <boost/spirit/include/qi_hold.hpp>
 
 #include "DBC_Grammar.h"
-#include "Network.h"
 #include "NetworkImpl.h"
-#include "SignalTypeImpl.h"
-#include "NodeImpl.h"
-#include "AttributeImpl.h"
-#include "valueTableImpl.h"
-#include "AttributeDefinitionImpl.h"
-#include "EnvironmentVariableImpl.h"
-#include "MessageImpl.h"
 #include "ConvertGrammarStructorToCppStructure.h"
 
 using namespace dbcppp;
@@ -184,6 +176,10 @@ BOOST_FUSION_ADAPT_STRUCT(
 	description
 )
 BOOST_FUSION_ADAPT_STRUCT(
+	G_SignalExtendedValueType,
+	message_id, signal_name, value
+)
+BOOST_FUSION_ADAPT_STRUCT(
 	G_Network,
 	version, new_symbols, bit_timing,
 	nodes, value_tables, messages,
@@ -194,9 +190,9 @@ BOOST_FUSION_ADAPT_STRUCT(
 	attribute_definitions,
 	attribute_defaults,
 	attribute_values,
-	value_descriptions
+	value_descriptions,
+	signal_extended_value_types
 )
-
 template <class Iter>
 struct NetworkGrammar
 	: public qi::grammar<Iter, G_Network(), ascii::space_type>
@@ -224,6 +220,7 @@ struct NetworkGrammar
 			>> _attribute_values
 
 			>> _value_descriptions
+			>> _signal_extended_value_types
 			;
 
 		_unsigned_integer %= qi::uint_;
@@ -372,12 +369,13 @@ struct NetworkGrammar
 		_attribute_value_ent_signal %= _attribute_name >> qi::lit("SG_") >> _message_id >> _signal_name >> _attribute_value;
 		_attribute_value_ent_env_var %= _attribute_name >> qi::lit("EV_") >> _env_var_name >> _attribute_value;
 
-
-
 		_value_descriptions %= *_value_description_sig_env_var;
 		_value_description_sig_env_var %= _value_description_signal | _value_description_env_var;
 		_value_description_signal %= qi::lit("VAL_") >> _message_id >> _signal_name >> _value_encoding_descriptions >> ';';
 		_value_description_env_var %= qi::lit("VAL_") >> _env_var_name >> _value_encoding_descriptions >> ';';
+
+		_signal_extended_value_types %= *_signal_extended_value_type;
+		_signal_extended_value_type %= qi::lit("SIG_VALTYPE_") >> _message_id >> _signal_name >> ':' >>  _unsigned_integer >> ';';
 	}
 
 	qi::rule<Iter, G_Network(), Skipper> _network;
@@ -490,6 +488,9 @@ struct NetworkGrammar
 	qi::rule<Iter, G_ValueDescription(), Skipper> _value_description_sig_env_var;
 	qi::rule<Iter, G_ValueDescriptionSignal(), Skipper> _value_description_signal;
 	qi::rule<Iter, G_ValueDescriptionEnvVar(), Skipper> _value_description_env_var;
+
+	qi::rule<Iter, std::vector<G_SignalExtendedValueType>(), Skipper> _signal_extended_value_types;
+	qi::rule<Iter, G_SignalExtendedValueType(), Skipper> _signal_extended_value_type;
 };
 
 DBCPPP_API bool operator>>(std::istream& is, Network& net)

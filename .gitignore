@@ -11,3 +11,4 @@ CTestTestfile.cmake
 /.vs
 /build
 /out/build/x64-Debug
+/cmake-build-release/

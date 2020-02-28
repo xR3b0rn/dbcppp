@@ -211,6 +211,12 @@ namespace dbcppp
 	{
 		boost::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar> description;
 	};
+	struct G_SignalExtendedValueType
+	{
+        uint64_t message_id;
+        std::string signal_name;
+        uint64_t value;
+	};
 	struct G_Network
 	{
 		G_Version version;
@@ -227,7 +233,7 @@ namespace dbcppp
 		std::vector<G_AttributeDefinition> attribute_definitions;
 		std::vector<G_Attribute> attribute_defaults;
 		std::vector<variant_attribute_t> attribute_values;
-
 		std::vector<G_ValueDescription> value_descriptions;
+		std::vector<G_SignalExtendedValueType> signal_extended_value_types;
 	};
 }

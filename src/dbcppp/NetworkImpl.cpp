@@ -176,19 +176,27 @@ std::vector<std::pair<std::string, const Attribute*>> NetworkImpl::getAttributeV
 	}
 	return result;
 }
+std::vector<const SignalExtendedValueType*> NetworkImpl::getSignalExtendedValues() const
+{
+    std::vector<const SignalExtendedValueType*> result;
+    for (auto& sigval : _signal_extended_value_types)
+    {
+       result.emplace_back(&sigval);
+    }
+    return result;
+}
 const std::string& NetworkImpl::getComment() const
 {
 	return _comment;
 }
-
 const Message* NetworkImpl::findParentMessage(const Signal* sig) const
 {
 	const Message* result = nullptr;
 	for (const auto& p : _messages)
 	{
-		const MessageImpl& msg = static_cast<const MessageImpl&>(p.second);
+		const MessageImpl& msg = p.second;
 		auto iter = msg._signals.find(sig->getName());
-		if (&iter->second == sig)
+		if (iter != msg._signals.end() && &iter->second == sig)
 		{
 			result = &msg;
 			break;
@@ -196,3 +204,4 @@ const Message* NetworkImpl::findParentMessage(const Signal* sig) const
 	}
 	return result;
 }
+

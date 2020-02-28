@@ -48,7 +48,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 			SignalImpl ns(
 				  s.byte_order == '0' ? Signal::ByteOrder::BigEndian : Signal::ByteOrder::LittleEndian
 				, s.value_type == '+' ? Signal::ValueType::Unsigned : Signal::ValueType::Signed
-				, s.start_bit, m.size);
+				, s.signal_size, s.start_bit, m.size);
 			if (ns.getError() == SignalImpl::ErrorCode::SignalExceedsMessageSize)
 			{
 				BOOST_LOG_TRIVIAL(warning) << "The signals '" << m.name << "::" << s.name << "'" << " start_bit + bit_size exceeds the byte size of the message! Ignoring this error will lead to garbage data when using the decode function of this signal.";
@@ -57,6 +57,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 			ns._minimum = s.minimum;
 			ns._maximum = s.maximum;
 			ns._multiplexer_switch_value = 0;
+			ns._bit_size = s.signal_size;
 			if (s.multiplexer_indicator)
 			{
 				auto m = *s.multiplexer_indicator;
