@@ -7,9 +7,7 @@
 #include <string>
 #include <cstddef>
 
-
 #include "Export.h"
-#include "span.h"
 #include "Helper.h"
 #include "Node.h"
 #include "Attribute.h"
@@ -40,7 +38,6 @@ namespace dbcppp
 		};
 		
 		virtual ~Signal() = default;
-		virtual const Message* getParentMessage() const = 0;
 		virtual const std::string& getName() const = 0;
 		virtual Multiplexer getMultiplexerIndicator() const = 0;
 		virtual uint64_t getMultiplexerSwitchValue() const = 0;
@@ -54,7 +51,7 @@ namespace dbcppp
 		virtual double getMaximum() const = 0;
 		virtual std::string getUnit() const = 0;
 		virtual bool hasReceiver(const std::string& name) const = 0;
-		virtual std::vector<const Node*> getReceivers() const = 0;
+		virtual std::vector<const std::string*> getReceivers() const = 0;
 		virtual const std::string* getValueDescriptionById(uint64_t id) const = 0;
 		virtual std::vector<std::pair<uint64_t, const std::string*>> getValueDescriptions() const = 0;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;

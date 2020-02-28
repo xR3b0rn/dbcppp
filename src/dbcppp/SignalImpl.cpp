@@ -138,10 +138,6 @@ SignalImpl::SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_
 	_raw_to_phys = ::raw_to_phys;
 	_phys_to_raw = ::phys_to_raw;
 }
-const Message* SignalImpl::getParentMessage() const
-{
-	return _parent_message;
-}
 const std::string& SignalImpl::getName() const
 {
 	return _name;
@@ -192,23 +188,14 @@ std::string SignalImpl::getUnit() const
 }
 bool SignalImpl::hasReceiver(const std::string& name) const
 {
-	bool result = false;
-	for (auto& n : _receivers)
-	{
-		if (n->getName() == name)
-		{
-			result = true;
-			break;
-		}
-	}
-	return result;
+	return _receivers.find(name) != _receivers.end();
 }
-std::vector<const Node*> SignalImpl::getReceivers() const
+std::vector<const std::string*> SignalImpl::getReceivers() const
 {
-	std::vector<const Node*> result;
-	for (auto& n : _receivers)
+	std::vector<const std::string*> result;
+	for (const auto& n : _receivers)
 	{
-		result.emplace_back(n);
+		result.emplace_back(&n);
 	}
 	return result;
 }

@@ -180,3 +180,19 @@ const std::string& NetworkImpl::getComment() const
 {
 	return _comment;
 }
+
+const Message* NetworkImpl::findParentMessage(const Signal* sig) const
+{
+	const Message* result = nullptr;
+	for (const auto& p : _messages)
+	{
+		const MessageImpl& msg = static_cast<const MessageImpl&>(p.second);
+		auto iter = msg._signals.find(sig->getName());
+		if (&iter->second == sig)
+		{
+			result = &msg;
+			break;
+		}
+	}
+	return result;
+}

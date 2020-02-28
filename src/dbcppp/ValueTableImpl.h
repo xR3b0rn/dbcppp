@@ -2,6 +2,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include "ValueTable.h"
 
 namespace dbcppp

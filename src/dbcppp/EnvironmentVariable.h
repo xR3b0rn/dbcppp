@@ -35,8 +35,8 @@ namespace dbcppp
 		virtual double getInitialValue() const = 0;
 		virtual uint64_t getEvId() const = 0;
 		virtual AccessType getAccessType() const = 0;
-		virtual const Node* getAccessNodeByName(const std::string& name) const = 0;
-		virtual std::vector<const Node*> getAccessNodes() const = 0;
+		virtual bool hasAccessNode(const std::string& name) const = 0;
+		virtual std::vector<const std::string*> getAccessNodes() const = 0;
 		virtual const std::string* getValueDescriptionById(uint64_t id) const = 0;
 		virtual std::vector<std::pair<uint64_t, const std::string*>> getValueDescriptions() const = 0;
 		virtual uint64_t getDataSize() const = 0;

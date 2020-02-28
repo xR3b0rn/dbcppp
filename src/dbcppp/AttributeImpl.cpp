@@ -1,4 +1,5 @@
 
+#include <boost/variant.hpp>
 #include "AttributeImpl.h"
 
 using namespace dbcppp;

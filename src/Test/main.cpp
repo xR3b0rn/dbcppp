@@ -24,6 +24,7 @@
 #include <ctime>
 #include <chrono>
 #include <random>
+#include <string>
 
 #include <boost/endian/conversion.hpp>
 
@@ -34,6 +35,7 @@
 #define BOOST_TEST_MODULE test
 #include <boost/test/included/unit_test.hpp>
 namespace utf = boost::unit_test;
+
 
 double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 {
@@ -92,25 +94,31 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 }
 BOOST_AUTO_TEST_CASE(Test_Parsing)
 {
-    auto net = dbcppp::Network::create();
     // TODO: create test DBC-file
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding8)
 {
-    std::cout << "Testing decode8-function with 99999 randomly generated tests..." << std::endl;
+    std::size_t n_tests = 99999;
 
+    BOOST_TEST_MESSAGE("Testing decode8-function with " << n_tests << " randomly generated tests...");
+
+    uint32_t seed = static_cast<uint32_t>(time(0));
     std::random_device dev;
-    std::mt19937 rng(dev());
+    std::default_random_engine rng(seed);
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
     using namespace dbcppp;
     SignalImpl sig(Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, 56, 5, 8);
     std::vector<uint8_t> data;
-    for (std::size_t i = 0; i < 99999; i++)
+    for (std::size_t i = 0; i < n_tests; i++)
     {
         auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
         auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_start_bit = dist(rng) % 54;
+        auto rnd_start_bit = dist(rng) % 64;
+        while (rnd_start_bit == 56)
+        {
+            rnd_start_bit = dist(rng) % 64;
+        }
         do
         {
             auto rnd_bit_size = dist(rng) % (64 - rnd_start_bit);
@@ -124,26 +132,37 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
         }
         auto dec_easy = easy_decode(sig, data);
         auto dec_sig = sig.decode8(&data[0]);
-
-        BOOST_CHECK(dec_easy == dec_sig);
+        
+        BOOST_REQUIRE_MESSAGE(dec_easy == dec_sig,
+            ("seed=" + std::to_string(seed)
+            + " i=" + std::to_string(i)
+            + " dec_easy=" + std::to_string(dec_easy)
+            + " dec_sig=" + std::to_string(dec_sig)));
     }
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding64)
 {
-    std::cout << "Testing decode64-function with 99999 randomly generated tests..." << std::endl;
+    std::size_t n_tests = 99999;
 
+    BOOST_TEST_MESSAGE("Testing decode64-function with " << n_tests << " randomly generated tests...");
+
+    uint32_t seed = static_cast<uint32_t>(time(0));
     std::random_device dev;
-    std::mt19937 rng(dev());
+    std::default_random_engine rng(seed);
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
     using namespace dbcppp;
     SignalImpl sig(Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, 56, 5, 8);
     std::vector<uint8_t> data;
-    for (std::size_t i = 0; i < 99999; i++)
+    for (std::size_t i = 0; i < n_tests; i++)
     {
         auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
         auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_start_bit = dist(rng) % 54;
+        auto rnd_start_bit = dist(rng) % 64;
+        while (rnd_start_bit == 56)
+        {
+            rnd_start_bit = dist(rng) % 64;
+        }
         do
         {
             auto rnd_bit_size = dist(rng) % (64 - rnd_start_bit);
@@ -157,7 +176,11 @@ BOOST_AUTO_TEST_CASE(Test_Decoding64)
         }
         auto dec_easy = easy_decode(sig, data);
         auto dec_sig = sig.decode8(&data[0]);
-
-        BOOST_CHECK(dec_easy == dec_sig);
+        
+        BOOST_REQUIRE_MESSAGE(dec_easy == dec_sig,
+            ("seed=" + std::to_string(seed)
+            + " i=" + std::to_string(i)
+            + " dec_easy=" + std::to_string(dec_easy)
+            + " dec_sig=" + std::to_string(dec_sig)));
     }
 }

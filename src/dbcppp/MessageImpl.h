@@ -15,9 +15,9 @@ namespace dbcppp
 		virtual uint64_t getId() const override;
 		virtual const std::string& getName() const override;
 		virtual uint64_t getMessageSize() const override;
-		virtual const Node* getTransmitter() const override;
-		virtual bool hasTransmitter(const std::string& name) const override;
-		virtual std::vector<const Node*> getTransmitters() const override;
+		virtual const std::string& getTransmitter() const override;
+		virtual bool hasReceiver(const std::string& name) const override;
+		virtual std::vector<const std::string*> getReceivers() const override;
 		virtual const Signal* getSignalByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Signal*>> getSignals() const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
@@ -27,8 +27,8 @@ namespace dbcppp
 		uint64_t _id;
 		std::string _name;
 		uint64_t _message_size;
-		NodeImpl* _transmitter;
-		std::set<NodeImpl*> _transmitters;
+		std::string _transmitter;
+		std::set<std::string> _receivers;
 		std::map<std::string, SignalImpl> _signals;
 		std::map<std::string, AttributeImpl> _attribute_values;
 		std::string _comment;

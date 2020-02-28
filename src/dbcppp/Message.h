@@ -20,9 +20,9 @@ namespace dbcppp
 		virtual uint64_t getId() const = 0;
 		virtual const std::string& getName() const = 0;
 		virtual uint64_t getMessageSize() const = 0;
-		virtual const Node* getTransmitter() const = 0;
-		virtual bool hasTransmitter(const std::string& name) const = 0;
-		virtual std::vector<const Node*> getTransmitters() const = 0;
+		virtual const std::string& getTransmitter() const = 0;
+		virtual bool hasReceiver(const std::string& name) const = 0;
+		virtual std::vector<const std::string*> getReceivers() const = 0;
 		virtual const Signal* getSignalByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const Signal*>> getSignals() const = 0;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;

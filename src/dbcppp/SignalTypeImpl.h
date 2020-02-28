@@ -32,7 +32,6 @@ namespace dbcppp
 		double _maximum;
 		std::string _unit;
 		double _default_value;
-		//ValueTable* _value_table;
 		std::string _value_table;
 	};
 }

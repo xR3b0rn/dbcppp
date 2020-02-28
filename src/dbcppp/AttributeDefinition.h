@@ -8,7 +8,6 @@
 
 #include "Export.h"
 
-
 namespace dbcppp
 {
 	class DBCPPP_API AttributeDefinition

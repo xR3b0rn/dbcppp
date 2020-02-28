@@ -35,24 +35,16 @@ EnvironmentVariable::AccessType EnvironmentVariableImpl::getAccessType() const
 {
 	return _access_type;
 }
-const Node* EnvironmentVariableImpl::getAccessNodeByName(const std::string& name) const
+bool EnvironmentVariableImpl::hasAccessNode(const std::string& name) const
 {
-	const Node* result = nullptr;
-	for (auto& n : _access_nodes)
-	{
-		if (n->getName() == name)
-		{
-			result = n;
-		}
-	}
-	return result;
+	return _access_nodes.find(name) != _access_nodes.end();
 }
-std::vector<const Node*> EnvironmentVariableImpl::getAccessNodes() const
+std::vector<const std::string*> EnvironmentVariableImpl::getAccessNodes() const
 {
-	std::vector<const Node*> result;
+	std::vector<const std::string*> result;
 	for (auto& n : _access_nodes)
 	{
-		result.emplace_back(n);
+		result.emplace_back(&n);
 	}
 	return result;
 }

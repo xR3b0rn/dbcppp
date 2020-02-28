@@ -15,29 +15,20 @@ uint64_t MessageImpl::getMessageSize() const
 {
 	return _message_size;
 }
-const Node* MessageImpl::getTransmitter() const
+const std::string& MessageImpl::getTransmitter() const
 {
 	return _transmitter;
 }
-bool MessageImpl::hasTransmitter(const std::string& name) const
+bool MessageImpl::hasReceiver(const std::string& name) const
 {
-	bool result = false;
-	for (auto& n : _transmitters)
-	{
-		if (n->getName() == name)
-		{
-			result = true;
-			break;
-		}
-	}
-	return result;
+	return _receivers.find(name) != _receivers.end();
 }
-std::vector<const Node*> MessageImpl::getTransmitters() const
+std::vector<const std::string*> MessageImpl::getReceivers() const
 {
-	std::vector<const Node*> result;
-	for (auto& n : _transmitters)
+	std::vector<const std::string*> result;
+	for (auto& n : _receivers)
 	{
-		result.emplace_back(n);
+		result.emplace_back(&n);
 	}
 	return result;
 }

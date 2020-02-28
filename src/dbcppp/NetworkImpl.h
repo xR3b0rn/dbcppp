@@ -37,6 +37,8 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
 		virtual const std::string& getComment() const override;
+
+		virtual const Message* findParentMessage(const Signal* sig) const override;
 		
 		std::string _version;
 		std::vector<std::string> _new_symbols;
@@ -49,7 +51,6 @@ namespace dbcppp
 		std::map<std::string, AttributeDefinitionImpl> _attribute_definitions;
 		std::map<std::string, AttributeImpl> _attribute_defaults;
 		std::map<std::string, AttributeImpl> _attribute_values;
-		//std::map<std::string, AttributeRelation> attribute_relation_values;
 		std::string _comment;
 	};
 }

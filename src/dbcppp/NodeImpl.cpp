@@ -3,6 +3,12 @@
 
 using namespace dbcppp;
 
+NodeImpl::NodeImpl()
+{
+}
+NodeImpl::~NodeImpl()
+{
+}
 const std::string& NodeImpl::getName() const
 {
 	return _name;
