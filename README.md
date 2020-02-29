@@ -3,7 +3,9 @@ A DBC file parser written in C++ and based on `boost.spirit`. This library is de
 
 # Build and install
 ```
-cmake .
+mkdir build
+cd build
+cmake ..
 make
 make install
 ```
