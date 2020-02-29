@@ -515,33 +515,7 @@ struct NetworkGrammar
 				auto[line, column] = getErrPos(begin, err);
 				std::cout << line << ":" << column << " Error! Expecting " << what << std::endl;
 			};
-        qi::on_error<qi::fail>(_network, error_handler);
-		auto accept_handler =
-			[begin](const auto& args, const auto& context, const auto& error)
-			{
-				const auto& first = fu::at_c<0>(args);
-				const auto& last = fu::at_c<1>(args);
-				const auto& err = fu::at_c<2>(args);
-				const auto& what = fu::at_c<3>(args);
-				std::size_t line = 1;
-				std::size_t column = 1;
-				auto iter = begin;
-				while (iter != err)
-				{
-					if (*iter == '\n')
-					{
-						line++;
-						column = 1;
-					}
-					else
-					{
-						column++;
-					}
-					iter++;
-				}
-				std::cout << line << ":" << column << " Error! Expecting " << what << std::endl;
-			};
-		qi::on_error<qi::accept>(_network, accept_handler);
+		qi::on_error<qi::fail>(_network, error_handler);
 	}
 
 
