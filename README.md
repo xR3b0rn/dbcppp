@@ -40,8 +40,11 @@ int main()
 }
 
 ```
-# DBC data types
-## Supported
+# Features
+* decode functionality for ISO CAN frames (8 data bytes)
+* decode functionality for FD CAN frames (64 data bytes)
+## DBC data types
+### Supported
 * version
 * new_symbols
 * bit_timing
@@ -58,7 +61,7 @@ int main()
 * attribute_values
 * value_descriptions
 * signal_extended_value_type_list
-## Not supported yet
+### Not supported yet
 * sigtype_attr_list
 * signal_type_refs
 * signal_groups
