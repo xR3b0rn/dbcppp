@@ -24,7 +24,7 @@
 
 #include "DBC_Grammar.h"
 #include "NetworkImpl.h"
-#include "ConvertGrammarStructorToCppStructure.h"
+#include "ConvertGrammarStructureToCppStructure.h"
 
 using namespace dbcppp;
 
@@ -511,7 +511,7 @@ DBCPPP_API bool operator>>(std::istream& is, Network& net)
 	result &= begin == end;
 	if (result)
 	{
-		ConvertGrammarStructorToCppStructure(gnet, static_cast<NetworkImpl&>(net));
+		ConvertGrammarStructureToCppStructure(gnet, static_cast<NetworkImpl&>(net));
 	}
  	return result;
 }

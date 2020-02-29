@@ -1,12 +1,12 @@
 
+#include <boost/log/trivial.hpp>
 #include "NetworkImpl.h"
 #include "DBC_Grammar.h"
-#include "ConvertGrammarStructorToCppStructure.h"
-#include <boost/log/trivial.hpp>
+#include "ConvertGrammarStructureToCppStructure.h"
 
 using namespace dbcppp;
 
-void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, NetworkImpl& net)
+void dbcppp::ConvertGrammarStructureToCppStructure(const G_Network& gnet, NetworkImpl& net)
 {
 	net._version = gnet.version.version;
 	for (auto& ns : gnet.new_symbols)
