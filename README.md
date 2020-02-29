@@ -89,7 +89,7 @@ template_decode8(Signal const*, void const*):
 ```
 Binary was generated using Compiler Explorer: https://godbolt.org/z/8YFjok
 # Known issues
-* decode64 isn't working correctly on LittleEndian-maschine if the ValueType of the Signal is BigEndian-signal
+* decode64 isn't working correctly on LittleEndian-maschine if the ValueType of the Signal is BigEndian
 * both decode functions weren't tested on a BigEndian-maschine
 # Similar projects
   * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` for grammar parsing
