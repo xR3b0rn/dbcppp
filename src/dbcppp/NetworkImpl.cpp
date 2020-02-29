@@ -12,7 +12,7 @@ std::unique_ptr<Network> Network::create()
 std::unique_ptr<const Network> Network::fromDBC(std::istream& is)
 {
 	auto net = std::make_unique<NetworkImpl>();
-	if (is >> *net)
+	if (!(is >> *net))
 	{
 		return nullptr;
 	}

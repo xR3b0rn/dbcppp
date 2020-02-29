@@ -31,7 +31,6 @@
 #include "Config.h"
 
 #include "../dbcppp/Network.h"
-#include "../dbcppp/DBC_Grammar.h"
 
 #define BOOST_TEST_MODULE test
 #include <boost/test/included/unit_test.hpp>
@@ -122,14 +121,10 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
             spec = dbc_to_vec(idbc);
         }
         std::ifstream idbc(dbc_file);
-        auto net = dbcppp::Network::create();
+        auto net = dbcppp::Network::fromDBC(idbc);
         std::clock_t begin = std::clock();
 
-        if (!(idbc >> *net))
-        {
-            std::cout << "DBC parsing failed!" << std::endl;
-            //return 1;
-        }
+        BOOST_REQUIRE_MESSAGE(net, "DBC parsing failed!");
 
         std::stringstream ss;
         net->serializeToStream(ss);

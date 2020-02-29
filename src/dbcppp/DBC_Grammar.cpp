@@ -21,6 +21,11 @@
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/fusion/adapted.hpp>
 #include <boost/spirit/include/qi_hold.hpp>
+#include <boost/spirit/include/phoenix_core.hpp>
+#include <boost/spirit/include/phoenix_operator.hpp>
+#include <boost/spirit/include/phoenix_fusion.hpp>
+#include <boost/spirit/include/phoenix_stl.hpp>
+#include <boost/spirit/include/phoenix_object.hpp>
 
 #include "DBC_Grammar.h"
 #include "NetworkImpl.h"
@@ -193,16 +198,41 @@ BOOST_FUSION_ADAPT_STRUCT(
 	value_descriptions,
 	signal_extended_value_types
 )
+
+template <class Iter>
+std::tuple<std::size_t, std::size_t> getErrPos(Iter iter, Iter cur)
+{
+	std::size_t line = 1;
+	std::size_t column = 1;
+	while (iter != cur)
+	{
+		if (*iter == '\n')
+		{
+			line++;
+			column = 1;
+		}
+		else
+		{
+			column++;
+		}
+		iter++;
+	}
+	return {line, column};
+}
+
 template <class Iter>
 struct NetworkGrammar
 	: public qi::grammar<Iter, G_Network(), ascii::space_type>
 {
 	using Skipper = ascii::space_type;
-	NetworkGrammar()
-		: NetworkGrammar::base_type(_network)
-	{
-		auto drain = [](const auto& p1, auto& p2) {};
 
+	template <class Iter>
+	NetworkGrammar(Iter begin)
+		: NetworkGrammar::base_type(_network, "DBC_Network")
+	{
+		auto drain = [](const auto& a, const auto& b) {};
+
+		_network.name("Network");
 		_network %= 
 			   _version
 			>> _new_symbols
@@ -223,15 +253,23 @@ struct NetworkGrammar
 			>> _signal_extended_value_types
 			;
 
+		_unsigned_integer.name("uint");
 		_unsigned_integer %= qi::uint_;
+		_signed_integer.name("int");
 		_signed_integer %= qi::int_;
+		_double.name("double");
 		_double %= qi::double_;
+		_char_string.name("QuotedString");
 		_char_string %= qi::lexeme['"' >> *(('\\' >> qi::char_("\\\"")) | ~qi::char_('"')) >> '"'];
+		_C_identifier.name("Identifier");
 		_C_identifier %= qi::lexeme[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")];
+		_C_identifier_.name("Identifier");
 		_C_identifier_ %= qi::lexeme[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")];
 
-		_version %= qi::lit("VERSION") >> _char_string;
+		_version.name("Version");
+		_version %= qi::lit("VERSION") > _char_string;
 		
+		_new_symbol.name("NewSymbol");
 		_new_symbol %=
 			qi::lexeme[
 				  qi::string("SIGTYPE_VALTYPE_")
@@ -265,121 +303,247 @@ struct NetworkGrammar
 				| qi::string("BA_")
 				| qi::string("CM_")
 			];
-		_new_symbols %= qi::lit("NS_") >> ':' >> *_new_symbol;
 
-		_bit_timing %= qi::lit("BS_") >> ':' >> -_bit_timing_inner;
-		_bit_timing_inner %= _baudrate >> ':' >> _BTR1 >> ',' >> _BTR2;
+		_new_symbols.name("NS_");
+		_new_symbols %= qi::lit("NS_") > ':' > *_new_symbol;
+
+		_bit_timing.name("BitTiming");
+		_bit_timing %= qi::lit("BS_") > ':' > -_bit_timing_inner;
+		_bit_timing_inner %= _baudrate > ':' > _BTR1 > ',' > _BTR2;
+		_baudrate.name("Baudrate");
 		_baudrate %= _unsigned_integer;
+		_BTR1.name("BTR1");
 		_BTR1 %= _unsigned_integer;
+		_BTR2.name("BTR2");
 		_BTR2 %= _unsigned_integer;
 		
-		_nodes %= qi::lit("BU_") >> ':' >> qi::skip(ascii::blank)[*_node_ >> qi::eol];
+		_nodes.name("Nodes");
+		_nodes %= qi::lit("BU_") >> ':' > qi::skip(ascii::blank)[*_node_ > qi::eol];
+		_node_.name("Node");
 		_node_ %= _node_name_;
+		_node_name.name("NodeName");
 		_node_name %= _C_identifier;
+		_node_name.name("NodeName");
 		_node_name_ %= _C_identifier_;
 
+		_value_tables.name("ValueTables");
 		_value_tables %= *_value_table;
-		_value_table %= qi::lit("VAL_TABLE_") >> _value_table_name >> _value_encoding_descriptions >> ';';
+		_value_table.name("ValueTable");
+		_value_table %= qi::lit("VAL_TABLE_") > _value_table_name > _value_encoding_descriptions > ';';
+		_value_table_name.name("ValueTableName");
 		_value_table_name %= _C_identifier;
+		_value_encoding_descriptions.name("VAlueEncodingDescriptions");
 		_value_encoding_descriptions %= *_value_encoding_description;
-		_value_encoding_description %= _double >> _char_string;
+		_value_encoding_description.name("VAlueEncodingDescription");
+		_value_encoding_description %= _double > _char_string;
 
+		_messages.name("Messages");
 		_messages %= *_message;
-		_message %= qi::lit("BO_") >> _message_id >> _message_name >> ':' >> _message_size >> _transmitter >> _signals;
+		_message.name("Message");
+		_message %= qi::lit("BO_ ") > _message_id > _message_name > ':' > _message_size > _transmitter > _signals;
+		_message_id.name("MessageId");
 		_message_id %= _unsigned_integer;
+		_message_name.name("MessageName");
 		_message_name %= _C_identifier;
+		_message_size.name("MessageSize");
 		_message_size %= _unsigned_integer;
+		_transmitter.name("NodeName");
 		_transmitter %= _node_name;
 
+		_signals.name("Signals");
 		_signals %= *_signal;
-		_signal %= qi::lit("SG_") >> _signal_name >> _multiplexer_indicator >> ':' >> _start_bit >> '|'
-			>> _signal_size >> '@' >> _byte_order >> _value_type >> '('
-			>> _factor >> ',' >> _offset >> ')' >> '[' >> _minimum >> '|' >> _maximum >> ']' >> _unit >> _receivers;
+		_signal.name("Signal");
+		_signal %= qi::lit("SG_ ") > _signal_name > _multiplexer_indicator > ':' > _start_bit > '|'
+			> _signal_size > '@' >> _byte_order > _value_type >> '('
+			> _factor > ',' >> _offset >> ')' > '[' > _minimum >> '|' > _maximum >> ']' > _unit > _receivers;
+		_signal_name.name("SignalName");
 		_signal_name %= _C_identifier;
+		_multiplexer_indicator.name("SignalMultiplexerIndicator");
 		_multiplexer_indicator %= -_C_identifier;
+		_start_bit.name("SignalStartBit");
 		_start_bit %= _unsigned_integer;
+		_signal_size.name("SignalSize");
 		_signal_size %= _unsigned_integer;
+		_byte_order.name("ByteOrder");
 		_byte_order = qi::lexeme[qi::char_('0') | qi::char_('1')];
+		_value_type.name("ValueType");
 		_value_type = qi::lexeme[qi::char_('-') | qi::char_('+')];
+		_factor.name("Factor");
 		_factor %= _double;
+		_offset.name("Offset");
 		_offset %= _double;
+		_minimum.name("Minimum");
 		_minimum %= _double;
+		_maximum.name("Maximum");
 		_maximum %= _double;
+		_unit.name("Unit");
 		_unit %= _char_string;
-		_receivers %= qi::skip(ascii::blank)[*_receiver_ >> qi::eol];
+		_receivers.name("NodeNames");
+		_receivers %= qi::skip(ascii::blank)[*_receiver_ > qi::eol];
+		_receiver_.name("NodeName");
 		_receiver_ %= _node_name_;
 
+		_message_transmitters.name("MessageTransmitters");
 		_message_transmitters %= *_message_transmitter;
-		_message_transmitter %= qi::lit("BO_TX_BU_") >> _message_id >> ':' >> _transmitters >> ';';
+		_message_transmitter.name("MessageTransmitter");
+		_message_transmitter %= qi::lit("BO_TX_BU_") > _message_id > ':' > _transmitters > ';';
+		_transmitters.name("NodeNames");
 		_transmitters %= _transmitter % ',';
 
+		_environment_variables.name("EnvironmentVariables");
 		_environment_variables %= *_environment_variable;
-		_environment_variable %= qi::lit("EV_") >> _env_var_name >> ':' >> _env_var_type >> '[' >> _minimum >> '|' >> _maximum >> ']'
-			>> _unit >> _initial_value >> _ev_id >> _access_type >> _access_nodes >> ';';
+		_environment_variable.name("EnvironmentVariable");
+		_environment_variable %= qi::lit("EV_ ") > _env_var_name > ':' > _env_var_type > '[' > _minimum > '|' > _maximum > ']'
+			> _unit > _initial_value > _ev_id > _access_type > _access_nodes > ';';
+		_env_var_name.name("EnvVarName");
 		_env_var_name %= _C_identifier;
+		_env_var_type.name("EnvVarType");
 		_env_var_type %= _unsigned_integer;
+		_initial_value.name("InitialValue");
 		_initial_value %= _double;
+		_ev_id.name("EvId");
 		_ev_id %= _unsigned_integer;
+		_access_type.name("AccessType");
 		_access_type %= _C_identifier;
+		_access_nodes.name("NodeNames");
 		_access_nodes %= _node_name % ',';
 
+		_environment_variable_datas.name("EnvironmentVariableDatas");
 		_environment_variable_datas %= *_environment_variable_data;
-		_environment_variable_data %= qi::lit("ENVVAR_DATA_") >> _env_var_name >> ':' >> _data_size >> ';';
+		_environment_variable_data.name("EnvironmentVariableData");
+		_environment_variable_data %= qi::lit("ENVVAR_DATA_") > _env_var_name > ':' > _data_size > ';';
+		_data_size.name("DataSize");
 		_data_size %= _unsigned_integer;
 
+		_signal_types.name("SignalTypes");
 		_signal_types %= *_signal_type;
-		_signal_type %= qi::lit("SGTYPE_") >> _signal_type_name >> ':' >> _signal_size >> '@'
-			>> _byte_order >> _value_type >> '(' >> _factor >> ',' >> _offset >> ')' >> '['
-			>> _minimum >> '|' >> _maximum >> ']' >> _unit >> _default_value >> ',' >> _value_table_name >> ';';
+		_signal_type.name("SignalType");
+		_signal_type %= qi::lit("SGTYPE_") > _signal_type_name > ':' > _signal_size > '@'
+			> _byte_order > _value_type > '(' > _factor > ',' > _offset > ')' > '['
+			> _minimum > '|' >> _maximum > ']' > _unit > _default_value > ',' > _value_table_name > ';';
+		_signal_type_name.name("SignalTypeName");
 		_signal_type_name %= _C_identifier;
+		_default_value.name("DefaultValue");
 		_default_value %= _double;
 		
+		_comments.name("Comments");
 		_comments %= *_comment;
-		_comment %= qi::lit("CM_") >> (_comment_node | _comment_message | _comment_signal | _comment_env_var | _comment_network);
+		_comment.name("Comment");
+		_comment %= qi::lit("CM_ ") >> (_comment_node | _comment_message | _comment_signal | _comment_env_var | _comment_network);
+		_comment_network.name("CommentNetwork");
 		_comment_network %= _char_string >> ';';
-		_comment_node %= qi::lit("BU_") >> _node_name >> _char_string >> ';';
-		_comment_message %= qi::lit("BO_") >> _message_id >> _char_string >> ';';
-		_comment_signal %= qi::lit("SG_") >> _message_id >> _signal_name >> _char_string >> ';';
-		_comment_env_var %= qi::lit("EV_") >> _env_var_name >> _char_string >> ';';
+		_comment_node.name("CommentNode");
+		_comment_node %= qi::lit("BU_") > _node_name > _char_string > ';';
+		_comment_message.name("CommentMessage");
+		_comment_message %= qi::lit("BO_") > _message_id > _char_string > ';';
+		_comment_signal.name("CommentSignal");
+		_comment_signal %= qi::lit("SG_") > _message_id > _signal_name > _char_string > ';';
+		_comment_env_var.name("CommentEnvVar");
+		_comment_env_var %= qi::lit("EV_") > _env_var_name > _char_string > ';';
 
+		_attribute_definitions.name("AttributeDefinitions");
 		_attribute_definitions %= *_attribute_definition;
-		_attribute_definition %= qi::lit("BA_DEF_") >> _object_type >> _attribute_name >> _attribute_value_type >> ';';
+		_attribute_definition.name("AttributeDefinition");
+		_attribute_definition %= qi::lit("BA_DEF_ ") > _object_type > _attribute_name > _attribute_value_type > ';';
+		_object_type.name("ObjectType");
 		_object_type %= -(qi::string("BU_") | qi::string("BO_") | qi::string("SG_") | qi::string("EV_"));
+		_attribute_name.name("AttributeName");
 		_attribute_name %= _char_string;
+		_attribute_value_type.name("AttributeValueType");
 		_attribute_value_type %=
 			  _attribute_value_type_int | _attribute_value_type_hex
 			| _attribute_value_type_float | _attribute_value_type_string
 			| _attribute_value_type_enum;
-		_attribute_value_type_int %= qi::lit("INT") >> _signed_integer >> _signed_integer;
-		_attribute_value_type_hex %= qi::lit("HEX") >> _signed_integer >> _signed_integer;
-		_attribute_value_type_float %= qi::lit("FLOAT") >> _double >> _double;
+		_attribute_value_type_int.name("AttributeValueTypeInt");
+		_attribute_value_type_int %= qi::lit("INT") > _signed_integer > _signed_integer;
+		_attribute_value_type_hex.name("AttributeValueTypeHex");
+		_attribute_value_type_hex %= qi::lit("HEX") > _signed_integer > _signed_integer;
+		_attribute_value_type_float.name("AttributeValueTypeFloat");
+		_attribute_value_type_float %= qi::lit("FLOAT") > _double > _double;
+		_attribute_value_type_string.name("AttributeValueTypeString");
 		_attribute_value_type_string = qi::lit("STRING")[drain];
-		_attribute_value_type_enum %= qi::lit("ENUM") >> (_char_string % ',');
+		_attribute_value_type_enum.name("AttributeValueTypeEnum");
+		_attribute_value_type_enum %= qi::lit("ENUM") > (_char_string % ',');
 		
+		_attribute_defaults.name("AttributeDefaults");
 		_attribute_defaults %= *_attribute_default;
-		_attribute_default %= (qi::lit("BA_DEF_DEF_REL_") | qi::lit("BA_DEF_DEF_"))
-			>> _attribute_name >> _attribute_value >> ';';
+		_attribute_default.name("AttributeDefault");
+		_attribute_default %= (qi::lexeme[qi::lit("BA_DEF_DEF_REL_ ") | qi::lit("BA_DEF_DEF_ ")])
+			> _attribute_name > _attribute_value > ';';
+		_attribute_value.name("AttributeValue");
 		_attribute_value %= _double | _signed_integer | _char_string;
 
+		_attribute_values.name("AttributeValues");
 		_attribute_values %= *_attribute_value_ent;
-		_attribute_value_ent %= qi::lit("BA_")
+		_attribute_value_ent.name("AttributeValueEnt");
+		_attribute_value_ent %= qi::lit("BA_ ")
 			>> (_attribute_value_ent_network | _attribute_value_ent_node
 			  | _attribute_value_ent_message | _attribute_value_ent_signal
-			  | _attribute_value_ent_env_var) >> ';';
+			  | _attribute_value_ent_env_var) > ';';
+		_attribute_value_ent_network.name("AttributeValueEntNetwork");
 		_attribute_value_ent_network %= _attribute_name >> _attribute_value;
-		_attribute_value_ent_node %= _attribute_name >> qi::lit("BU_") >> _node_name >> _attribute_value;
-		_attribute_value_ent_message %= _attribute_name >> qi::lit("BO_") >> _message_id >> _attribute_value;
-		_attribute_value_ent_signal %= _attribute_name >> qi::lit("SG_") >> _message_id >> _signal_name >> _attribute_value;
-		_attribute_value_ent_env_var %= _attribute_name >> qi::lit("EV_") >> _env_var_name >> _attribute_value;
+		_attribute_value_ent_node.name("AttributeValueEntNode");
+		_attribute_value_ent_node %= _attribute_name >> qi::lit("BU_") > _node_name > _attribute_value;
+		_attribute_value_ent_message.name("AttributeValueEntMessage");
+		_attribute_value_ent_message %= _attribute_name >> qi::lit("BO_") > _message_id > _attribute_value;
+		_attribute_value_ent_signal.name("AttributeValueEntSignal");
+		_attribute_value_ent_signal %= _attribute_name >> qi::lit("SG_") > _message_id > _signal_name > _attribute_value;
+		_attribute_value_ent_env_var.name("AttributeValueEntEnvVar");
+		_attribute_value_ent_env_var %= _attribute_name >> qi::lit("EV_") > _env_var_name > _attribute_value;
 
+		_value_descriptions.name("ValueDescriptions");
 		_value_descriptions %= *_value_description_sig_env_var;
+		_value_description_sig_env_var.name("ValueDescriptionsSigEnvVar");
 		_value_description_sig_env_var %= _value_description_signal | _value_description_env_var;
-		_value_description_signal %= qi::lit("VAL_") >> _message_id >> _signal_name >> _value_encoding_descriptions >> ';';
-		_value_description_env_var %= qi::lit("VAL_") >> _env_var_name >> _value_encoding_descriptions >> ';';
+		_value_description_signal.name("ValueDescriptionsSignal");
+		_value_description_signal %= qi::lit("VAL_") >> _message_id > _signal_name > _value_encoding_descriptions > ';';
+		_value_description_env_var.name("ValueDescriptionsEnvVar");
+		_value_description_env_var %= qi::lit("VAL_") >> _env_var_name > _value_encoding_descriptions > ';';
 
+		_signal_extended_value_types.name("SignalExtendedValueTypes");
 		_signal_extended_value_types %= *_signal_extended_value_type;
-		_signal_extended_value_type %= qi::lit("SIG_VALTYPE_") >> _message_id >> _signal_name >> ':' >>  _unsigned_integer >> ';';
+		_signal_extended_value_type.name("SignalExtendedValueType");
+		_signal_extended_value_type %= qi::lit("SIG_VALTYPE_") > _message_id > _signal_name > ':' >  _unsigned_integer > ';';
+		
+		auto error_handler =
+			[begin](const auto& args, const auto& context, const auto& error)
+			{
+				const auto& first = fu::at_c<0>(args);
+				const auto& last = fu::at_c<1>(args);
+				const auto& err = fu::at_c<2>(args);
+				const auto& what = fu::at_c<3>(args);
+				auto[line, column] = getErrPos(begin, err);
+				std::cout << line << ":" << column << " Error! Expecting " << what << std::endl;
+			};
+        qi::on_error<qi::fail>(_network, error_handler);
+		auto accept_handler =
+			[begin](const auto& args, const auto& context, const auto& error)
+			{
+				const auto& first = fu::at_c<0>(args);
+				const auto& last = fu::at_c<1>(args);
+				const auto& err = fu::at_c<2>(args);
+				const auto& what = fu::at_c<3>(args);
+				std::size_t line = 1;
+				std::size_t column = 1;
+				auto iter = begin;
+				while (iter != err)
+				{
+					if (*iter == '\n')
+					{
+						line++;
+						column = 1;
+					}
+					else
+					{
+						column++;
+					}
+					iter++;
+				}
+				std::cout << line << ":" << column << " Error! Expecting " << what << std::endl;
+			};
+		qi::on_error<qi::accept>(_network, accept_handler);
 	}
+
 
 	qi::rule<Iter, G_Network(), Skipper> _network;
 	
@@ -495,20 +659,20 @@ struct NetworkGrammar
 	qi::rule<Iter, std::vector<G_SignalExtendedValueType>(), Skipper> _signal_extended_value_types;
 	qi::rule<Iter, G_SignalExtendedValueType(), Skipper> _signal_extended_value_type;
 };
-
 DBCPPP_API bool operator>>(std::istream& is, Network& net)
 {
 	bool result = false;
 	std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 	auto begin{str.begin()}, end{str.end()};
-	NetworkGrammar<std::string::iterator> g;
+	NetworkGrammar<std::string::iterator> g(begin);
 	G_Network gnet;
 	result = phrase_parse(begin, end, g, ascii::space, gnet);
+	result &= begin == end;
 	if (begin != end)
 	{
-		std::cout << std::string(begin, end) << std::endl;
+		auto[line, column] = getErrPos(str.begin(), begin);
+		std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
 	}
-	result &= begin == end;
 	if (result)
 	{
 		ConvertGrammarStructureToCppStructure(gnet, static_cast<NetworkImpl&>(net));
