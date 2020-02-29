@@ -3,9 +3,8 @@ A DBC file parser written in C++ and based on `boost.spirit`. This library is de
 # Features
 * very fast decoding
 * verbose parser output in error case
-* work on DBC through C++ interface exported from shared library
-* deserialization of DBC file
-* serialization of DBC file
+* DBC is editable through C++ interface exported from the library
+* de-/serialization of DBC file
 * decode functionality for ISO CAN frames (8 data bytes)
 * decode functionality for FD CAN frames (64 data bytes)
 ## DBC data types
