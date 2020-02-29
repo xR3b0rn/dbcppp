@@ -7,6 +7,28 @@ A DBC file parser written in C++ and based on `boost.spirit`. This library is de
 * serialization of DBC file
 * decode functionality for ISO CAN frames (8 data bytes)
 * decode functionality for FD CAN frames (64 data bytes)
+## DBC data types
+### Supported
+* version
+* new_symbols
+* bit_timing
+* nodes
+* value_tables
+* messages
+* message_transmitters
+* environment_variables
+* environment_variables_data
+* signal_types
+* comments
+* attribute_definitions
+* attribute_defaults
+* attribute_values
+* value_descriptions
+* signal_extended_value_type_list
+### Not supported yet
+* sigtype_attr_list
+* signal_type_refs
+* signal_groups
 # Build and install
 ```
 mkdir build
@@ -46,28 +68,6 @@ int main()
 }
 
 ```
-## DBC data types
-### Supported
-* version
-* new_symbols
-* bit_timing
-* nodes
-* value_tables
-* messages
-* message_transmitters
-* environment_variables
-* environment_variables_data
-* signal_types
-* comments
-* attribute_definitions
-* attribute_defaults
-* attribute_values
-* value_descriptions
-* signal_extended_value_type_list
-### Not supported yet
-* sigtype_attr_list
-* signal_type_refs
-* signal_groups
 # Decode-function
 The signals decode function is using prestored masks and fixed offsets to speed up calculation, therefore the decoding-function should be almost as fast as a code generated decode function would be. The assembly of the `decode8` on its critical path (signed and byte swap must happen) looks similar to this:
 ```
