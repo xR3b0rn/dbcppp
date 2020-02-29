@@ -269,6 +269,9 @@ struct NetworkGrammar
 
 		_bit_timing %= qi::lit("BS_") >> ':' >> -_bit_timing_inner;
 		_bit_timing_inner %= _baudrate >> ':' >> _BTR1 >> ',' >> _BTR2;
+		_baudrate %= _unsigned_integer;
+		_BTR1 %= _unsigned_integer;
+		_BTR2 %= _unsigned_integer;
 		
 		_nodes %= qi::lit("BU_") >> ':' >> qi::skip(ascii::blank)[*_node_ >> qi::eol];
 		_node_ %= _node_name_;
@@ -276,10 +279,10 @@ struct NetworkGrammar
 		_node_name_ %= _C_identifier_;
 
 		_value_tables %= *_value_table;
-		_value_table %= qi::lit("VAL_TABLE_") >> _value_table_name >> _value_encoding_descriptions;
+		_value_table %= qi::lit("VAL_TABLE_") >> _value_table_name >> _value_encoding_descriptions >> ';';
 		_value_table_name %= _C_identifier;
 		_value_encoding_descriptions %= *_value_encoding_description;
-		_value_encoding_description %= _unsigned_integer >> _char_string;
+		_value_encoding_description %= _double >> _char_string;
 
 		_messages %= *_message;
 		_message %= qi::lit("BO_") >> _message_id >> _message_name >> ':' >> _message_size >> _transmitter >> _signals;
@@ -356,7 +359,7 @@ struct NetworkGrammar
 		_attribute_defaults %= *_attribute_default;
 		_attribute_default %= (qi::lit("BA_DEF_DEF_REL_") | qi::lit("BA_DEF_DEF_"))
 			>> _attribute_name >> _attribute_value >> ';';
-		_attribute_value %= _signed_integer | _double | _char_string;
+		_attribute_value %= _double | _signed_integer | _char_string;
 
 		_attribute_values %= *_attribute_value_ent;
 		_attribute_value_ent %= qi::lit("BA_")
@@ -405,8 +408,8 @@ struct NetworkGrammar
 	qi::rule<Iter, std::vector<G_ValueTable>(), Skipper> _value_tables;
 	qi::rule<Iter, G_ValueTable(), Skipper> _value_table;
 	qi::rule<Iter, std::string(), Skipper> _value_table_name;
-	qi::rule<Iter, std::map<uint64_t, std::string>(), Skipper> _value_encoding_descriptions;
-	qi::rule<Iter, std::pair<uint64_t, std::string>(), Skipper> _value_encoding_description;
+	qi::rule<Iter, std::map<double, std::string>(), Skipper> _value_encoding_descriptions;
+	qi::rule<Iter, std::pair<double, std::string>(), Skipper> _value_encoding_description;
 
 	qi::rule<Iter, std::vector<G_Message>(), Skipper> _messages;
 	qi::rule<Iter, G_Message(), Skipper> _message;

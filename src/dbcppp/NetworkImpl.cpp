@@ -100,25 +100,6 @@ std::vector<std::pair<std::string, const EnvironmentVariable*>> NetworkImpl::get
 	}
 	return result;
 }
-const SignalType* NetworkImpl::getSignalTypeByName(const std::string& name) const
-{
-	const SignalType* result = nullptr;
-	auto iter = _signal_types.find(name);
-	if (iter != _signal_types.end())
-	{
-		result = &iter->second;
-	}
-	return result;
-}
-std::vector<std::pair<std::string, const SignalType*>> NetworkImpl::getSignalTypes() const
-{
-	std::vector<std::pair<std::string, const SignalType*>> result;
-	for (auto& st : _signal_types)
-	{
-		result.emplace_back(st.first, &st.second);
-	}
-	return result;
-}
 const AttributeDefinition* NetworkImpl::getAttributeDefinitionByName(const std::string& name) const
 {
 	const AttributeDefinition* result = nullptr;
@@ -236,10 +217,13 @@ void Network::serializeToStream(std::ostream& os) const
 		{
 			os << "\n";
 			os << "BO_TX_BU_ " << m.second->getId() << " :";
-			for (const auto& t : transmitters)
+			auto iter = transmitters.begin();
+			os << " " << **iter;
+			for (iter++; iter != transmitters.end(); iter++)
 			{
-				os << " " << t;
+				os << ", " << **iter;
 			}
+			os << ";";
 		}
 	}
 	for (const auto& ev : getEnvironmentVariables())
@@ -255,17 +239,20 @@ void Network::serializeToStream(std::ostream& os) const
 			os << "ENVVAR_DATA_ " << ev.second->getName() << " : " << ev.second->getDataSize() << ";";
 		}
 	}
-	for (const auto& st : getSignalTypes())
+	for (const auto& vt : getValueTables())
 	{
-		os << "\n";
-		st.second->serializeToStream(os);
+		if (vt.second->getSignalType())
+		{
+			os << "\n";
+			vt.second->getSignalType()->serializeToStream(os);
+		}
 	}
 	// serialize comments
 	// Network comment
 	if (getComment() != "")
 	{
 		os << "\n";
-		os << "CM_ " << getComment() << ";";
+		os << "CM_ \"" << getComment() << "\";";
 	}
 	// Node comments
 	for (const auto& n : getNodes())
@@ -375,6 +362,20 @@ void Network::serializeToStream(std::ostream& os) const
 			}
 		}
 	}
+	for (const auto& ev : getEnvironmentVariables())
+	{
+		auto vds = ev.second->getValueDescriptions();
+		if (vds.size())
+		{
+			os << "\n";
+			os << "VAL_ " << ev.second->getName();
+			for (const auto& vd : vds)
+			{
+				os << " " << vd.first << " \"" << *vd.second << "\"";
+			}
+			os << ";";
+		}
+	}
 	for (const auto& m : getMessages())
 	{
 		for (const auto& s : m.second->getSignals())
@@ -389,7 +390,7 @@ void Network::serializeToStream(std::ostream& os) const
 				case Signal::ExtendedValueType::Double: type = 2; break;
 				}
 				os << "\n";
-				os << "SIG_VALTYPE_ " << m.second->getId() << " " << s.second->getName() << type << ";";
+				os << "SIG_VALTYPE_ " << m.second->getId() << " " << s.second->getName() << " : " << type << ";";
 			}
 		}
 	}

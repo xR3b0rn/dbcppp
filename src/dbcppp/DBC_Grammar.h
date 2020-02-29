@@ -32,7 +32,7 @@ namespace dbcppp
 	struct G_ValueTable
 	{
 		std::string name;
-		std::map<uint64_t, std::string> value_encoding_descriptions;
+		std::map<double, std::string> value_encoding_descriptions;
 	};
 	struct G_Signal
 	{
@@ -200,12 +200,12 @@ namespace dbcppp
 	{
 		uint64_t message_id;
 		std::string signal_name;
-		std::map<uint64_t, std::string> value_description;
+		std::map<double, std::string> value_description;
 	};
 	struct G_ValueDescriptionEnvVar
 	{
 		std::string env_var_name;
-		std::map<uint64_t, std::string> value_description;
+		std::map<double, std::string> value_description;
 	};
 	struct G_ValueDescription
 	{

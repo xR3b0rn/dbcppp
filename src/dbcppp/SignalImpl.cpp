@@ -197,7 +197,7 @@ std::vector<const std::string*> SignalImpl::getReceivers() const
 	}
 	return result;
 }
-const std::string* SignalImpl::getValueDescriptionById(uint64_t id) const
+const std::string* SignalImpl::getValueDescriptionById(double id) const
 {
 	const std::string* result = nullptr;
 	auto iter = _value_descriptions.find(id);
@@ -207,9 +207,9 @@ const std::string* SignalImpl::getValueDescriptionById(uint64_t id) const
 	}
 	return result;
 }
-std::vector<std::pair<uint64_t, const std::string*>> SignalImpl::getValueDescriptions() const
+std::vector<std::pair<double, const std::string*>> SignalImpl::getValueDescriptions() const
 {
-	std::vector<std::pair<uint64_t, const std::string*>> result;
+	std::vector<std::pair<double, const std::string*>> result;
 	for (auto& vd : _value_descriptions)
 	{
 		result.emplace_back(vd.first, &vd.second);

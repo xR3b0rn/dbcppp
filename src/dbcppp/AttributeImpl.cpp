@@ -178,7 +178,7 @@ void Attribute::serializeToStream(std::ostream& os, const Network& net) const
 				}
 				return std::string("");
 			};
-		os << " BO_ " << find_environment_variable_name();
+		os << " EV_ " << find_environment_variable_name();
 		boost::apply_visitor(Visitor(os), getValue());
 		break;
 	}

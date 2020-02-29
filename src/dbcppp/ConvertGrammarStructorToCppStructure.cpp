@@ -19,7 +19,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 	if (gnet.bit_timing)
 	{
 		net._bit_timing._baudrate = gnet.bit_timing->baudrate;
-		net._bit_timing._BTR1 = gnet.bit_timing->BTR2;
+		net._bit_timing._BTR1 = gnet.bit_timing->BTR1;
 		net._bit_timing._BTR2 = gnet.bit_timing->BTR2;
 	}
 	for (auto& n : gnet.nodes)
@@ -93,6 +93,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 	for (auto& ev : gnet.environment_variables)
 	{
 		EnvironmentVariableImpl& nev = net._environment_variables[ev.name];
+		nev._name = ev.name;
 		for (auto& an : ev.access_nodes)
 		{
 			nev._access_nodes.insert(an.name);
@@ -135,7 +136,8 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 	}
 	for (auto& st : gnet.signal_types)
 	{
-		SignalTypeImpl& nst = net._signal_types[st.name];
+		SignalTypeImpl nst;
+		nst._value_table = st.value_table_name;
 		nst._byte_order = st.byte_order == '0' ? Signal::ByteOrder::BigEndian : Signal::ByteOrder::LittleEndian;
 		nst._default_value = st.default_value;
 		nst._factor = st.factor;
@@ -146,6 +148,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 		nst._signal_size = st.size;
 		nst._unit = st.unit;
 		nst._value_type = st.value_type == '+' ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
+		net._value_tables[st.value_table_name]._signal_type = std::move(nst);
 	}
 	struct VisitorComment
 	{

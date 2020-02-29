@@ -8,16 +8,24 @@ const std::string& ValueTableImpl::getName() const
 {
 	return _name;
 }
-std::vector<std::pair<uint64_t, const std::string*>> ValueTableImpl::getValueDescriptions() const
+boost::optional<const SignalType&> ValueTableImpl::getSignalType() const
 {
-	std::vector<std::pair<uint64_t, const std::string*>> result;
+	if (_signal_type)
+	{
+		return *_signal_type;
+	}
+	return boost::none;
+}
+std::vector<std::pair<double, const std::string*>> ValueTableImpl::getValueDescriptions() const
+{
+	std::vector<std::pair<double, const std::string*>> result;
 	for (const auto& vd : _value_descriptions)
 	{
 		result.emplace_back(vd.first, &vd.second);
 	}
 	return result;
 }
-const std::string* ValueTableImpl::getValueDescriptionById(uint64_t id) const
+const std::string* ValueTableImpl::getValueDescriptionById(double id) const
 {
 	const std::string* result = nullptr;
 	auto iter = _value_descriptions.find(id);
@@ -30,10 +38,14 @@ const std::string* ValueTableImpl::getValueDescriptionById(uint64_t id) const
 
 void ValueTable::serializeToStream(std::ostream& os) const
 {
-	os << "VAL_TABLE_ " << getName();
-	for (const auto& ved : getValueDescriptions())
+	auto value_descriptions = getValueDescriptions();
+	if (value_descriptions.size())
 	{
-		os << " " << ved.first << " \"" << ved.second << "\"";
+		os << "VAL_TABLE_ " << getName();
+		for (const auto& ved : getValueDescriptions())
+		{
+			os << " " << ved.first << " \"" << *ved.second << "\"";
+		}
+		os << ";";
 	}
-	os << ";";
 }

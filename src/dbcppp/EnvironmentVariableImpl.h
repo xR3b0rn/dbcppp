@@ -21,8 +21,8 @@ namespace dbcppp
 		virtual AccessType getAccessType() const override;
 		virtual bool hasAccessNode(const std::string& name) const override;
 		virtual std::vector<const std::string*> getAccessNodes() const override;
-		virtual const std::string* getValueDescriptionById(uint64_t id) const override;
-		virtual std::vector<std::pair<uint64_t, const std::string*>> getValueDescriptions() const override;
+		virtual const std::string* getValueDescriptionById(double id) const override;
+		virtual std::vector<std::pair<double, const std::string*>> getValueDescriptions() const override;
 		virtual uint64_t getDataSize() const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
@@ -37,7 +37,7 @@ namespace dbcppp
 		uint64_t _ev_id;
 		AccessType _access_type;
 		std::set<std::string> _access_nodes;
-		std::map<uint64_t, std::string> _value_descriptions;
+		std::map<double, std::string> _value_descriptions;
 		uint64_t _data_size;
 		std::map<std::string, AttributeImpl> _attribute_values;
 		std::string _comment;

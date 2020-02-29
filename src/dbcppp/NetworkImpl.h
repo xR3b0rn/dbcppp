@@ -28,8 +28,6 @@ namespace dbcppp
 		virtual std::vector<std::pair<uint64_t, const Message*>> getMessages() const override;
 		virtual const EnvironmentVariable* getEnvironmentVariableByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const EnvironmentVariable*>> getEnvironmentVariables() const override;
-		virtual const SignalType* getSignalTypeByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const SignalType*>> getSignalTypes() const override;
 		virtual const AttributeDefinition* getAttributeDefinitionByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const AttributeDefinition*>> getAttributeDefinitions() const override;
 		virtual const Attribute* getAttributeDefaultByName(const std::string& name) const override;
@@ -47,7 +45,6 @@ namespace dbcppp
 		std::map<std::string, ValueTableImpl> _value_tables;
 		std::unordered_map<uint64_t, MessageImpl> _messages;
 		std::map<std::string, EnvironmentVariableImpl> _environment_variables;
-		std::map<std::string, SignalTypeImpl> _signal_types;
 		std::map<std::string, AttributeDefinitionImpl> _attribute_definitions;
 		std::map<std::string, AttributeImpl> _attribute_defaults;
 		std::map<std::string, AttributeImpl> _attribute_values;

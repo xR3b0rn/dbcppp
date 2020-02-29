@@ -48,7 +48,7 @@ std::vector<const std::string*> EnvironmentVariableImpl::getAccessNodes() const
 	}
 	return result;
 }
-const std::string* EnvironmentVariableImpl::getValueDescriptionById(uint64_t id) const
+const std::string* EnvironmentVariableImpl::getValueDescriptionById(double id) const
 {
 	const std::string* result = nullptr;
 	auto iter = _value_descriptions.find(id);
@@ -58,9 +58,9 @@ const std::string* EnvironmentVariableImpl::getValueDescriptionById(uint64_t id)
 	}
 	return result;
 }
-std::vector<std::pair<uint64_t, const std::string*>> EnvironmentVariableImpl::getValueDescriptions() const
+std::vector<std::pair<double, const std::string*>> EnvironmentVariableImpl::getValueDescriptions() const
 {
-	std::vector<std::pair<uint64_t, const std::string*>> result;
+	std::vector<std::pair<double, const std::string*>> result;
 	for (auto& vd : _value_descriptions)
 	{
 		result.emplace_back(vd.first, &vd.second);
@@ -103,6 +103,7 @@ void EnvironmentVariable::serializeToStream(std::ostream& os) const
 	case EnvironmentVariable::VarType::Integer: os << "0"; break;
 	case EnvironmentVariable::VarType::Float: os << "1"; break;
 	case EnvironmentVariable::VarType::String: os << "2"; break;
+	case EnvironmentVariable::VarType::Data: os << "0"; break;
 	}
 	os << " [" << getMinimum() << "|" << getMaximum() << "]" << " \"" << getUnit() << "\" "
 		<< getInitialValue() << " " << getEvId() << " ";
@@ -113,9 +114,15 @@ void EnvironmentVariable::serializeToStream(std::ostream& os) const
 	case EnvironmentVariable::AccessType::Write: os << "DUMMY_NODE_VECTOR2"; break;
 	case EnvironmentVariable::AccessType::ReadWrite: os << "DUMMY_NODE_VECTOR3"; break;
 	}
-	for (const auto& n : getAccessNodes())
+	auto access_nodes = getAccessNodes();
+	if (access_nodes.size())
 	{
-		os << " " << *n;
+		auto iter = access_nodes.begin();
+		os << " " << **iter;
+		for (iter++; iter != access_nodes.end(); iter++)
+		{
+			os << ", " << **iter;
+		}
 	}
 	os << ";";
 }

@@ -10,6 +10,10 @@ file(GLOB header
 file(GLOB src
     "*.cpp"
 )
+configure_file (
+    "${CMAKE_CURRENT_SOURCE_DIR}/Config.h.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Config.h"
+)
 
 add_executable(${PROJECT_NAME}_Test ${header} ${src})
 set_property(TARGET ${PROJECT_NAME}_Test PROPERTY CXX_STANDARD 17)

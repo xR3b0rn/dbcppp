@@ -21,6 +21,6 @@ void BitTiming::serializeToStream(std::ostream& os) const
 	os << "BS_:";
 	if (getBaudrate() != 0 && getBTR1() != 0 && getBTR2() != 0)
 	{
-		os << " " << getBaudrate() << " : " << getBTR1() << " , " << getBTR2();
+		os << " " << getBaudrate() << " : " << getBTR1() << ", " << getBTR2();
 	}
 }

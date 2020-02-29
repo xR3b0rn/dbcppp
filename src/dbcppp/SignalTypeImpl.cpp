@@ -58,10 +58,12 @@ void SignalType::serializeToStream(std::ostream& os) const
 	}
 	switch (getValueType())
 	{
-	case Signal::ValueType::Unsigned: os << "- "; break;
-	case Signal::ValueType::Signed: os << "+ "; break;
+	case Signal::ValueType::Unsigned: os << "+ "; break;
+	case Signal::ValueType::Signed: os << "- "; break;
 	}
 	os << "(" << getFactor() << "," << getOffset() << ") ";
 	os << "[" << getMinimum() << "|" << getMaximum() << "] ";
-	os << "\"" << getUnit() << "\" " << getDefaultValue() << ", " << getValueTable() << ";";
+	os << "\"" << getUnit() << "\" " << getDefaultValue();
+	os << ", " << getValueTable();
+	os << ";";
 }

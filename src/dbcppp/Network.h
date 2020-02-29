@@ -47,8 +47,6 @@ namespace dbcppp
 		virtual std::vector<std::pair<uint64_t, const Message*>> getMessages() const = 0;
 		virtual const EnvironmentVariable* getEnvironmentVariableByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const EnvironmentVariable*>> getEnvironmentVariables() const = 0;
-		virtual const SignalType* getSignalTypeByName(const std::string& name) const = 0;
-		virtual std::vector<std::pair<std::string, const SignalType*>> getSignalTypes() const = 0;
 		virtual const AttributeDefinition* getAttributeDefinitionByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const AttributeDefinition*>> getAttributeDefinitions() const = 0;
 		virtual const Attribute* getAttributeDefaultByName(const std::string& name) const = 0;

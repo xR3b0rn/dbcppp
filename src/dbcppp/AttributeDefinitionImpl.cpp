@@ -49,7 +49,7 @@ void AttributeDefinition::serializeToStream(std::ostream& os) const
 				_os << " \"" << *iter << "\"";
 				for (iter++; iter != values.end(); iter++)
 				{
-					_os << ",\"" << *iter << "\"";
+					_os << ", \"" << *iter << "\"";
 				}
 			}
 		}

@@ -29,8 +29,8 @@ namespace dbcppp
 		virtual std::string getUnit() const override;
 		virtual bool hasReceiver(const std::string& name) const override;
 		virtual std::vector<const std::string*> getReceivers() const override;
-		virtual const std::string* getValueDescriptionById(uint64_t id) const override;
-		virtual std::vector<std::pair<uint64_t, const std::string*>> getValueDescriptions() const override;
+		virtual const std::string* getValueDescriptionById(double id) const override;
+		virtual std::vector<std::pair<double, const std::string*>> getValueDescriptions() const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
 		virtual const std::string& getComment() const override;
@@ -54,7 +54,7 @@ namespace dbcppp
 		std::string _unit;
 		std::set<std::string> _receivers;
 		std::map<std::string, AttributeImpl> _attribute_values;
-		std::map<uint64_t, std::string> _value_descriptions;
+		std::map<double, std::string> _value_descriptions;
 		std::string _comment;
 		boost::optional<Signal::ExtendedValueType> _extended_value_type;
 		// for performance
