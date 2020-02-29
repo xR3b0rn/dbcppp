@@ -1,2 +1,2 @@
 
-constexpr char* TEST_DBC = "@CMAKE_CURRENT_SOURCE_DIR@/Test.dbc";
+#define TEST_DBC "@CMAKE_CURRENT_SOURCE_DIR@/Test.dbc"

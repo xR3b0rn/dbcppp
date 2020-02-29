@@ -194,13 +194,10 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
         }
         auto dec_easy = easy_decode(*sig, data);
         auto dec_sig = sig->decode8(&data[0]);
-        
-        if (dec_easy != dec_sig)
-        {
-            std::stringstream ss;
-            sig->serializeToStream(ss);
-            BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
-        }
+       
+        std::stringstream ss;
+        sig->serializeToStream(ss);
+        BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
     }
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding64)
@@ -249,11 +246,8 @@ BOOST_AUTO_TEST_CASE(Test_Decoding64)
         auto dec_easy = easy_decode(*sig, data);
         auto dec_sig = sig->decode64(&data[0]);
         
-        if (dec_easy != dec_sig)
-        {
-            std::stringstream ss;
-            sig->serializeToStream(ss);
-            BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
-        }
+        std::stringstream ss;
+        sig->serializeToStream(ss);
+        BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
     }
 }

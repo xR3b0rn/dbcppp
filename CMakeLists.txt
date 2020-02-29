@@ -9,7 +9,7 @@ set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
 
-find_package(Boost REQUIRED)
+find_package(Boost MODULE COMPONENTS log  REQUIRED)
 
 if(Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
