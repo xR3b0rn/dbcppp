@@ -226,7 +226,6 @@ struct NetworkGrammar
 {
 	using Skipper = ascii::space_type;
 
-	template <class Iter>
 	NetworkGrammar(Iter begin)
 		: NetworkGrammar::base_type(_network, "DBC_Network")
 	{
