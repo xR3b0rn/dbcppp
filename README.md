@@ -17,26 +17,24 @@ int main()
 {
     std::ifstream dbc_file{"your_dbc.dbc"};
     std::unique_ptr<const dbcppp::Network> net = dbcppp::Network::fromDBC(dbc_file);
-    if (!(dbc_file >> *net))
+    if (net)
     {
-        std::cout << "DBC parsing failed!" << std::endl;
-        return 1;
-    }
-    can_frame frame;
-    canfd_frame fd_frame;
-    while (1)
-    {
-        receive_can_frame_from_somewhere(&frame);
-        receive_canfd_frame_from_somewhere(&fd_frame);
-        auto& msg = net->getMessageById(frame.id);
-        std::cout << "Received message: " << msg->getName() << std::endl;
-        for (auto* signal : msg->getSignals())
+        can_frame frame;
+        canfd_frame fd_frame;
+        while (1)
         {
-            // either this for standard CAN frames
-            double raw = signal->decode8(frame.data);
-            // or this for FD CAN frames
-            // double raw = signal->decode64(fd_frame.data);
-            std::cout << "\t" << signal->name << "=" << signal->raw_to_phys(raw) << std::endl;
+            receive_can_frame_from_somewhere(&frame);
+            receive_canfd_frame_from_somewhere(&fd_frame);
+            auto& msg = net->getMessageById(frame.id);
+            std::cout << "Received message: " << msg->getName() << std::endl;
+            for (auto* signal : msg->getSignals())
+            {
+                // either this for standard CAN frames
+                double raw = signal->decode8(frame.data);
+                // or this for FD CAN frames
+                // double raw = signal->decode64(fd_frame.data);
+                std::cout << "\t" << signal->name << "=" << signal->raw_to_phys(raw) << std::endl;
+            }
         }
     }
 }
