@@ -160,7 +160,7 @@ Signal::ByteOrder SignalImpl::getByteOrder() const
 {
 	return _byte_order;
 }
-Signal::ValueType SignalImpl::getValueType()
+Signal::ValueType SignalImpl::getValueType() const
 {
 	return _value_type;
 }
@@ -239,7 +239,39 @@ const std::string& SignalImpl::getComment() const
 {
 	return _comment;
 }
+boost::optional<Signal::ExtendedValueType> SignalImpl::getExtendedValueType() const
+{
+	return _extended_value_type;
+}
 Signal::ErrorCode SignalImpl::getError() const
 {
 	return _error;
+}
+
+void Signal::serializeToStream(std::ostream& os, const Network& net) const
+{
+	os << "SG_ " << getName() << " ";
+	switch (getMultiplexerIndicator())
+	{
+	case Signal::Multiplexer::MuxSwitch: os << "M "; break;
+	case Signal::Multiplexer::MuxValue: os << "m" << getMultiplexerSwitchValue() << " "; break;
+	}
+	os << ": " << getStartBit() << "|" << getBitSize() << "@";
+	switch (getByteOrder())
+	{
+	case Signal::ByteOrder::BigEndian: os << "0"; break;
+	case Signal::ByteOrder::LittleEndian: os << "1"; break;
+	}
+	switch (getValueType())
+	{
+	case Signal::ValueType::Unsigned: os << "+ "; break;
+	case Signal::ValueType::Signed: os << "- "; break;
+	}
+	os << "(" << getFactor() << "," << getOffset() << ") ";
+	os << "[" << getMinimum() << "|" << getMaximum() << "] ";
+	os << "\"" << getUnit() << "\"";
+	for (auto& n : getReceivers())
+	{
+		os << " " << *n;
+	}
 }

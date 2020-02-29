@@ -21,7 +21,7 @@ namespace dbcppp
 		virtual uint64_t getStartBit() const override;
 		virtual uint64_t getBitSize() const override;
 		virtual ByteOrder getByteOrder() const override;
-		virtual ValueType getValueType() override;
+		virtual ValueType getValueType() const override;
 		virtual double getFactor() const override;
 		virtual double getOffset() const override;
 		virtual double getMinimum() const override;
@@ -34,6 +34,7 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
 		virtual const std::string& getComment() const override;
+		virtual boost::optional<Signal::ExtendedValueType> getExtendedValueType() const override;
 		ErrorCode getError() const;
 
 		SignalImpl() = default;
@@ -55,7 +56,7 @@ namespace dbcppp
 		std::map<std::string, AttributeImpl> _attribute_values;
 		std::map<uint64_t, std::string> _value_descriptions;
 		std::string _comment;
-		
+		boost::optional<Signal::ExtendedValueType> _extended_value_type;
 		// for performance
 		uint64_t _mask;
 		uint64_t _mask_signed;

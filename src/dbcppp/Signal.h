@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <cstddef>
+#include <boost/optional.hpp>
 
 #include "Export.h"
 #include "Helper.h"
@@ -36,6 +37,10 @@ namespace dbcppp
 		{
 			Signed, Unsigned
 		};
+		enum class ExtendedValueType
+		{
+			Signed, Float, Double
+		};
 		
 		virtual ~Signal() = default;
 		virtual const std::string& getName() const = 0;
@@ -44,7 +49,7 @@ namespace dbcppp
 		virtual uint64_t getStartBit() const = 0;
 		virtual uint64_t getBitSize() const = 0;
 		virtual ByteOrder getByteOrder() const = 0;
-		virtual ValueType getValueType() = 0;
+		virtual ValueType getValueType() const = 0;
 		virtual double getFactor() const = 0;
 		virtual double getOffset() const = 0;
 		virtual double getMinimum() const = 0;
@@ -57,7 +62,10 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
 		virtual const std::string& getComment() const = 0;
-		
+		virtual boost::optional<ExtendedValueType> getExtendedValueType() const = 0;
+
+		void serializeToStream(std::ostream& os, const Network& net) const;
+
 		/// \brief Extracts the raw value from a given 8 byte array
 		///
 		/// This function uses a optimized method of reversing the byte order and extracting

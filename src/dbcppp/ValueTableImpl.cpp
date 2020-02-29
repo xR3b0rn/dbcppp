@@ -1,4 +1,5 @@
 
+#include "Network.h"
 #include "ValueTableImpl.h"
 
 using namespace dbcppp;
@@ -25,4 +26,14 @@ const std::string* ValueTableImpl::getValueDescriptionById(uint64_t id) const
 		result = &iter->second;
 	}
 	return result;
+}
+
+void ValueTable::serializeToStream(std::ostream& os, const Network& net) const
+{
+	os << "VAL_TABLE_ " << getName();
+	for (const auto& ved : getValueDescriptions())
+	{
+		os << " " << ved.first << " \"" << ved.second << "\"";
+	}
+	os << ";";
 }

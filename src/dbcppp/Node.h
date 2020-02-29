@@ -10,6 +10,7 @@
 
 namespace dbcppp
 {
+	class Network;
 	class DBCPPP_API Node
 	{
 	public:
@@ -18,5 +19,7 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
 		virtual const std::string& getComment() const = 0;
+		
+		void serializeToStream(std::ostream& os, const Network& net) const;
 	};
 }

@@ -57,6 +57,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 			ns._minimum = s.minimum;
 			ns._maximum = s.maximum;
 			ns._multiplexer_switch_value = 0;
+			ns._multiplexer_indicator = Signal::Multiplexer::NoMux;
 			ns._bit_size = s.signal_size;
 			if (s.multiplexer_indicator)
 			{
@@ -82,6 +83,13 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 			nm._signals.insert(std::make_pair(ns._name, std::move(ns)));
 		}
 	}
+	for (auto& ts : gnet.message_transmitters)
+	{
+		for (auto& t : ts.transmitters)
+		{
+			net._messages[ts.id]._message_transmitters.insert(t.name);
+		}
+	}
 	for (auto& ev : gnet.environment_variables)
 	{
 		EnvironmentVariableImpl& nev = net._environment_variables[ev.name];
@@ -95,16 +103,17 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 		}
 		else if (ev.access_type == "DUMMY_NODE_VECTOR1")
 		{
-			nev._access_type = EnvironmentVariable::AccessType::Unrestricted;
+			nev._access_type = EnvironmentVariable::AccessType::Read;
 		}
 		else if (ev.access_type == "DUMMY_NODE_VECTOR2")
 		{
-			nev._access_type = EnvironmentVariable::AccessType::Unrestricted;
+			nev._access_type = EnvironmentVariable::AccessType::Write;
 		}
 		else if (ev.access_type == "DUMMY_NODE_VECTOR3")
 		{
-			nev._access_type = EnvironmentVariable::AccessType::Unrestricted;
+			nev._access_type = EnvironmentVariable::AccessType::ReadWrite;
 		}
+		nev._data_size = 0;
 		nev._ev_id = ev.id;
 		nev._initial_value = ev.initial_value;
 		nev._maximum = ev.maximum;
@@ -200,6 +209,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 		}
 		void operator()(const G_AttributeValueTypeString& cn) const
 		{
+			_ad._value_type = AttributeDefinition::ValueTypeString();
 		}
 		void operator()(const G_AttributeValueTypeEnum& cn) const
 		{
@@ -276,6 +286,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 	for (auto& ad : gnet.attribute_defaults)
 	{
 		AttributeImpl& nad = net._attribute_defaults[ad.name];
+		nad._name = ad.name;
 		boost::apply_visitor(VisitorAttribute(nad), ad.value);
 	}
 	struct VisitorAttributeValues
@@ -325,5 +336,43 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 	for (auto& av : gnet.attribute_values)
 	{
 		boost::apply_visitor(VisitorAttributeValues(net), av);
+	}
+	struct VisitorValueDescription
+	{
+		VisitorValueDescription(NetworkImpl& net)
+			: _net(net)
+		{}
+		void operator()(const G_ValueDescriptionSignal& vd)
+		{
+			for (const auto& p : vd.value_description)
+			{
+				_net._messages[vd.message_id]._signals[vd.signal_name]._value_descriptions[p.first] = p.second;
+			}
+		}
+		void operator()(const G_ValueDescriptionEnvVar& vd)
+		{
+			for (const auto& p : vd.value_description)
+			{
+				_net._environment_variables[vd.env_var_name]._value_descriptions[p.first] = p.second;
+			}
+		}
+
+	private:
+		NetworkImpl& _net;
+	};
+	for (auto& vd : gnet.value_descriptions)
+	{
+		boost::apply_visitor(VisitorValueDescription(net), vd.description);
+	}
+	for (auto& sev : gnet.signal_extended_value_types)
+	{
+		Signal::ExtendedValueType type;
+		switch (sev.value)
+		{
+		case 0: type = Signal::ExtendedValueType::Signed; break;
+		case 1: type = Signal::ExtendedValueType::Float; break;
+		case 2: type = Signal::ExtendedValueType::Double; break;
+		}
+		net._messages[sev.message_id]._signals[sev.signal_name]._extended_value_type = type;
 	}
 }

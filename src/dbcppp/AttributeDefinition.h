@@ -10,6 +10,7 @@
 
 namespace dbcppp
 {
+	class Network;
 	class DBCPPP_API AttributeDefinition
 	{
 	public:
@@ -49,5 +50,7 @@ namespace dbcppp
 		virtual ObjectType getObjectType() const = 0;
 		virtual const std::string& getName() const = 0;
 		virtual const value_type_t& getValueType() const = 0;
+
+		void serializeToStream(std::ostream& os, const Network& net) const;
 	};
 }

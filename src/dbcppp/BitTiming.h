@@ -8,6 +8,7 @@
 
 namespace dbcppp
 {
+	class Network;
 	class DBCPPP_API BitTiming
 	{
 	public:
@@ -15,5 +16,7 @@ namespace dbcppp
 		virtual uint64_t getBaudrate() const = 0;
 		virtual uint64_t getBTR1() const = 0;
 		virtual uint64_t getBTR2() const = 0;
+		
+		void serializeToStream(std::ostream& os, const Network& net) const;
 	};
 }

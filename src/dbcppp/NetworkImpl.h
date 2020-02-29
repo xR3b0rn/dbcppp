@@ -9,7 +9,6 @@
 #include "SignalTypeImpl.h"
 #include "AttributeDefinitionImpl.h"
 #include "AttributeImpl.h"
-#include "SignalExtendedValueTypeImpl.h"
 
 namespace dbcppp
 {
@@ -37,7 +36,6 @@ namespace dbcppp
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeDefaults() const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
-        virtual std::vector<const SignalExtendedValueType*> getSignalExtendedValues() const override;
 		virtual const std::string& getComment() const override;
 
 		virtual const Message* findParentMessage(const Signal* sig) const override;
@@ -54,7 +52,6 @@ namespace dbcppp
 		std::map<std::string, AttributeImpl> _attribute_defaults;
 		std::map<std::string, AttributeImpl> _attribute_values;
 		//std::map<std::string, AttributeRelation> attribute_relation_values;
-        std::vector<SignalExtendedValueTypeImpl> _signal_extended_value_types;
 		std::string _comment;
 	};
 }

@@ -176,15 +176,6 @@ std::vector<std::pair<std::string, const Attribute*>> NetworkImpl::getAttributeV
 	}
 	return result;
 }
-std::vector<const SignalExtendedValueType*> NetworkImpl::getSignalExtendedValues() const
-{
-    std::vector<const SignalExtendedValueType*> result;
-    for (auto& sigval : _signal_extended_value_types)
-    {
-       result.emplace_back(&sigval);
-    }
-    return result;
-}
 const std::string& NetworkImpl::getComment() const
 {
 	return _comment;
@@ -205,3 +196,201 @@ const Message* NetworkImpl::findParentMessage(const Signal* sig) const
 	return result;
 }
 
+void Network::serializeToStream(std::ostream& os, const Network& net) const
+{
+	os << "VERSION \"";
+	if (getVersion() != "")
+	{
+		os << getVersion();
+	}
+	os << "\"";
+	os << "\n";
+	os << "NS_:";
+	for (const auto& ns : getNewSymbols())
+	{
+		os << "\n " << *ns;
+	}
+	os << "\n";
+	getBitTiming().serializeToStream(os, net);
+	os << "\n";
+	os << "BU_:";
+	for (const auto& n : getNodes())
+	{
+		os << " " << n.second->getName(); 
+	}
+	for (const auto& vt : getValueTables())
+	{
+		os << "\n";
+		vt.second->serializeToStream(os, net);
+	}
+	for (const auto& m : getMessages())
+	{
+		os << "\n";
+		m.second->serializeToStream(os, net);
+	}
+	// serialize message_transmitters
+	for (const auto& m : getMessages())
+	{
+		auto transmitters = m.second->getMessageTransmitters();
+		if (transmitters.size())
+		{
+			os << "\n";
+			os << "BO_TX_BU_ " << m.second->getId() << " :";
+			for (const auto& t : transmitters)
+			{
+				os << " " << t;
+			}
+		}
+	}
+	for (const auto& ev : getEnvironmentVariables())
+	{
+		os << "\n";
+		ev.second->serializeToStream(os, net);
+	}
+	for (const auto& ev : getEnvironmentVariables())
+	{
+		if (ev.second->getVarType() == EnvironmentVariable::VarType::Data)
+		{
+			os << "\n";
+			os << "ENVVAR_DATA_ " << ev.second->getName() << " : " << ev.second->getDataSize() << ";";
+		}
+	}
+	for (const auto& st : getSignalTypes())
+	{
+		os << "\n";
+		st.second->serializeToStream(os, net);
+	}
+	// serialize comments
+	// Network comment
+	if (net.getComment() != "")
+	{
+		os << "\n";
+		os << "CM_ " << net.getComment() << ";";
+	}
+	// Node comments
+	for (const auto& n : net.getNodes())
+	{
+		if (n.second->getComment() != "")
+		{
+			os << "\n";
+			os << "CM_ BU_ " << n.second->getName() << " \"" << n.second->getComment() << "\"" << ";";
+		}
+	}
+	// Message comments
+	for (const auto& m : net.getMessages())
+	{
+		if (m.second->getComment() != "")
+		{
+			os << "\n";
+			os << "CM_ BO_ " << m.second->getId() << " \"" << m.second->getComment() << "\"" << ";";
+		}
+	}
+	// Signal comments
+	for (const auto& m : net.getMessages())
+	{
+		for (const auto& s : m.second->getSignals())
+		{
+			if (s.second->getComment() != "")
+			{
+				os << "\n";
+				os << "CM_ SG_ " << m.second->getId() << " " << s.second->getName() << " \"" << s.second->getComment() << "\"" << ";";
+			}
+		}
+	}
+	// EnvironmentVariable comments
+	for (const auto& ev : net.getEnvironmentVariables())
+	{
+		if (ev.second->getComment() != "")
+		{
+			os << "\n";
+			os << "CM_ EV_ " << ev.second->getName() << " \"" << ev.second->getComment() << "\"" << ";";
+		}
+	}
+	for (const auto& ad : net.getAttributeDefinitions())
+	{
+		os << "\n";
+		ad.second->serializeToStream(os, net);
+	}
+	for (const auto& ad : net.getAttributeDefaults())
+	{
+		os << "\n";
+		ad.second->serializeToStream(os, net);
+	}
+	// Serialize Attribute Values
+	for (const auto& val : net.getAttributeValues())
+	{
+		os << "\n";
+		val.second->serializeToStream(os, net);
+	}
+	for (const auto& n : net.getNodes())
+	{
+		for (const auto& val : n.second->getAttributeValues())
+		{
+			os << "\n";
+			val.second->serializeToStream(os, net);
+		}
+	}
+	for (const auto& m : net.getMessages())
+	{
+		for (const auto& val : m.second->getAttributeValues())
+		{
+			os << "\n";
+			val.second->serializeToStream(os, net);
+		}
+	}
+	for (const auto& m : net.getMessages())
+	{
+		for (const auto& s : m.second->getSignals())
+		{
+			for (const auto& val : s.second->getAttributeValues())
+			{
+				os << "\n";
+				val.second->serializeToStream(os, net);
+			}
+		}
+	}
+	for (const auto& ev : net.getEnvironmentVariables())
+	{
+		for (const auto& val : ev.second->getAttributeValues())
+		{
+			os << "\n";
+			val.second->serializeToStream(os, net);
+		}
+	}
+	// Serialize value descriptions
+	for (const auto& m : net.getMessages())
+	{
+		for (const auto& s : m.second->getSignals())
+		{
+			auto vds = s.second->getValueDescriptions();
+			if (vds.size())
+			{
+				os << "\n";
+				os << "VAL_ " << m.second->getId() << " " << s.second->getName();
+				for (const auto& vd : vds)
+				{
+					os << " " << vd.first << " \"" << *vd.second << "\"";
+				}
+				os << ";";
+			}
+		}
+	}
+	for (const auto& m : net.getMessages())
+	{
+		for (const auto& s : m.second->getSignals())
+		{
+			if (s.second->getExtendedValueType())
+			{
+				uint64_t type = 0;
+				switch (*s.second->getExtendedValueType())
+				{
+				case Signal::ExtendedValueType::Signed: type = 0; break;
+				case Signal::ExtendedValueType::Float: type = 1; break;
+				case Signal::ExtendedValueType::Double: type = 2; break;
+				}
+				os << "\n";
+				os << "SIG_VALTYPE_ " << m.second->getId() << " " << s.second->getName() << type << ";";
+			}
+		}
+	}
+}

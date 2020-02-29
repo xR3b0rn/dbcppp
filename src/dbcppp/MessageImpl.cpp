@@ -19,14 +19,14 @@ const std::string& MessageImpl::getTransmitter() const
 {
 	return _transmitter;
 }
-bool MessageImpl::hasReceiver(const std::string& name) const
+bool MessageImpl::hasMessageTransmitter(const std::string& name) const
 {
-	return _receivers.find(name) != _receivers.end();
+	return _message_transmitters.find(name) != _message_transmitters.end();
 }
-std::vector<const std::string*> MessageImpl::getReceivers() const
+std::vector<const std::string*> MessageImpl::getMessageTransmitters() const
 {
 	std::vector<const std::string*> result;
-	for (auto& n : _receivers)
+	for (auto& n : _message_transmitters)
 	{
 		result.emplace_back(&n);
 	}
@@ -73,4 +73,14 @@ std::vector<std::pair<std::string, const Attribute*>> MessageImpl::getAttributeV
 const std::string& MessageImpl::getComment() const
 {
 	return _comment;
+}
+
+void Message::serializeToStream(std::ostream& os, const Network& net) const
+{
+	os << "BO_ " << getId() << " " << getName() << ": " << getMessageSize() << " " << getTransmitter();
+	for (const auto& s : getSignals())
+	{
+		os << "\n ";
+		s.second->serializeToStream(os, net);
+	}
 }

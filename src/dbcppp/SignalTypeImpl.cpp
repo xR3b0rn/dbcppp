@@ -47,3 +47,21 @@ const std::string& SignalTypeImpl::getValueTable() const
 {
 	return _value_table;
 }
+
+void SignalType::serializeToStream(std::ostream& os, const Network& net) const
+{
+	os << "SGTYPE_ " << getName() << " : " << getSignalSize() << "@";
+	switch (getByteOrder())
+	{
+	case Signal::ByteOrder::BigEndian: os << "0"; break;
+	case Signal::ByteOrder::LittleEndian: os << "1"; break;
+	}
+	switch (getValueType())
+	{
+	case Signal::ValueType::Unsigned: os << "- "; break;
+	case Signal::ValueType::Signed: os << "+ "; break;
+	}
+	os << "(" << getFactor() << "," << getOffset() << ") ";
+	os << "[" << getMinimum() << "|" << getMaximum() << "] ";
+	os << "\"" << getUnit() << "\" " << getDefaultValue() << ", " << getValueTable() << ";";
+}
