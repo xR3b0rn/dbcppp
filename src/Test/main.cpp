@@ -112,7 +112,6 @@ std::vector<std::string> dbc_to_vec(std::istream& is)
 
 BOOST_AUTO_TEST_CASE(DBCParsing)
 {
-    // TODO: create test DBC-file
     std::string dbc_file(TEST_DBC);
     
     BOOST_TEST_MESSAGE("Testing DBC AST tree for correctness!");
