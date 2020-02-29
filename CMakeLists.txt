@@ -5,15 +5,18 @@ project("dbcppp")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-set(Boost_USE_STATIC_LIBS ON)
+option(Boost_USE_STATIC_LIBS "MyOption" ON)
+
+if (!${Boost_USE_STATIC_LIBS})
+	add_definitions(-DBOOST_LOG_DYN_LINK)
+endif()
+
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
 
 find_package(Boost MODULE COMPONENTS log REQUIRED)
 
-message(STATUS ${Boost_LIBRARY_DIRS})
-
-if(Boost_FOUND)
+if (Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
 	link_directories(${Boost_LIBRARY_DIRS})
 endif()
