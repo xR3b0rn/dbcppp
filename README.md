@@ -1,6 +1,12 @@
 # dbcppp (DBC C++ parser)
 A DBC file parser written in C++ and based on `boost.spirit`. This library is designed for decdoing performance.
-
+# Features
+* verbose parser output in error case
+* work on DBC through C++ interface exported from shared library
+* deserialization of DBC file
+* serialization of DBC file
+* decode functionality for ISO CAN frames (8 data bytes)
+* decode functionality for FD CAN frames (64 data bytes)
 # Build and install
 ```
 mkdir build
@@ -40,12 +46,6 @@ int main()
 }
 
 ```
-# Features
-* work on DBC through C++ interface exported from shared library
-* deserialization of DBC file
-* serialization of DBC file
-* decode functionality for ISO CAN frames (8 data bytes)
-* decode functionality for FD CAN frames (64 data bytes)
 ## DBC data types
 ### Supported
 * version
