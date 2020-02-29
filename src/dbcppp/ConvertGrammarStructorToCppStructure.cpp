@@ -369,7 +369,7 @@ void dbcppp::ConvertGrammarStructorToCppStructure(const G_Network& gnet, Network
 		Signal::ExtendedValueType type;
 		switch (sev.value)
 		{
-		case 0: type = Signal::ExtendedValueType::Signed; break;
+		case 0: type = Signal::ExtendedValueType::Integer; break;
 		case 1: type = Signal::ExtendedValueType::Float; break;
 		case 2: type = Signal::ExtendedValueType::Double; break;
 		}

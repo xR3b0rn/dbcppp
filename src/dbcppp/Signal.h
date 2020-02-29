@@ -39,7 +39,7 @@ namespace dbcppp
 		};
 		enum class ExtendedValueType
 		{
-			Signed, Float, Double
+			Integer, Float, Double
 		};
 		
 		virtual ~Signal() = default;

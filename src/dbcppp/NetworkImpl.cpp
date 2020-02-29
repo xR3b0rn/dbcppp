@@ -384,7 +384,7 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 				uint64_t type = 0;
 				switch (*s.second->getExtendedValueType())
 				{
-				case Signal::ExtendedValueType::Signed: type = 0; break;
+				case Signal::ExtendedValueType::Integer: type = 0; break;
 				case Signal::ExtendedValueType::Float: type = 1; break;
 				case Signal::ExtendedValueType::Double: type = 2; break;
 				}
