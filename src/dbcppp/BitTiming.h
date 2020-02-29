@@ -17,6 +17,6 @@ namespace dbcppp
 		virtual uint64_t getBTR1() const = 0;
 		virtual uint64_t getBTR2() const = 0;
 		
-		void serializeToStream(std::ostream& os, const Network& net) const;
+		void serializeToStream(std::ostream& os) const;
 	};
 }

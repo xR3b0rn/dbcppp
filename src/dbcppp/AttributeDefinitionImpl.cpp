@@ -16,7 +16,7 @@ const AttributeDefinition::value_type_t& AttributeDefinitionImpl::getValueType()
 	return _value_type;
 }
 
-void AttributeDefinition::serializeToStream(std::ostream& os, const Network& net) const
+void AttributeDefinition::serializeToStream(std::ostream& os) const
 {
 	struct VisitorValueType
 	{

@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
 {
     // TODO: create test DBC-file
     std::string dbc_file;
-
+    
     BOOST_TEST_MESSAGE("Testing DBC AST tree for correctness!");
 
     if (dbc_file != "")
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
         }
 
         std::stringstream ss;
-        net->serializeToStream(ss, *net);
+        net->serializeToStream(ss);
         auto imp = dbc_to_vec(ss);
 
         for (const auto& line : imp)
@@ -193,11 +193,12 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
         auto dec_easy = easy_decode(sig, data);
         auto dec_sig = sig.decode8(&data[0]);
         
-        BOOST_REQUIRE_MESSAGE(dec_easy == dec_sig,
-            ("seed=" + std::to_string(seed)
-            + " i=" + std::to_string(i)
-            + " dec_easy=" + std::to_string(dec_easy)
-            + " dec_sig=" + std::to_string(dec_sig)));
+        if (dec_easy != dec_sig)
+        {
+            std::stringstream ss;
+            sig.serializeToStream(ss);
+            BOOST_REQUIRE_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+        }
     }
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding64)
@@ -236,11 +237,11 @@ BOOST_AUTO_TEST_CASE(Test_Decoding64)
         }
         auto dec_easy = easy_decode(sig, data);
         auto dec_sig = sig.decode8(&data[0]);
-        
-        BOOST_REQUIRE_MESSAGE(dec_easy == dec_sig,
-            ("seed=" + std::to_string(seed)
-            + " i=" + std::to_string(i)
-            + " dec_easy=" + std::to_string(dec_easy)
-            + " dec_sig=" + std::to_string(dec_sig)));
+        if (dec_easy != dec_sig)
+        {
+            std::stringstream ss;
+            sig.serializeToStream(ss);
+            BOOST_REQUIRE_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+        }
     }
 }

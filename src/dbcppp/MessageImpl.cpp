@@ -75,12 +75,12 @@ const std::string& MessageImpl::getComment() const
 	return _comment;
 }
 
-void Message::serializeToStream(std::ostream& os, const Network& net) const
+void Message::serializeToStream(std::ostream& os) const
 {
 	os << "BO_ " << getId() << " " << getName() << ": " << getMessageSize() << " " << getTransmitter();
 	for (const auto& s : getSignals())
 	{
 		os << "\n ";
-		s.second->serializeToStream(os, net);
+		s.second->serializeToStream(os);
 	}
 }

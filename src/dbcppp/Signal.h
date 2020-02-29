@@ -64,7 +64,7 @@ namespace dbcppp
 		virtual const std::string& getComment() const = 0;
 		virtual boost::optional<ExtendedValueType> getExtendedValueType() const = 0;
 
-		void serializeToStream(std::ostream& os, const Network& net) const;
+		void serializeToStream(std::ostream& os) const;
 
 		/// \brief Extracts the raw value from a given 8 byte array
 		///

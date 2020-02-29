@@ -95,7 +95,7 @@ const std::string& EnvironmentVariableImpl::getComment() const
 	return _comment;
 }
 
-void EnvironmentVariable::serializeToStream(std::ostream& os, const Network& net) const
+void EnvironmentVariable::serializeToStream(std::ostream& os) const
 {
 	os << "EV_ " << getName() << ": ";
 	switch (getVarType())

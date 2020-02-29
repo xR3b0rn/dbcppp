@@ -248,7 +248,7 @@ Signal::ErrorCode SignalImpl::getError() const
 	return _error;
 }
 
-void Signal::serializeToStream(std::ostream& os, const Network& net) const
+void Signal::serializeToStream(std::ostream& os) const
 {
 	os << "SG_ " << getName() << " ";
 	switch (getMultiplexerIndicator())

@@ -48,7 +48,7 @@ const std::string& SignalTypeImpl::getValueTable() const
 	return _value_table;
 }
 
-void SignalType::serializeToStream(std::ostream& os, const Network& net) const
+void SignalType::serializeToStream(std::ostream& os) const
 {
 	os << "SGTYPE_ " << getName() << " : " << getSignalSize() << "@";
 	switch (getByteOrder())

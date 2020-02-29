@@ -196,7 +196,7 @@ const Message* NetworkImpl::findParentMessage(const Signal* sig) const
 	return result;
 }
 
-void Network::serializeToStream(std::ostream& os, const Network& net) const
+void Network::serializeToStream(std::ostream& os) const
 {
 	os << "VERSION \"";
 	if (getVersion() != "")
@@ -211,7 +211,7 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 		os << "\n " << *ns;
 	}
 	os << "\n";
-	getBitTiming().serializeToStream(os, net);
+	getBitTiming().serializeToStream(os);
 	os << "\n";
 	os << "BU_:";
 	for (const auto& n : getNodes())
@@ -221,12 +221,12 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 	for (const auto& vt : getValueTables())
 	{
 		os << "\n";
-		vt.second->serializeToStream(os, net);
+		vt.second->serializeToStream(os);
 	}
 	for (const auto& m : getMessages())
 	{
 		os << "\n";
-		m.second->serializeToStream(os, net);
+		m.second->serializeToStream(os);
 	}
 	// serialize message_transmitters
 	for (const auto& m : getMessages())
@@ -245,7 +245,7 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 	for (const auto& ev : getEnvironmentVariables())
 	{
 		os << "\n";
-		ev.second->serializeToStream(os, net);
+		ev.second->serializeToStream(os);
 	}
 	for (const auto& ev : getEnvironmentVariables())
 	{
@@ -258,17 +258,17 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 	for (const auto& st : getSignalTypes())
 	{
 		os << "\n";
-		st.second->serializeToStream(os, net);
+		st.second->serializeToStream(os);
 	}
 	// serialize comments
 	// Network comment
-	if (net.getComment() != "")
+	if (getComment() != "")
 	{
 		os << "\n";
-		os << "CM_ " << net.getComment() << ";";
+		os << "CM_ " << getComment() << ";";
 	}
 	// Node comments
-	for (const auto& n : net.getNodes())
+	for (const auto& n : getNodes())
 	{
 		if (n.second->getComment() != "")
 		{
@@ -277,7 +277,7 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 		}
 	}
 	// Message comments
-	for (const auto& m : net.getMessages())
+	for (const auto& m : getMessages())
 	{
 		if (m.second->getComment() != "")
 		{
@@ -286,7 +286,7 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 		}
 	}
 	// Signal comments
-	for (const auto& m : net.getMessages())
+	for (const auto& m : getMessages())
 	{
 		for (const auto& s : m.second->getSignals())
 		{
@@ -298,7 +298,7 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 		}
 	}
 	// EnvironmentVariable comments
-	for (const auto& ev : net.getEnvironmentVariables())
+	for (const auto& ev : getEnvironmentVariables())
 	{
 		if (ev.second->getComment() != "")
 		{
@@ -306,59 +306,59 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 			os << "CM_ EV_ " << ev.second->getName() << " \"" << ev.second->getComment() << "\"" << ";";
 		}
 	}
-	for (const auto& ad : net.getAttributeDefinitions())
+	for (const auto& ad : getAttributeDefinitions())
 	{
 		os << "\n";
-		ad.second->serializeToStream(os, net);
+		ad.second->serializeToStream(os);
 	}
-	for (const auto& ad : net.getAttributeDefaults())
+	for (const auto& ad : getAttributeDefaults())
 	{
 		os << "\n";
-		ad.second->serializeToStream(os, net);
+		ad.second->serializeToStream(os, *this);
 	}
 	// Serialize Attribute Values
-	for (const auto& val : net.getAttributeValues())
+	for (const auto& val : getAttributeValues())
 	{
 		os << "\n";
-		val.second->serializeToStream(os, net);
+		val.second->serializeToStream(os, *this);
 	}
-	for (const auto& n : net.getNodes())
+	for (const auto& n : getNodes())
 	{
 		for (const auto& val : n.second->getAttributeValues())
 		{
 			os << "\n";
-			val.second->serializeToStream(os, net);
+			val.second->serializeToStream(os, *this);
 		}
 	}
-	for (const auto& m : net.getMessages())
+	for (const auto& m : getMessages())
 	{
 		for (const auto& val : m.second->getAttributeValues())
 		{
 			os << "\n";
-			val.second->serializeToStream(os, net);
+			val.second->serializeToStream(os, *this);
 		}
 	}
-	for (const auto& m : net.getMessages())
+	for (const auto& m : getMessages())
 	{
 		for (const auto& s : m.second->getSignals())
 		{
 			for (const auto& val : s.second->getAttributeValues())
 			{
 				os << "\n";
-				val.second->serializeToStream(os, net);
+				val.second->serializeToStream(os, *this);
 			}
 		}
 	}
-	for (const auto& ev : net.getEnvironmentVariables())
+	for (const auto& ev : getEnvironmentVariables())
 	{
 		for (const auto& val : ev.second->getAttributeValues())
 		{
 			os << "\n";
-			val.second->serializeToStream(os, net);
+			val.second->serializeToStream(os, *this);
 		}
 	}
 	// Serialize value descriptions
-	for (const auto& m : net.getMessages())
+	for (const auto& m : getMessages())
 	{
 		for (const auto& s : m.second->getSignals())
 		{
@@ -375,7 +375,7 @@ void Network::serializeToStream(std::ostream& os, const Network& net) const
 			}
 		}
 	}
-	for (const auto& m : net.getMessages())
+	for (const auto& m : getMessages())
 	{
 		for (const auto& s : m.second->getSignals())
 		{

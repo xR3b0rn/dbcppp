@@ -28,7 +28,7 @@ const std::string* ValueTableImpl::getValueDescriptionById(uint64_t id) const
 	return result;
 }
 
-void ValueTable::serializeToStream(std::ostream& os, const Network& net) const
+void ValueTable::serializeToStream(std::ostream& os) const
 {
 	os << "VAL_TABLE_ " << getName();
 	for (const auto& ved : getValueDescriptions())

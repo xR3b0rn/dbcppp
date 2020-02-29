@@ -37,7 +37,7 @@ std::vector<std::pair<std::string, const Attribute*>> NodeImpl::getAttributeValu
 	return result;
 }
 
-void Node::serializeToStream(std::ostream& os, const Network& net) const
+void Node::serializeToStream(std::ostream& os) const
 {
 	os << getName();
 }

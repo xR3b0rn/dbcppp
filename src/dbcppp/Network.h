@@ -59,7 +59,7 @@ namespace dbcppp
 		
 		virtual const Message* findParentMessage(const Signal* sig) const = 0;
 
-		void serializeToStream(std::ostream& os, const Network& net) const;
+		void serializeToStream(std::ostream& os) const;
 	};
 }
 

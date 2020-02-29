@@ -20,6 +20,6 @@ namespace dbcppp
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
 		virtual const std::string& getComment() const = 0;
 		
-		void serializeToStream(std::ostream& os, const Network& net) const;
+		void serializeToStream(std::ostream& os) const;
 	};
 }

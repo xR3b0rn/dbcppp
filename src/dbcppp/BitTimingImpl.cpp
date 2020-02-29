@@ -16,7 +16,7 @@ uint64_t BitTimingImpl::getBTR2() const
 {
 	return _BTR2;
 }
-void BitTiming::serializeToStream(std::ostream& os, const Network& net) const
+void BitTiming::serializeToStream(std::ostream& os) const
 {
 	os << "BS_:";
 	if (getBaudrate() != 0 && getBTR1() != 0 && getBTR2() != 0)
