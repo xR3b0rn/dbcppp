@@ -87,7 +87,7 @@ template_decode8(Signal const*, void const*):
         cvtsi2sd        xmm0, rax
         ret
 ```
-Binary was generated using Compiler Explorer: https://godbolt.org/z/8YFjok
+Assembly was generated using Compiler Explorer: https://godbolt.org/z/8YFjok
 # Known issues
 * decode64 isn't working correctly on LittleEndian-maschine if the ValueType of the Signal is BigEndian
 * both decode functions weren't tested on a BigEndian-maschine
