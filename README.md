@@ -16,7 +16,7 @@ make install
 int main()
 {
     std::ifstream dbc_file{"your_dbc.dbc"};
-    std::unique_ptr<dbcppp::Network> net = dbcppp::Network::Create();
+    std::unique_ptr<const dbcppp::Network> net = dbcppp::Network::fromDBC(dbc_file);
     if (!(dbc_file >> *net))
     {
         std::cout << "DBC parsing failed!" << std::endl;
