@@ -30,8 +30,6 @@ A DBC file parser written in C++ and based on `boost.spirit`. This library is de
 * signal_type_refs
 * signal_groups
 # Build and install
-## Dependencies
-* boost
 ```
 mkdir build
 cd build
@@ -39,6 +37,8 @@ cmake ..
 make
 make install
 ```
+## Dependencies
+* boost
 # Usage example
 ```C++
 #include <fstream>
