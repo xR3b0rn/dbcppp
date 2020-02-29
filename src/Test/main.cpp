@@ -30,10 +30,8 @@
 
 #include "Config.h"
 
-#include "../dbcppp/DBC_Grammar.h"
 #include "../dbcppp/Network.h"
 #include "../dbcppp/DBC_Grammar.h"
-#include "../dbcppp/SignalImpl.h"
 
 #define BOOST_TEST_MODULE test
 #include <boost/test/included/unit_test.hpp>
@@ -168,36 +166,45 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
     using namespace dbcppp;
-    SignalImpl sig(Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, 56, 5, 8);
+
     std::vector<uint8_t> data;
     for (std::size_t i = 0; i < n_tests; i++)
     {
+        auto net = dbcppp::Network::create();
+        Message* msg = net->addMessage(0);
+        Signal* sig = nullptr;
         auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
         auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_start_bit = dist(rng) % 64;
-        while (rnd_start_bit == 56)
+        auto rnd_bit_size = dist(rng) % 64;
+        if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
         {
-            rnd_start_bit = dist(rng) % 64;
+            auto rnd_start_bit = dist(rng) % (64 - rnd_bit_size);
+            sig = msg->addSignal("Signal", rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 8);
         }
-        do
+        else
         {
-            auto rnd_bit_size = dist(rng) % (64 - rnd_start_bit);
-            sig = SignalImpl(rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 8);
-        } while (sig.getError() != Signal::ErrorCode::NoError);
+            while (!sig)
+            {
+                auto rnd_start_bit = dist(rng) % 64;
+                msg->removeSignal("Signal");
+                sig = msg->addSignal("Signal", rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 8);
+            }
+        }
+
 
         data.clear();
         for (std::size_t j = 0; j < 8; j++)
         {
             data.push_back(uint8_t(dist(rng) % 0xFF));
         }
-        auto dec_easy = easy_decode(sig, data);
-        auto dec_sig = sig.decode8(&data[0]);
+        auto dec_easy = easy_decode(*sig, data);
+        auto dec_sig = sig->decode8(&data[0]);
         
         if (dec_easy != dec_sig)
         {
             std::stringstream ss;
-            sig.serializeToStream(ss);
-            BOOST_REQUIRE_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+            sig->serializeToStream(ss);
+            BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
         }
     }
 }
@@ -213,35 +220,45 @@ BOOST_AUTO_TEST_CASE(Test_Decoding64)
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
     using namespace dbcppp;
-    SignalImpl sig(Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, 56, 5, 8);
+    
     std::vector<uint8_t> data;
     for (std::size_t i = 0; i < n_tests; i++)
     {
+        auto net = dbcppp::Network::create();
+        Message* msg = net->addMessage(0);
+        Signal* sig = nullptr;
         auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
         auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_start_bit = dist(rng) % 64;
-        while (rnd_start_bit == 56)
+        auto rnd_bit_size = dist(rng) % 64;
+        if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
         {
-            rnd_start_bit = dist(rng) % 64;
+            auto rnd_start_bit = dist(rng) % (512 - rnd_bit_size);
+            msg->removeSignal("Signal");
+            sig = msg->addSignal("Signal", rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 64);
         }
-        do
+        else
         {
-            auto rnd_bit_size = dist(rng) % (64 - rnd_start_bit);
-            sig = SignalImpl(rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 8);
-        } while (sig.getError() != Signal::ErrorCode::NoError);
+            while (!sig)
+            {
+                auto rnd_start_bit = dist(rng) % 512;
+                msg->removeSignal("Signal");
+                sig = msg->addSignal("Signal", rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 64);
+            }
+        }
 
         data.clear();
         for (std::size_t j = 0; j < 64; j++)
         {
             data.push_back(uint8_t(dist(rng) % 0xFF));
         }
-        auto dec_easy = easy_decode(sig, data);
-        auto dec_sig = sig.decode8(&data[0]);
+        auto dec_easy = easy_decode(*sig, data);
+        auto dec_sig = sig->decode64(&data[0]);
+        
         if (dec_easy != dec_sig)
         {
             std::stringstream ss;
-            sig.serializeToStream(ss);
-            BOOST_REQUIRE_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+            sig->serializeToStream(ss);
+            BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
         }
     }
 }

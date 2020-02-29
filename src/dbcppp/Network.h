@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <istream>
 #include <unordered_map>
 
 #include "Export.h"
@@ -23,17 +24,9 @@ namespace dbcppp
 	class DBCPPP_API Network
 	{
 	public:
-		using new_symbols_t = std::vector<std::string>;
-		using nodes_t = std::map<std::string, Node>;
-		using value_tables_t = std::map<std::string, ValueTable>;
-		using messages_t = std::unordered_map<uint64_t, Message>;
-		using environment_variable_t = std::map<std::string, EnvironmentVariable>;
-		using signal_types_t = std::map<std::string, SignalType>;
-		using attribute_definitions_t = std::map<std::string, AttributeDefinition>;
-		using attribute_defaults_t = std::map<std::string, Attribute>;
-		using attribute_values_t = std::map<std::string, Attribute>;
-
 		static std::unique_ptr<Network> create();
+		static std::unique_ptr<const Network> fromDBC(std::istream& is);
+
 		virtual ~Network() = default;
 		virtual const std::string& getVersion() const = 0;
 		virtual bool hasNewSymbol(const std::string& name) const = 0;
@@ -56,6 +49,8 @@ namespace dbcppp
 		virtual const std::string& getComment() const = 0;
 		
 		virtual const Message* findParentMessage(const Signal* sig) const = 0;
+
+		virtual Message* addMessage(uint64_t id) = 0;
 
 		void serializeToStream(std::ostream& os) const;
 	};

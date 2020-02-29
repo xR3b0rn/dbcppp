@@ -30,6 +30,14 @@ namespace dbcppp
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
 		virtual const std::string& getComment() const = 0;
 		
+		virtual Signal* addSignal(
+			const std::string& name,
+			Signal::ByteOrder byte_order,
+			Signal::ValueType value_type,
+			uint64_t bit_size, uint64_t start_bit,
+			uint64_t message_size) = 0;
+		virtual void removeSignal(const std::string& name) = 0;
+		
 		void serializeToStream(std::ostream& os) const;
 	};
 }

@@ -23,6 +23,14 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
 		virtual const std::string& getComment() const override;
+
+		virtual Signal* addSignal(
+			const std::string& name,
+			Signal::ByteOrder byte_order,
+			Signal::ValueType value_type,
+			uint64_t bit_size, uint64_t start_bit,
+			uint64_t message_size) override;
+		virtual void removeSignal(const std::string& name) override;
 		
 		uint64_t _id;
 		std::string _name;

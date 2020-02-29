@@ -38,6 +38,8 @@ namespace dbcppp
 
 		virtual const Message* findParentMessage(const Signal* sig) const override;
 
+		virtual Message* addMessage(uint64_t id) override;
+
 		std::string _version;
 		std::vector<std::string> _new_symbols;
 		BitTimingImpl _bit_timing;

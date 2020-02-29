@@ -74,6 +74,30 @@ const std::string& MessageImpl::getComment() const
 {
 	return _comment;
 }
+Signal* MessageImpl::addSignal(
+	const std::string& name,
+	Signal::ByteOrder byte_order,
+	Signal::ValueType value_type,
+	uint64_t bit_size, uint64_t start_bit,
+	uint64_t message_size)
+{
+	Signal* result = nullptr;
+	if (_signals.find(name) == _signals.end())
+	{
+		SignalImpl sig(byte_order, value_type, bit_size, start_bit, message_size);
+		sig._name = name;
+		if (sig.getError() == SignalImpl::ErrorCode::NoError)
+		{
+			_signals[name] = std::move(sig);
+			result = &_signals[name];
+		}
+	}
+	return result;
+}
+void MessageImpl::removeSignal(const std::string& name)
+{
+	_signals.erase(name);
+}
 
 void Message::serializeToStream(std::ostream& os) const
 {

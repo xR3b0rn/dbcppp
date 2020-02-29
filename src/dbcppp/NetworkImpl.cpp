@@ -1,7 +1,23 @@
 
+#include "Network.h"
 #include "NetworkImpl.h"
+#include "DBC_Grammar.h"
 
 using namespace dbcppp;
+
+std::unique_ptr<Network> Network::create()
+{
+	return std::make_unique<NetworkImpl>();
+}
+std::unique_ptr<const Network> Network::fromDBC(std::istream& is)
+{
+	auto net = std::make_unique<NetworkImpl>();
+	if (is >> *net)
+	{
+		return nullptr;
+	}
+	return std::move(net);
+}
 
 const std::string& NetworkImpl::getVersion() const
 {
@@ -173,6 +189,15 @@ const Message* NetworkImpl::findParentMessage(const Signal* sig) const
 			result = &msg;
 			break;
 		}
+	}
+	return result;
+}
+Message* NetworkImpl::addMessage(uint64_t id)
+{
+	Message* result = nullptr;
+	if (_messages.find(id) == _messages.end())
+	{
+		result = &_messages[id];
 	}
 	return result;
 }

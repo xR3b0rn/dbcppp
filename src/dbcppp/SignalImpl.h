@@ -11,7 +11,7 @@
 
 namespace dbcppp
 {
-	class DBCPPP_API SignalImpl
+	class SignalImpl
 		: public Signal
 	{
 	public:
@@ -35,7 +35,7 @@ namespace dbcppp
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
 		virtual const std::string& getComment() const override;
 		virtual boost::optional<Signal::ExtendedValueType> getExtendedValueType() const override;
-		ErrorCode getError() const;
+		virtual ErrorCode getError() const override;
 
 		SignalImpl() = default;
 		SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_size, uint64_t start_bit, uint64_t message_size = 8);
