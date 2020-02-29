@@ -41,7 +41,7 @@ int main()
 
 ```
 # Features
-* work on DBC through C++ interface exported from the shared library
+* work on DBC through C++ interface exported from shared library
 * deserialization of DBC file
 * serialization of DBC file
 * decode functionality for ISO CAN frames (8 data bytes)
