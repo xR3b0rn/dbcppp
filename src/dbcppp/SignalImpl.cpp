@@ -24,18 +24,18 @@ double template_decode8(const Signal* sig, const void* _8byte) noexcept
 		return *reinterpret_cast<double*>(&data);
 	}
 	data >>= sigi->_fixed_start_bit;
-	data &= sigi->_mask;
 	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Integer)
 	{
-		if constexpr (aValueType == Signal::ValueType::Signed)
-		{
-			// bit extending
-			data |= ~((data & sigi->_mask_signed) - 1);
-			return double(*reinterpret_cast<int64_t*>(&data));
-		}
-		return data;
+		return *reinterpret_cast<float*>(&data);
 	}
-	return *reinterpret_cast<float*>(&data);
+	data &= sigi->_mask;
+	if constexpr (aValueType == Signal::ValueType::Signed)
+	{
+		// bit extending
+		data |= ~((data & sigi->_mask_signed) - 1);
+		return *reinterpret_cast<int64_t*>(&data);
+	}
+	return data;
 }
 template <dbcppp::Signal::ByteOrder aByteOrder, dbcppp::Signal::ValueType aValueType, dbcppp::Signal::ExtendedValueType aExtendedValueType>
 double template_decode64(const Signal* sig, const void* _64byte) noexcept
@@ -43,7 +43,6 @@ double template_decode64(const Signal* sig, const void* _64byte) noexcept
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
 	uint8_t data8[64];
 	std::memcpy(data8, _64byte, 64);
-	
 	if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
 	{
 		// only reverse byte order when native byte order isn't big endian
@@ -60,18 +59,18 @@ double template_decode64(const Signal* sig, const void* _64byte) noexcept
 		return *reinterpret_cast<double*>(&data);
 	}
 	data >>= sigi->_fixed_start_bit_fd;
-	data &= sigi->_mask;
-	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Integer)
+	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
 	{
-		if constexpr (aValueType == Signal::ValueType::Signed)
-		{
-			// bit extending
-			data |= ~((data & sigi->_mask_signed) - 1);
-			return double(*reinterpret_cast<int64_t*>(&data));
-		}
-		return data;
+		return *reinterpret_cast<float*>(&data);
 	}
-	return *reinterpret_cast<float*>(&data);
+	data &= sigi->_mask;
+	if constexpr (aValueType == Signal::ValueType::Signed)
+	{
+		// bit extending
+		data |= ~((data & sigi->_mask_signed) - 1);
+		return *reinterpret_cast<int64_t*>(&data);
+	}
+	return data;
 }
 double raw_to_phys(const Signal* sig, double raw) noexcept
 {
