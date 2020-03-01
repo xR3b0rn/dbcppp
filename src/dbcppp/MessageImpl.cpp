@@ -84,7 +84,7 @@ Signal* MessageImpl::addSignal(
 	Signal* result = nullptr;
 	if (_signals.find(name) == _signals.end())
 	{
-		SignalImpl sig(byte_order, value_type, bit_size, start_bit, message_size);
+		SignalImpl sig(byte_order, value_type, bit_size, start_bit, Signal::ExtendedValueType::Float, message_size);
 		sig._name = name;
 		if (sig.getError() == SignalImpl::ErrorCode::NoError)
 		{

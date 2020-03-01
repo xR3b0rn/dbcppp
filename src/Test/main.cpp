@@ -79,6 +79,11 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
             ++dstBit;
         }
     }
+    switch (sig.getExtendedValueType())
+    {
+    case dbcppp::Signal::ExtendedValueType::Float: return *reinterpret_cast<float*>(&retVal);
+    case dbcppp::Signal::ExtendedValueType::Double: return *reinterpret_cast<double*>(&retVal);
+    }
     if (sig.getValueType() == dbcppp::Signal::ValueType::Signed)
     {
         if (retVal & (1ull << (sig.getBitSize() - 1)))
@@ -194,10 +199,10 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
         }
         auto dec_easy = easy_decode(*sig, data);
         auto dec_sig = sig->decode8(&data[0]);
-       
+        
         std::stringstream ss;
         sig->serializeToStream(ss);
-        BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+        BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
     }
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding64)

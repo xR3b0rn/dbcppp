@@ -45,10 +45,24 @@ void dbcppp::ConvertGrammarStructureToCppStructure(const G_Network& gnet, Networ
 		nm._transmitter = m.transmitter;
 		for (auto& s : m.signals)
 		{
+			auto iter = std::find_if(gnet.signal_extended_value_types.begin(), gnet.signal_extended_value_types.end(),
+				[&](const G_SignalExtendedValueType& sev)
+				{
+					return sev.message_id == m.id && sev.signal_name == s.name;
+				});
+			Signal::ExtendedValueType evt = Signal::ExtendedValueType::Integer;
+			if (iter != gnet.signal_extended_value_types.end())
+			{
+				switch (iter->value)
+				{
+				case 1: evt = Signal::ExtendedValueType::Float; break;
+				case 2: evt = Signal::ExtendedValueType::Double; break;
+				}
+			}
 			SignalImpl ns(
 				  s.byte_order == '0' ? Signal::ByteOrder::BigEndian : Signal::ByteOrder::LittleEndian
 				, s.value_type == '+' ? Signal::ValueType::Unsigned : Signal::ValueType::Signed
-				, s.signal_size, s.start_bit, m.size);
+				, s.signal_size, s.start_bit, evt, m.size);
 			if (ns.getError() == SignalImpl::ErrorCode::SignalExceedsMessageSize)
 			{
 				BOOST_LOG_TRIVIAL(warning) << "The signals '" << m.name << "::" << s.name << "'" << " start_bit + bit_size exceeds the byte size of the message! Ignoring this error will lead to garbage data when using the decode function of this signal.";
@@ -366,16 +380,5 @@ void dbcppp::ConvertGrammarStructureToCppStructure(const G_Network& gnet, Networ
 	for (auto& vd : gnet.value_descriptions)
 	{
 		boost::apply_visitor(VisitorValueDescription(net), vd.description);
-	}
-	for (auto& sev : gnet.signal_extended_value_types)
-	{
-		Signal::ExtendedValueType type;
-		switch (sev.value)
-		{
-		case 0: type = Signal::ExtendedValueType::Integer; break;
-		case 1: type = Signal::ExtendedValueType::Float; break;
-		case 2: type = Signal::ExtendedValueType::Double; break;
-		}
-		net._messages[sev.message_id]._signals[sev.signal_name]._extended_value_type = type;
 	}
 }

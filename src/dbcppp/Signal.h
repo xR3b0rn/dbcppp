@@ -62,7 +62,7 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
 		virtual const std::string& getComment() const = 0;
-		virtual boost::optional<ExtendedValueType> getExtendedValueType() const = 0;
+		virtual ExtendedValueType getExtendedValueType() const = 0;
 		virtual ErrorCode getError() const = 0;
 
 		void serializeToStream(std::ostream& os) const;
