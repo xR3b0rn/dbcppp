@@ -54,9 +54,7 @@ double template_decode64(const Signal* sig, const void* _64byte) noexcept
 		// only reverse byte order when native byte order isn't little endian
 		native_to_little_inplace_64(reinterpret_cast<uint64_t*>(data8));
 	}
-	
 	uint64_t data = *reinterpret_cast<uint64_t*>(&data8[sigi->_byte_pos_fd]);
-	
 	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
 	{
 		return *reinterpret_cast<double*>(&data);
