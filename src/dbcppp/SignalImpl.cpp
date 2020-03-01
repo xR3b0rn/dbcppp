@@ -24,7 +24,7 @@ double template_decode8(const Signal* sig, const void* _8byte) noexcept
 		return *reinterpret_cast<double*>(&data);
 	}
 	data >>= sigi->_fixed_start_bit;
-	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Integer)
+	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
 	{
 		return *reinterpret_cast<float*>(&data);
 	}
@@ -59,7 +59,7 @@ double template_decode64(const Signal* sig, const void* _64byte) noexcept
 		return *reinterpret_cast<double*>(&data);
 	}
 	data >>= sigi->_fixed_start_bit_fd;
-	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
+	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
 	{
 		return *reinterpret_cast<float*>(&data);
 	}
