@@ -175,7 +175,8 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
         Signal* sig = nullptr;
         auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
         auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_bit_size = dist(rng) % 64;
+        //auto rnd_bit_size = dist(rng) % 64;
+        auto rnd_bit_size = 32;
         if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
         {
             auto rnd_start_bit = dist(rng) % (64 - rnd_bit_size);

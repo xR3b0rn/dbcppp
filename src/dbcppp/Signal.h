@@ -21,9 +21,11 @@ namespace dbcppp
 	{
 	public:
 		enum class ErrorCode
+			: uint64_t
 		{
 			NoError,
-			SignalExceedsMessageSize
+			SignalExceedsMessageSize,
+			WrongBitSizeForExtendedDataType
 		};
 		enum class Multiplexer
 		{

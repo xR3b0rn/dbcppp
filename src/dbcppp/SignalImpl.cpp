@@ -110,6 +110,21 @@ SignalImpl::SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_
 		}
 		break;
 	}
+	switch (evt)
+	{
+	case Signal::ExtendedValueType::Float:
+		if (bit_size != 32)
+		{
+			_error = ErrorCode::WrongBitSizeForExtendedDataType;
+		}
+		break;
+	case Signal::ExtendedValueType::Double:
+		if (bit_size != 64)
+		{
+			_error = ErrorCode::WrongBitSizeForExtendedDataType;
+		}
+		break;
+	}
 
 	// save some additional values to speed up decoding
 	_mask = (1ull << _bit_size) - 1;
