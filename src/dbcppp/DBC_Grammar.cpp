@@ -129,9 +129,6 @@ BOOST_FUSION_ADAPT_STRUCT(
 	minimum, maximum
 )
 BOOST_FUSION_ADAPT_STRUCT(
-	G_AttributeValueTypeString
-)
-BOOST_FUSION_ADAPT_STRUCT(
 	G_AttributeValueTypeEnum,
 	values
 )
@@ -170,11 +167,11 @@ BOOST_FUSION_ADAPT_STRUCT(
 )
 BOOST_FUSION_ADAPT_STRUCT(
 	G_ValueDescriptionSignal,
-	message_id, signal_name, value_description
+	message_id, signal_name, value_descriptions
 )
 BOOST_FUSION_ADAPT_STRUCT(
 	G_ValueDescriptionEnvVar,
-	env_var_name, value_description
+	env_var_name, value_descriptions
 )
 BOOST_FUSION_ADAPT_STRUCT(
 	G_ValueDescription,
@@ -221,9 +218,10 @@ std::tuple<std::size_t, std::size_t> getErrPos(Iter iter, Iter cur)
 }
 
 template <class Iter>
-struct NetworkGrammar
+class NetworkGrammar
 	: public qi::grammar<Iter, G_Network(), ascii::space_type>
 {
+public:
 	using Skipper = ascii::space_type;
 
 	NetworkGrammar(Iter begin)
@@ -517,7 +515,7 @@ struct NetworkGrammar
 		qi::on_error<qi::fail>(_network, error_handler);
 	}
 
-
+private:
 	qi::rule<Iter, G_Network(), Skipper> _network;
 	
 	qi::rule<Iter, uint64_t(), Skipper> _unsigned_integer;
@@ -632,25 +630,26 @@ struct NetworkGrammar
 	qi::rule<Iter, std::vector<G_SignalExtendedValueType>(), Skipper> _signal_extended_value_types;
 	qi::rule<Iter, G_SignalExtendedValueType(), Skipper> _signal_extended_value_type;
 };
-DBCPPP_API bool operator>>(std::istream& is, Network& net)
+std::unique_ptr<const Network> Network::fromDBCIStream(std::istream& is)
 {
-	bool result = false;
+	std::unique_ptr<const Network> result = false;
 	std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 	auto begin{str.begin()}, end{str.end()};
 	NetworkGrammar<std::string::iterator> g(begin);
 	G_Network gnet;
-	result = phrase_parse(begin, end, g, ascii::space, gnet);
-	result &= begin == end;
-	if (begin != end)
+	bool succeeded = phrase_parse(begin, end, g, ascii::space, gnet);
+	succeeded &= begin == end;
+	if (!succeeded)
 	{
 		auto[line, column] = getErrPos(str.begin(), begin);
 		std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
 	}
-	if (result)
+	if (succeeded)
 	{
-		ConvertGrammarStructureToCppStructure(gnet, static_cast<NetworkImpl&>(net));
+		auto network = ConvertGrammarStructureToCppStructure(gnet);
+		result = std::make_unique<NetworkImpl>(std::move(network));
 	}
- 	return result;
+	return result;
 }
 extern "C"
 {
@@ -661,15 +660,10 @@ extern "C"
 		{
 			return nullptr;
 		}
-
-		NetworkImpl* net = new NetworkImpl();
-		if (!(is >> *net))
-		{
-			delete net;
-			return nullptr;
-		}
-
-		return reinterpret_cast<dbcppp_Network*>(net);
+		auto unique_ptr_network = Network::fromDBCIStream(is);
+		auto ptr_network = unique_ptr_network.get();
+		unique_ptr_network.release();
+		return reinterpret_cast<dbcppp_Network*>(const_cast<Network*>(ptr_network));
 	}
 	DBCPPP_API void free_network(struct dbcppp_network* network)
 	{

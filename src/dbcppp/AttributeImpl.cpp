@@ -6,6 +6,22 @@
 
 using namespace dbcppp;
 
+std::unique_ptr<Attribute> Attribute::create(
+	  std::string&& name
+	, AttributeDefinition::ObjectType object_type
+	, value_t&& value)
+{
+	return std::make_unique<AttributeImpl>(
+		  std::move(name)
+		, object_type
+		, std::move(value));
+}
+
+AttributeImpl::AttributeImpl(std::string&& name, AttributeDefinition::ObjectType object_type, Attribute::value_t value)
+	: _name(std::move(name))
+	, _object_type(std::move(object_type))
+	, _value(std::move(value))
+{}
 const std::string& AttributeImpl::getName() const
 {
 	return _name;
@@ -13,7 +29,7 @@ const std::string& AttributeImpl::getName() const
 AttributeDefinition::ObjectType AttributeImpl::getObjectType() const
 {
 	return _object_type;
-}
+};
 const Attribute::value_t& AttributeImpl::getValue() const
 {
 	return _value;
@@ -26,25 +42,17 @@ void Attribute::serializeToStream(std::ostream& os, const Network& net) const
 		Visitor(std::ostream& os)
 			: _os(os)
 		{}
-		void operator()(const Attribute::IntegerValue& i) const
+		void operator()(int64_t i) const
 		{
-			_os << " " << i.value;
+			_os << " " << i;
 		}
-		void operator()(const Attribute::HexValue& h) const
+		void operator()(double d) const
 		{
-			_os << " " << h.value;
+			_os << " " << d;
 		}
-		void operator()(const Attribute::FloatValue& f) const
+		void operator()(const std::string& s) const
 		{
-			_os << " " << f.value;
-		}
-		void operator()(const Attribute::EnumValue& e) const
-		{
-			_os << " " << e.value;
-		}
-		void operator()(const Attribute::StringValue& s) const
-		{
-			_os << " \"" << s.value << "\"";
+			_os << " \"" << s << "\"";
 		}
 
 		std::ostream& _os;
@@ -94,28 +102,18 @@ void Attribute::serializeToStream(std::ostream& os, const Network& net) const
 	}
 	case AttributeDefinition::ObjectType::Message:
 	{
-		auto pthis = this;
 		auto find_message_id =
-			[&, pthis]()
+			[&]()
 			{
 				for (auto m : net.getMessages())
 				{
 					auto values = m.second->getAttributeValues();
 					auto iter =
 						std::find_if(values.begin(), values.end(),
-							[&, pthis](const auto& p)
+							[&](const auto& p)
 							{
-								return p.second == pthis;
+								return p.second == this;
 							});
-					for (auto iter = values.begin(); iter != values.end(); iter++)
-					{
-						uint64_t val1 = reinterpret_cast<uint64_t>(pthis);
-						uint64_t val2 = reinterpret_cast<uint64_t>(iter->second);
-						if (iter->second == pthis)
-						{
-							return m.second->getId();
-						}
-					}
 					if (iter != values.end())
 					{
 						return m.second->getId();

@@ -13,10 +13,19 @@
 
 namespace dbcppp
 {
-	class Network;
 	class DBCPPP_API Message
 	{
 	public:
+		static std::unique_ptr<Message> create(
+			  uint64_t id
+			, std::string&& name
+			, uint64_t message_size
+			, std::string&& transmitter
+			, std::set<std::string>&& message_transmitters
+			, std::map<std::string, std::unique_ptr<Signal>>&& signals
+			, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+			, std::string&& comment);
+
 		virtual ~Message() = default;
 		virtual uint64_t getId() const = 0;
 		virtual const std::string& getName() const = 0;
@@ -29,15 +38,7 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
 		virtual const std::string& getComment() const = 0;
-		
-		virtual Signal* addSignal(
-			const std::string& name,
-			Signal::ByteOrder byte_order,
-			Signal::ValueType value_type,
-			uint64_t bit_size, uint64_t start_bit,
-			uint64_t message_size) = 0;
-		virtual void removeSignal(const std::string& name) = 0;
-		
+				
 		void serializeToStream(std::ostream& os) const;
 	};
 }

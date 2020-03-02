@@ -11,10 +11,32 @@
 
 namespace dbcppp
 {
-	class SignalImpl
+	class SignalImpl final
 		: public Signal
 	{
 	public:
+		SignalImpl(
+			  uint64_t message_size
+			, std::string&& name
+			, Multiplexer multiplexer_indicator
+			, uint64_t multiplexer_switch_value
+			, uint64_t start_bit
+			, uint64_t bit_size
+			, ByteOrder byte_order
+			, ValueType value_type
+			, double factor
+			, double offset
+			, double minimum
+			, double maximum
+			, std::string&& unit
+			, std::set<std::string>&& receivers
+			, std::map<std::string, AttributeImpl>&& attribute_values
+			, std::map<double, std::string>&& value_descriptions
+			, std::string&& comment
+			, Signal::ExtendedValueType extended_value_type);
+		SignalImpl(SignalImpl&&) = default;
+		SignalImpl& operator=(SignalImpl&&) = default;
+
 		virtual const std::string& getName() const override;
 		virtual Multiplexer getMultiplexerIndicator() const override;
 		virtual uint64_t getMultiplexerSwitchValue() const override;
@@ -34,19 +56,17 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
 		virtual const std::string& getComment() const override;
-		virtual Signal::ExtendedValueType getExtendedValueType() const override;
+		virtual ExtendedValueType getExtendedValueType() const override;
 		virtual ErrorCode getError() const override;
 
-		SignalImpl() = default;
-		SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_size, uint64_t start_bit, Signal::ExtendedValueType evt, uint64_t message_size);
-
+	private:
 		std::string _name;
-		Signal::Multiplexer _multiplexer_indicator;
+		Multiplexer _multiplexer_indicator;
 		uint64_t _multiplexer_switch_value;
 		uint64_t _start_bit;
 		uint64_t _bit_size;
-		Signal::ByteOrder _byte_order;
-		Signal::ValueType _value_type;
+		ByteOrder _byte_order;
+		ValueType _value_type;
 		double _factor;
 		double _offset;
 		double _minimum;
@@ -56,7 +76,9 @@ namespace dbcppp
 		std::map<std::string, AttributeImpl> _attribute_values;
 		std::map<double, std::string> _value_descriptions;
 		std::string _comment;
-		Signal::ExtendedValueType _extended_value_type;
+		ExtendedValueType _extended_value_type;
+
+	public:
 		// for performance
 		uint64_t _mask;
 		uint64_t _mask_signed;

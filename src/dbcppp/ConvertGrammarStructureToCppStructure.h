@@ -6,5 +6,5 @@
 
 namespace dbcppp
 {
-	void ConvertGrammarStructureToCppStructure(const G_Network& gnet, NetworkImpl& net);
+	NetworkImpl ConvertGrammarStructureToCppStructure(const G_Network& gnet);
 }

@@ -110,7 +110,7 @@ EV_ EnvVar0: 0 [0|1] "unit" 0.5 0 DUMMY_NODE_VECTOR0 Bus0, Bus1, Bus2;
 
 ENVVAR_DATA_ EnvVar0 : 8;
 
-SGTYPE_ SgType0 : 10@1+ (2,0) [-3|2] "unit" 2, EnvVar0;
+SGTYPE_ SgType0 : 10@1+ (2,0) [-3|2] "unit" 2, ValueTable0;
 
 CM_ "Network comment";
 CM_ BU_ Bus0 "Node comment";

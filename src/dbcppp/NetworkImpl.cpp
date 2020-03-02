@@ -5,20 +5,102 @@
 
 using namespace dbcppp;
 
-std::unique_ptr<Network> Network::create()
+std::unique_ptr<Network> Network::create(
+	  std::string&& version
+	, std::vector<std::string>&& new_symbols
+	, std::unique_ptr<BitTiming>&& bit_timing
+	, std::map<std::string, std::unique_ptr<Node>>&& nodes
+	, std::map<std::string, std::unique_ptr<ValueTable>>&& value_tables
+	, std::unordered_map<uint64_t, std::unique_ptr<Message>>&& messages
+	, std::map<std::string, std::unique_ptr<EnvironmentVariable>>&& environment_variables
+	, std::map<std::string, std::unique_ptr<AttributeDefinition>>&& attribute_definitions
+	, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_defaults
+	, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+	, std::string&& comment)
 {
-	return std::make_unique<NetworkImpl>();
-}
-std::unique_ptr<const Network> Network::fromDBC(std::istream& is)
-{
-	auto net = std::make_unique<NetworkImpl>();
-	if (!(is >> *net))
+	BitTimingImpl bt = std::move(static_cast<BitTimingImpl&>(*bit_timing));
+	bit_timing.reset(nullptr);
+	std::map<std::string, NodeImpl> ns;
+	std::map<std::string, ValueTableImpl> vts;
+	std::unordered_map<uint64_t, MessageImpl> ms;
+	std::map<std::string, EnvironmentVariableImpl> evs;
+	std::map<std::string, AttributeDefinitionImpl> ads;
+	std::map<std::string, AttributeImpl> avds;
+	std::map<std::string, AttributeImpl> avs;
+	for (auto& n : nodes)
 	{
-		return nullptr;
+		ns.insert(std::make_pair(n.first, std::move(static_cast<NodeImpl&>(*n.second))));
+		n.second.reset(nullptr);
 	}
-	return std::move(net);
+	for (auto& vt : value_tables)
+	{
+		vts.insert(std::make_pair(vt.first, std::move(static_cast<ValueTableImpl&>(*vt.second))));
+		vt.second.reset(nullptr);
+	}
+	for (auto& m : messages)
+	{
+		ms.insert(std::make_pair(m.first, std::move(static_cast<MessageImpl&>(*m.second))));
+		m.second.reset(nullptr);
+	}
+	for (auto& ev : environment_variables)
+	{
+		evs.insert(std::make_pair(ev.first, std::move(static_cast<EnvironmentVariableImpl&>(*ev.second))));
+		ev.second.reset(nullptr);
+	}
+	for (auto& ad : attribute_definitions)
+	{
+		ads.insert(std::make_pair(ad.first, std::move(static_cast<AttributeDefinitionImpl&>(*ad.second))));
+		ad.second.reset(nullptr);
+	}
+	for (auto& ad : attribute_defaults)
+	{
+		avds.insert(std::make_pair(ad.first, std::move(static_cast<AttributeImpl&>(*ad.second))));
+		ad.second.reset(nullptr);
+	}
+	for (auto& ad : attribute_values)
+	{
+		avs.insert(std::make_pair(ad.first, std::move(static_cast<AttributeImpl&>(*ad.second))));
+		ad.second.reset(nullptr);
+	}
+	return std::make_unique<NetworkImpl>(
+		  std::move(version)
+		, std::move(new_symbols)
+		, std::move(bt)
+		, std::move(ns)
+		, std::move(vts)
+		, std::move(ms)
+		, std::move(evs)
+		, std::move(ads)
+		, std::move(avds)
+		, std::move(avs)
+		, std::move(comment));
 }
 
+NetworkImpl::NetworkImpl(
+	  std::string&& version
+	, std::vector<std::string>&& new_symbols
+	, BitTimingImpl&& bit_timing
+	, std::map<std::string, NodeImpl>&& nodes
+	, std::map<std::string, ValueTableImpl>&& value_tables
+	, std::unordered_map<uint64_t, MessageImpl>&& messages
+	, std::map<std::string, EnvironmentVariableImpl>&& environment_variables
+	, std::map<std::string, AttributeDefinitionImpl>&& attribute_definitions
+	, std::map<std::string, AttributeImpl>&& attribute_defaults
+	, std::map<std::string, AttributeImpl>&& attribute_values
+	, std::string&& comment)
+
+	: _version(std::move(version))
+	, _new_symbols(std::move(new_symbols))
+	, _bit_timing(std::move(bit_timing))
+	, _nodes(std::move(nodes))
+	, _value_tables(std::move(value_tables))
+	, _messages(std::move(messages))
+	, _environment_variables(std::move(environment_variables))
+	, _attribute_definitions(std::move(attribute_definitions))
+	, _attribute_defaults(std::move(attribute_defaults))
+	, _attribute_values(std::move(attribute_values))
+	, _comment(std::move(comment))
+{}
 const std::string& NetworkImpl::getVersion() const
 {
 	return _version;
@@ -91,7 +173,7 @@ const Message* NetworkImpl::getMessageById(uint64_t id) const
 std::vector<std::pair<uint64_t, const Message*>> NetworkImpl::getMessages() const
 {
 	std::vector<std::pair<uint64_t, const Message*>> result;
-	for (auto& m : _messages)
+	for (const auto& m : _messages)
 	{
 		result.emplace_back(m.first, &m.second);
 	}
@@ -183,21 +265,12 @@ const Message* NetworkImpl::findParentMessage(const Signal* sig) const
 	for (const auto& p : _messages)
 	{
 		const MessageImpl& msg = p.second;
-		auto iter = msg._signals.find(sig->getName());
-		if (iter != msg._signals.end() && &iter->second == sig)
+		auto iter = msg.signals().find(sig->getName());
+		if (iter != msg.signals().end() && &iter->second == sig)
 		{
 			result = &msg;
 			break;
 		}
-	}
-	return result;
-}
-Message* NetworkImpl::addMessage(uint64_t id)
-{
-	Message* result = nullptr;
-	if (_messages.find(id) == _messages.end())
-	{
-		result = &_messages[id];
 	}
 	return result;
 }

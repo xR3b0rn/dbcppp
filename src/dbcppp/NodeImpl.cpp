@@ -3,12 +3,24 @@
 
 using namespace dbcppp;
 
-NodeImpl::NodeImpl()
+std::unique_ptr<Node> Node::create(
+	std::string&& name,
+	std::string&& comment,
+	std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values)
 {
+	std::map<std::string, AttributeImpl> avs;
+	for (auto& av : attribute_values)
+	{
+		avs.insert(std::make_pair(av.first, std::move(*static_cast<AttributeImpl*>(av.second.get()))));
+		av.second.reset(nullptr);
+	}
+	return std::make_unique<NodeImpl>(std::move(name), std::move(comment), std::move(avs));
 }
-NodeImpl::~NodeImpl()
-{
-}
+NodeImpl::NodeImpl(std::string&& name, std::string&& comment, std::map<std::string, AttributeImpl>&& attribute_values)
+	: _name(std::move(name))
+	, _comment(std::move(comment))
+	, _attribute_values(std::move(attribute_values))
+{}
 const std::string& NodeImpl::getName() const
 {
 	return _name;

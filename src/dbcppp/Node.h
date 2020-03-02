@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <memory>
 
 #include "Helper.h"
 #include "Export.h"
@@ -10,10 +11,14 @@
 
 namespace dbcppp
 {
-	class Network;
 	class DBCPPP_API Node
 	{
 	public:
+		static std::unique_ptr<Node> create(
+			std::string&& name,
+			std::string&& comment,
+			std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values);
+
 		virtual ~Node() = default;
 		virtual const std::string& getName() const = 0;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;

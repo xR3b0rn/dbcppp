@@ -16,7 +16,6 @@
 
 namespace dbcppp
 {
-	class Message;
 	class DBCPPP_API Signal
 	{
 	public:
@@ -44,6 +43,26 @@ namespace dbcppp
 			Integer, Float, Double
 		};
 		
+		static std::unique_ptr<Signal> create(
+			  uint64_t message_size
+			, std::string&& name
+			, Multiplexer multiplexer_indicator
+			, uint64_t multiplexer_switch_value
+			, uint64_t start_bit
+			, uint64_t bit_size
+			, ByteOrder byte_order
+			, ValueType value_type
+			, double factor
+			, double offset
+			, double minimum
+			, double maximum
+			, std::string&& unit
+			, std::set<std::string>&& receivers
+			, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+			, std::map<double, std::string>&& value_descriptions
+			, std::string&& comment
+			, Signal::ExtendedValueType extended_value_type);
+
 		virtual ~Signal() = default;
 		virtual const std::string& getName() const = 0;
 		virtual Multiplexer getMultiplexerIndicator() const = 0;
@@ -105,9 +124,9 @@ namespace dbcppp
 
 	protected:
 		// instead of using virtuals dynamic dispatching use function pointers
-		double (*_decode8)(const Signal* sig, const void* _8byte) noexcept;
-		double (*_decode64)(const Signal* sig, const void* _64byte) noexcept;
-		double (*_raw_to_phys)(const Signal* sig, double raw) noexcept;
-		double (*_phys_to_raw)(const Signal* sig, double phys) noexcept;
+		double (*_decode8)(const Signal* sig, const void* _8byte) noexcept {nullptr};
+		double (*_decode64)(const Signal* sig, const void* _64byte) noexcept {nullptr};
+		double (*_raw_to_phys)(const Signal* sig, double raw) noexcept {nullptr};
+		double (*_phys_to_raw)(const Signal* sig, double phys) noexcept {nullptr};
 	};
 }

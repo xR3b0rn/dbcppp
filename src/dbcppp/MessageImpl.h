@@ -12,6 +12,17 @@ namespace dbcppp
 		: public Message
 	{
 	public:
+		MessageImpl(
+			  uint64_t id
+			, std::string&& name
+			, uint64_t message_size
+			, std::string&& transmitter
+			, std::set<std::string>&& message_transmitters
+			, std::map<std::string, SignalImpl>&& signals
+			, std::map<std::string, AttributeImpl>&& attribute_values
+			, std::string&& comment);
+		MessageImpl(MessageImpl&&) = default;
+		MessageImpl& operator=(MessageImpl&&) = default;
 		virtual uint64_t getId() const override;
 		virtual const std::string& getName() const override;
 		virtual uint64_t getMessageSize() const override;
@@ -23,15 +34,10 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
 		virtual const std::string& getComment() const override;
-
-		virtual Signal* addSignal(
-			const std::string& name,
-			Signal::ByteOrder byte_order,
-			Signal::ValueType value_type,
-			uint64_t bit_size, uint64_t start_bit,
-			uint64_t message_size) override;
-		virtual void removeSignal(const std::string& name) override;
 		
+		const std::map<std::string, SignalImpl>& signals() const;
+		
+	private:
 		uint64_t _id;
 		std::string _name;
 		uint64_t _message_size;

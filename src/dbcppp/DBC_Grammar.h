@@ -9,7 +9,7 @@
 
 namespace dbcppp
 {
-	using variant_attr_value_t = boost::variant<uint64_t, int64_t, double, std::string>;
+	using variant_attr_value_t = boost::variant<int64_t, double, std::string>;
 
 	struct G_Version
 	{
@@ -200,12 +200,12 @@ namespace dbcppp
 	{
 		uint64_t message_id;
 		std::string signal_name;
-		std::map<double, std::string> value_description;
+		std::map<double, std::string> value_descriptions;
 	};
 	struct G_ValueDescriptionEnvVar
 	{
 		std::string env_var_name;
-		std::map<double, std::string> value_description;
+		std::map<double, std::string> value_descriptions;
 	};
 	struct G_ValueDescription
 	{
