@@ -34,7 +34,8 @@ A C++ DBC file parser based on `boost.spirit`. This library is designed for decd
 mkdir build
 cd build
 cmake ..
-make
+make -j6
+make RunTests
 make install
 ```
 ## Dependencies
