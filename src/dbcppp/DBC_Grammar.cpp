@@ -632,7 +632,7 @@ private:
 };
 std::unique_ptr<const Network> Network::fromDBCIStream(std::istream& is)
 {
-	std::unique_ptr<const Network> result = false;
+	std::unique_ptr<const Network> result;
 	std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 	auto begin{str.begin()}, end{str.end()};
 	NetworkGrammar<std::string::iterator> g(begin);
