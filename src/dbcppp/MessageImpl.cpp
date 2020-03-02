@@ -1,8 +1,61 @@
 
 #include "MessageImpl.h"
+#include <boost/move/unique_ptr.hpp>
 
 using namespace dbcppp;
 
+
+std::unique_ptr<Message> Message::create(
+	  uint64_t id
+	, std::string&& name
+	, uint64_t message_size
+	, std::string&& transmitter
+	, std::set<std::string>&& message_transmitters
+	, std::map<std::string, std::unique_ptr<Signal>>&& signals
+	, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+	, std::string&& comment)
+{
+	std::map<std::string, SignalImpl> ss;
+	std::map<std::string, AttributeImpl> avs;
+	for (auto& s : signals)
+	{
+		ss.insert(std::make_pair(s.first, std::move(static_cast<SignalImpl&>(*s.second))));
+		s.second.reset(nullptr);
+	}
+	for (auto& av : attribute_values)
+	{
+		avs.insert(std::make_pair(av.first, std::move(static_cast<AttributeImpl&>(*av.second))));
+		av.second.reset(nullptr);
+	}
+	return std::make_unique<MessageImpl>(
+		  id
+		, std::move(name)
+		, message_size
+		, std::move(transmitter)
+		, std::move(message_transmitters)
+		, std::move(ss)
+		, std::move(avs)
+		, std::move(comment));
+}
+MessageImpl::MessageImpl(
+	  uint64_t id
+	, std::string&& name
+	, uint64_t message_size
+	, std::string&& transmitter
+	, std::set<std::string>&& message_transmitters
+	, std::map<std::string, SignalImpl>&& signals
+	, std::map<std::string, AttributeImpl>&& attribute_values
+	, std::string&& comment)
+	
+	: _id(std::move(id))
+	, _name(std::move(name))
+	, _message_size(std::move(message_size))
+	, _transmitter(std::move(transmitter))
+	, _message_transmitters(std::move(message_transmitters))
+	, _signals(std::move(signals))
+	, _attribute_values(std::move(attribute_values))
+	, _comment(std::move(comment))
+{}
 uint64_t MessageImpl::getId() const
 {
 	return _id;
@@ -45,7 +98,7 @@ const Signal* MessageImpl::getSignalByName(const std::string& name) const
 std::vector<std::pair<std::string, const Signal*>> MessageImpl::getSignals() const
 {
 	std::vector<std::pair<std::string, const Signal*>> result;
-	for (auto& s : _signals)
+	for (const auto& s : _signals)
 	{
 		result.emplace_back(s.first, &s.second);
 	}
@@ -74,29 +127,9 @@ const std::string& MessageImpl::getComment() const
 {
 	return _comment;
 }
-Signal* MessageImpl::addSignal(
-	const std::string& name,
-	Signal::ByteOrder byte_order,
-	Signal::ValueType value_type,
-	uint64_t bit_size, uint64_t start_bit,
-	uint64_t message_size)
+const std::map<std::string, SignalImpl>& MessageImpl::signals() const
 {
-	Signal* result = nullptr;
-	if (_signals.find(name) == _signals.end())
-	{
-		SignalImpl sig(byte_order, value_type, bit_size, start_bit, message_size);
-		sig._name = name;
-		if (sig.getError() == SignalImpl::ErrorCode::NoError)
-		{
-			_signals[name] = std::move(sig);
-			result = &_signals[name];
-		}
-	}
-	return result;
-}
-void MessageImpl::removeSignal(const std::string& name)
-{
-	_signals.erase(name);
+	return _signals;
 }
 
 void Message::serializeToStream(std::ostream& os) const

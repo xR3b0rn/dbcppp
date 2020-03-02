@@ -3,6 +3,22 @@
 
 using namespace dbcppp;
 
+std::unique_ptr<AttributeDefinition> AttributeDefinition::create(
+	  std::string&& name
+	, ObjectType object_type
+	, value_type_t&& value_type)
+{
+	return std::make_unique<AttributeDefinitionImpl>(
+		  std::move(name)
+		, object_type
+		, std::move(value_type));
+}
+
+AttributeDefinitionImpl::AttributeDefinitionImpl(std::string&& name, ObjectType object_type, value_type_t value_type)
+	: _name(std::move(name))
+	, _object_type(std::move(object_type))
+	, _value_type(std::move(value_type))
+{}
 AttributeDefinition::ObjectType AttributeDefinitionImpl::getObjectType() const
 {
 	return _object_type;

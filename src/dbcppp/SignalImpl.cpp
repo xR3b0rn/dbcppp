@@ -4,7 +4,7 @@
 
 using namespace dbcppp;
 
-template <dbcppp::Signal::ByteOrder aByteOrder, dbcppp::Signal::ValueType aValueType>
+template <dbcppp::Signal::ByteOrder aByteOrder, dbcppp::Signal::ValueType aValueType, dbcppp::Signal::ExtendedValueType aExtendedValueType>
 double template_decode8(const Signal* sig, const void* _8byte) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
@@ -19,7 +19,15 @@ double template_decode8(const Signal* sig, const void* _8byte) noexcept
 		// only reverse byte order when native byte order isn't little endian
 		boost::endian::native_to_little_inplace(data);
 	}
+	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
+	{
+		return *reinterpret_cast<double*>(&data);
+	}
 	data >>= sigi->_fixed_start_bit;
+	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
+	{
+		return *reinterpret_cast<float*>(&data);
+	}
 	data &= sigi->_mask;
 	if constexpr (aValueType == Signal::ValueType::Signed)
 	{
@@ -29,13 +37,12 @@ double template_decode8(const Signal* sig, const void* _8byte) noexcept
 	}
 	return double(data);
 }
-template <dbcppp::Signal::ByteOrder aByteOrder, dbcppp::Signal::ValueType aValueType>
+template <dbcppp::Signal::ByteOrder aByteOrder, dbcppp::Signal::ValueType aValueType, dbcppp::Signal::ExtendedValueType aExtendedValueType>
 double template_decode64(const Signal* sig, const void* _64byte) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
 	uint8_t data8[64];
 	std::memcpy(data8, _64byte, 64);
-	
 	if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
 	{
 		// only reverse byte order when native byte order isn't big endian
@@ -47,7 +54,15 @@ double template_decode64(const Signal* sig, const void* _64byte) noexcept
 		native_to_little_inplace_64(reinterpret_cast<uint64_t*>(data8));
 	}
 	uint64_t data = *reinterpret_cast<uint64_t*>(&data8[sigi->_byte_pos_fd]);
+	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
+	{
+		return *reinterpret_cast<double*>(&data);
+	}
 	data >>= sigi->_fixed_start_bit_fd;
+	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
+	{
+		return *reinterpret_cast<float*>(&data);
+	}
 	data &= sigi->_mask;
 	if constexpr (aValueType == Signal::ValueType::Signed)
 	{
@@ -60,20 +75,104 @@ double template_decode64(const Signal* sig, const void* _64byte) noexcept
 double raw_to_phys(const Signal* sig, double raw) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
-	return raw * sigi->_factor + sigi->_offset;
+	return raw * sigi->getFactor() + sigi->getOffset();
 }
 double phys_to_raw(const Signal* sig, double phys) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
-	return (phys - sigi->_offset) / sigi->_factor;
+	return (phys - sigi->getOffset()) / sigi->getFactor();
 }
 
-SignalImpl::SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_size, uint64_t start_bit, uint64_t message_size/* = 8 */)
-	: _byte_order(byte_order)
-	, _value_type(value_type)
-	, _bit_size(bit_size)
-	, _start_bit(start_bit)
-	, _error(ErrorCode::NoError)
+std::unique_ptr<Signal> Signal::create(
+	  uint64_t message_size
+	, std::string&& name
+	, Multiplexer multiplexer_indicator
+	, uint64_t multiplexer_switch_value
+	, uint64_t start_bit
+	, uint64_t bit_size
+	, ByteOrder byte_order
+	, ValueType value_type
+	, double factor
+	, double offset
+	, double minimum
+	, double maximum
+	, std::string&& unit
+	, std::set<std::string>&& receivers
+	, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+	, std::map<double, std::string>&& value_descriptions
+	, std::string&& comment
+	, Signal::ExtendedValueType extended_value_type)
+{
+	std::unique_ptr<SignalImpl> result;
+	std::map<std::string, AttributeImpl> avs;
+	for (auto& av : attribute_values)
+	{
+		avs.insert(std::make_pair(av.first, std::move(*static_cast<AttributeImpl*>(av.second.get()))));
+		av.second.reset(nullptr);
+	}
+	result = std::make_unique<SignalImpl>(
+		  message_size
+		, std::move(name)
+		, multiplexer_indicator
+		, multiplexer_switch_value
+		, start_bit
+		, bit_size
+		, byte_order
+		, value_type
+		, factor
+		, offset
+		, minimum
+		, maximum
+		, std::move(unit)
+		, std::move(receivers)
+		, std::move(avs)
+		, std::move(value_descriptions)
+		, std::move(comment)
+		, extended_value_type);
+	if (result->getError() != SignalImpl::ErrorCode::NoError)
+	{
+		result = nullptr;
+	}
+	return result;
+}
+SignalImpl::SignalImpl(
+	  uint64_t message_size
+	, std::string&& name
+	, Multiplexer multiplexer_indicator
+	, uint64_t multiplexer_switch_value
+	, uint64_t start_bit
+	, uint64_t bit_size
+	, ByteOrder byte_order
+	, ValueType value_type
+	, double factor
+	, double offset
+	, double minimum
+	, double maximum
+	, std::string&& unit
+	, std::set<std::string>&& receivers
+	, std::map<std::string, AttributeImpl>&& attribute_values
+	, std::map<double, std::string>&& value_descriptions
+	, std::string&& comment
+	, ExtendedValueType extended_value_type)
+	
+	: _name(std::move(name))
+	, _multiplexer_indicator(std::move(multiplexer_indicator))
+	, _multiplexer_switch_value(std::move(multiplexer_switch_value))
+	, _start_bit(std::move(start_bit))
+	, _bit_size(std::move(bit_size))
+	, _byte_order(std::move(byte_order))
+	, _value_type(std::move(value_type))
+	, _factor(std::move(factor))
+	, _offset(std::move(offset))
+	, _minimum(std::move(minimum))
+	, _maximum(std::move(maximum))
+	, _unit(std::move(unit))
+	, _receivers(std::move(receivers))
+	, _attribute_values(std::move(attribute_values))
+	, _value_descriptions(std::move(value_descriptions))
+	, _comment(std::move(comment))
+	, _extended_value_type(std::move(extended_value_type))
+	, _error(Signal::ErrorCode::NoError)
 {
 	// check for out of frame size error
 	switch (byte_order)
@@ -93,10 +192,25 @@ SignalImpl::SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_
 		}
 		break;
 	}
+	switch (extended_value_type)
+	{
+	case Signal::ExtendedValueType::Float:
+		if (bit_size != 32)
+		{
+			_error = ErrorCode::WrongBitSizeForExtendedDataType;
+		}
+		break;
+	case Signal::ExtendedValueType::Double:
+		if (bit_size != 64)
+		{
+			_error = ErrorCode::WrongBitSizeForExtendedDataType;
+		}
+		break;
+	}
 
 	// save some additional values to speed up decoding
-	_mask = (1ull << _bit_size) - 1;
-	_mask_signed = (1ull << (_bit_size - 1));
+	_mask =  (1ull << (_bit_size - 1ull) << 1ull) - 1;
+	_mask_signed = 1ull << (_bit_size - 1ull);
 	_fixed_start_bit =
 		  _byte_order == dbcppp::Signal::ByteOrder::BigEndian
 		? (8 * (7 - (_start_bit / 8))) + (_start_bit % 8) - (_bit_size - 1)
@@ -112,26 +226,102 @@ SignalImpl::SignalImpl(ByteOrder byte_order, ValueType value_type, uint64_t bit_
 	if (_byte_order == Signal::ByteOrder::BigEndian &&
 		_value_type == Signal::ValueType::Signed)
 	{
-		_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed>;
-		_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed>;
+		switch (_extended_value_type)
+		{
+		case Signal::ExtendedValueType::Integer:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>;
+			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>;
+			break;
+		}
+		case Signal::ExtendedValueType::Float:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>;
+			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>;
+			break;
+		}
+		case Signal::ExtendedValueType::Double:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>;
+			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>;
+			break;
+		}
+		}
 	}
 	else if (_byte_order == dbcppp::Signal::ByteOrder::BigEndian &&
 		_value_type == dbcppp::Signal::ValueType::Unsigned)
 	{
-		_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned>;
-		_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned>;
+		switch (_extended_value_type)
+		{
+		case Signal::ExtendedValueType::Integer:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Integer>;
+			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Integer>;
+			break;
+		}
+		case Signal::ExtendedValueType::Float:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Float>;
+			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Float>;
+			break;
+		}
+		case Signal::ExtendedValueType::Double:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Double>;
+			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Double>;
+			break;
+		}
+		}
 	}
 	else if (_byte_order == Signal::ByteOrder::LittleEndian &&
 		_value_type == Signal::ValueType::Signed)
 	{
-		_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed>;
-		_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed>;
+		switch (_extended_value_type)
+		{
+		case Signal::ExtendedValueType::Integer:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>;
+			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>;
+			break;
+		}
+		case Signal::ExtendedValueType::Float:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>;
+			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>;
+			break;
+		}
+		case Signal::ExtendedValueType::Double:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>;
+			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>;
+			break;
+		}
+		}
 	}
 	else if (_byte_order == Signal::ByteOrder::LittleEndian &&
 		_value_type == Signal::ValueType::Unsigned)
 	{
-		_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned>;
-		_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned>;
+		switch (_extended_value_type)
+		{
+		case Signal::ExtendedValueType::Integer:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Integer>;
+			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Integer>;
+			break;
+		}
+		case Signal::ExtendedValueType::Float:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Float>;
+			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Float>;
+			break;
+		}
+		case Signal::ExtendedValueType::Double:
+		{
+			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Double>;
+			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Double>;
+			break;
+		}
+		}
 	}
 	_raw_to_phys = ::raw_to_phys;
 	_phys_to_raw = ::phys_to_raw;
@@ -239,7 +429,7 @@ const std::string& SignalImpl::getComment() const
 {
 	return _comment;
 }
-boost::optional<Signal::ExtendedValueType> SignalImpl::getExtendedValueType() const
+Signal::ExtendedValueType SignalImpl::getExtendedValueType() const
 {
 	return _extended_value_type;
 }

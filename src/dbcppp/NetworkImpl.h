@@ -16,6 +16,21 @@ namespace dbcppp
 		: public Network
 	{
 	public:
+		NetworkImpl(
+			  std::string&& version
+			, std::vector<std::string>&& new_symbols
+			, BitTimingImpl&& bit_timing
+			, std::map<std::string, NodeImpl>&& nodes
+			, std::map<std::string, ValueTableImpl>&& value_tables
+			, std::unordered_map<uint64_t, MessageImpl>&& messages
+			, std::map<std::string, EnvironmentVariableImpl>&& environment_variables
+			, std::map<std::string, AttributeDefinitionImpl>&& attribute_definitions
+			, std::map<std::string, AttributeImpl>&& attribute_defaults
+			, std::map<std::string, AttributeImpl>&& attribute_values
+			, std::string&& comment);
+		NetworkImpl(NetworkImpl&&) = default;
+		NetworkImpl& operator=(NetworkImpl&&) = default;
+
 		virtual const std::string& getVersion() const override;
 		virtual bool hasNewSymbol(const std::string& name) const override;
 		virtual std::vector<const std::string*> getNewSymbols() const override;
@@ -38,8 +53,7 @@ namespace dbcppp
 
 		virtual const Message* findParentMessage(const Signal* sig) const override;
 
-		virtual Message* addMessage(uint64_t id) override;
-
+	private:
 		std::string _version;
 		std::vector<std::string> _new_symbols;
 		BitTimingImpl _bit_timing;
