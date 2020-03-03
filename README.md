@@ -74,21 +74,19 @@ int main()
 # Decode-function
 The signals decode function is using prestored masks and fixed offsets to speed up calculation, therefore the decoding-function should be almost as fast as a code generated decode function would be. The assembly of the `decode8` on its critical path (signed and byte swap must happen) looks similar to this:
 ```
-template_decode8(Signal const*, void const*):
-        mov     rax, QWORD PTR [rsi]
-        mov     rcx, QWORD PTR [rdi]
+decode8(unsigned long, unsigned long, unsigned long, unsigned long):
+        bswap   rdi
+        shr     rdi, cl
         pxor    xmm0, xmm0
-        mov     rdx, QWORD PTR [rdi+16]
-        bswap   rax
-        shr     rax, cl
-        and     rax, QWORD PTR [rdi+8]
-        and     rdx, rax
-        neg     rdx
+        and     rsi, rdi
+        mov     rax, rsi
         or      rax, rdx
-        cvtsi2sd        xmm0, rax
+        test    rsi, rdx
+        cmovne  rsi, rax
+        cvtsi2sd        xmm0, rsi
         ret
 ```
-Assembly was generated using Compiler Explorer: https://godbolt.org/z/8YFjok
+Assembly was generated using Compiler Explorer: https://godbolt.org/z/dHRqE4
 # Known issues
 * decode64 isn't working correctly on LittleEndian-maschine if the ValueType of the Signal is BigEndian
 * both decode functions weren't tested on a BigEndian-maschine
