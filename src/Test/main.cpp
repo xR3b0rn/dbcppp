@@ -79,10 +79,31 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
             ++dstBit;
         }
     }
+
     switch (sig.getExtendedValueType())
     {
-    case dbcppp::Signal::ExtendedValueType::Float: return *reinterpret_cast<float*>(&retVal);
-    case dbcppp::Signal::ExtendedValueType::Double: return *reinterpret_cast<double*>(&retVal);
+    case dbcppp::Signal::ExtendedValueType::Float:
+        {
+            std::cout << "easy_decode raw: " << std::hex << retVal << std::endl;
+            //https://babbage.cs.qc.cuny.edu/IEEE-754.old/32bit.html
+
+            unsigned int sign     = (retVal & 0x80000000); //01111111 10000000 00000000 00000000
+            unsigned int exponent = (retVal & 0x7F800000); //01111111 10000000 00000000 00000000
+            unsigned int mantessa = (retVal & 0x007FFFFF); //00000000 01111111 11111111 11111111
+            float normalized_exponent = (float) ((signed char) ((exponent>>23) - 127));
+            float normalized_mantessa = (float) 1 + (float) mantessa / pow((float)2,(float)23);
+            float result = normalized_mantessa * pow((float)2,(float)normalized_exponent);
+            if (sign != 0) result = result * (float) (-1);
+            if (fabs(result) < pow((float) 10, (float) -38)) result = 0;
+
+            std::cout << " float decoded: " << *reinterpret_cast<float*>(&result) << std::endl;
+            return *reinterpret_cast<float*>(&result);
+        }
+
+    case dbcppp::Signal::ExtendedValueType::Double:
+        {
+            return *reinterpret_cast<double*>(&retVal);
+        }
     }
     if (sig.getValueType() == dbcppp::Signal::ValueType::Signed)
     {
@@ -115,7 +136,7 @@ std::vector<std::string> dbc_to_vec(std::istream& is)
 BOOST_AUTO_TEST_CASE(DBCParsing)
 {
     std::string dbc_file(TEST_DBC);
-    
+
     BOOST_TEST_MESSAGE("Testing DBC AST tree for correctness!");
 
     if (dbc_file != "")
@@ -154,14 +175,15 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
         }
     }
 }
-BOOST_AUTO_TEST_CASE(Test_Decoding8)
-{
-    std::size_t n_tests = 99999;
 
-    BOOST_TEST_MESSAGE("Testing decode8-function with " << n_tests << " randomly generated tests...");
+
+BOOST_AUTO_TEST_CASE(Test_Decoding8_Float)
+{
+    std::size_t n_tests = 9999;
+
+    BOOST_TEST_MESSAGE("Testing decode8-function with " << n_tests << " randomly generated float and double tests...");
 
     uint32_t seed = static_cast<uint32_t>(time(0));
-    std::random_device dev;
     std::default_random_engine rng(seed);
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
@@ -169,18 +191,19 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 
     std::vector<uint8_t> data;
     std::vector<std::size_t> indices;
+
     for (std::size_t i = 0; i < 64; i++) indices.push_back(i);
     for (std::size_t i = 0; i < n_tests; i++)
     {
         std::unique_ptr<Signal> sig;
         auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
         auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_bit_size = dist(rng) % 64 + 1;
+        auto rnd_bit_size = 32 ;
         Signal::ExtendedValueType rnd_extended_value_type = Signal::ExtendedValueType::Integer;
-        switch (dist(rng) % 3)
+        switch ((dist(rng) % 2) + 1)
         {
-        case 1: rnd_extended_value_type = Signal::ExtendedValueType::Float; rnd_bit_size = 32; break;
-        case 2: rnd_extended_value_type = Signal::ExtendedValueType::Double; rnd_bit_size = 64; break;
+            case 1: rnd_extended_value_type = Signal::ExtendedValueType::Float; rnd_bit_size = 32; break;
+            case 2: rnd_extended_value_type = Signal::ExtendedValueType::Double; rnd_bit_size = 64; break;
         }
         if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
         {
@@ -190,7 +213,7 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
                 dist(rng) % (64 - rnd_bit_size);
             }
             sig = Signal::create(8, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
-                rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", Signal::ExtendedValueType::Integer);
+                                 rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
         }
         else
         {
@@ -200,7 +223,7 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
             for (auto rnd_start_bit : indices)
             {
                 sig = Signal::create(8, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
-                    rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", Signal::ExtendedValueType::Integer);
+                                     rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
                 if (sig)
                 {
                     break;
@@ -215,12 +238,13 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
         }
         auto dec_easy = easy_decode(*sig, data);
         auto dec_sig = sig->decode8(&data[0]);
-        
+
         std::stringstream ss;
         sig->serializeToStream(ss);
         BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
     }
 }
+
 BOOST_AUTO_TEST_CASE(Test_Decoding64)
 {
     //std::size_t n_tests = 99999;
