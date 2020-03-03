@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 				rnd_start_bit = dist(rng) % (64 - rnd_bit_size);
 			}
 			sig = Signal::create(8, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
-				rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", Signal::ExtendedValueType::Integer);
+				rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
 		}
 		else
 		{
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 			for (auto rnd_start_bit : indices)
 			{
 				sig = Signal::create(8, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
-					rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", Signal::ExtendedValueType::Integer);
+					rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
 				if (sig)
 				{
 					break;
@@ -218,7 +218,12 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 		
 		std::stringstream ss;
 		sig->serializeToStream(ss);
-		BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+		if (dec_easy != dec_sig)
+		{
+			std::cout << "break" << std::endl;
+		}
+		// since nan != nan we reintepret_cast to uint64_t before we compare
+		BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
 	}
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding64)
