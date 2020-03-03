@@ -4,7 +4,7 @@
 
 using namespace dbcppp;
 
-template <dbcppp::Signal::ByteOrder aByteOrder, dbcppp::Signal::ValueType aValueType, dbcppp::Signal::ExtendedValueType aExtendedValueType>
+template <Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
 double template_decode8(const Signal* sig, const void* _8byte) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
@@ -37,7 +37,7 @@ double template_decode8(const Signal* sig, const void* _8byte) noexcept
 	}
 	return double(data);
 }
-template <dbcppp::Signal::ByteOrder aByteOrder, dbcppp::Signal::ValueType aValueType, dbcppp::Signal::ExtendedValueType aExtendedValueType>
+template <Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
 double template_decode64(const Signal* sig, const void* _64byte) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
@@ -72,6 +72,55 @@ double template_decode64(const Signal* sig, const void* _64byte) noexcept
 	}
 	return double(data);
 }
+
+using decode_func_t = double (*)(const Signal*, const void*) noexcept;
+template <std::size_t nBytes, Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
+struct MakeDecode
+{
+	static decode_func_t value(
+		  Signal::ByteOrder byte_order
+		, Signal::ValueType value_type
+		, Signal::ExtendedValueType extended_value_type)
+	{
+		if (aByteOrder == byte_order &&
+			aValueType == value_type &&
+			aExtendedValueType == extended_value_type)
+		{
+			if constexpr (nBytes == 8)
+			{
+				return template_decode8<aByteOrder, aValueType, aExtendedValueType>;
+			}
+			else
+			{
+				return template_decode64<aByteOrder, aValueType, aExtendedValueType>;
+			}
+		}
+		if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
+		{
+			return MakeDecode<nBytes, Signal::ByteOrder::LittleEndian, aValueType, aExtendedValueType>::value(byte_order, value_type, extended_value_type);
+		}
+		else if constexpr (aValueType == Signal::ValueType::Signed)
+		{
+			return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, aExtendedValueType>::value(byte_order, value_type, extended_value_type);
+		}
+		else if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
+		{
+			return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>::value(byte_order, value_type, extended_value_type);
+		}
+		else if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
+		{
+			return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>::value(byte_order, value_type, extended_value_type);
+		}
+		return nullptr;
+	}
+};
+
+template <std::size_t nBytes>
+static decode_func_t make_signal(Signal::ByteOrder byte_order, Signal::ValueType value_type, Signal::ExtendedValueType extended_value_type)
+{
+	return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>::value(byte_order, value_type, extended_value_type);;
+}
+
 double raw_to_phys(const Signal* sig, double raw) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
@@ -222,107 +271,9 @@ SignalImpl::SignalImpl(
 	_byte_pos_fd = _fixed_start_bit_fd / 8;
 	_fixed_start_bit_fd -= _byte_pos_fd * 8;
 
-	// set decoding funciton
-	if (_byte_order == Signal::ByteOrder::BigEndian &&
-		_value_type == Signal::ValueType::Signed)
-	{
-		switch (_extended_value_type)
-		{
-		case Signal::ExtendedValueType::Integer:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>;
-			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>;
-			break;
-		}
-		case Signal::ExtendedValueType::Float:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>;
-			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>;
-			break;
-		}
-		case Signal::ExtendedValueType::Double:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>;
-			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>;
-			break;
-		}
-		}
-	}
-	else if (_byte_order == dbcppp::Signal::ByteOrder::BigEndian &&
-		_value_type == dbcppp::Signal::ValueType::Unsigned)
-	{
-		switch (_extended_value_type)
-		{
-		case Signal::ExtendedValueType::Integer:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Integer>;
-			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Integer>;
-			break;
-		}
-		case Signal::ExtendedValueType::Float:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Float>;
-			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Float>;
-			break;
-		}
-		case Signal::ExtendedValueType::Double:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Double>;
-			_decode64 = template_decode64<Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Double>;
-			break;
-		}
-		}
-	}
-	else if (_byte_order == Signal::ByteOrder::LittleEndian &&
-		_value_type == Signal::ValueType::Signed)
-	{
-		switch (_extended_value_type)
-		{
-		case Signal::ExtendedValueType::Integer:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>;
-			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>;
-			break;
-		}
-		case Signal::ExtendedValueType::Float:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>;
-			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>;
-			break;
-		}
-		case Signal::ExtendedValueType::Double:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>;
-			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>;
-			break;
-		}
-		}
-	}
-	else if (_byte_order == Signal::ByteOrder::LittleEndian &&
-		_value_type == Signal::ValueType::Unsigned)
-	{
-		switch (_extended_value_type)
-		{
-		case Signal::ExtendedValueType::Integer:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Integer>;
-			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Integer>;
-			break;
-		}
-		case Signal::ExtendedValueType::Float:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Float>;
-			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Float>;
-			break;
-		}
-		case Signal::ExtendedValueType::Double:
-		{
-			_decode8 = template_decode8<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Double>;
-			_decode64 = template_decode64<Signal::ByteOrder::LittleEndian, Signal::ValueType::Unsigned, Signal::ExtendedValueType::Double>;
-			break;
-		}
-		}
-	}
+	_decode8 = ::make_signal<8>(_byte_order, _value_type, _extended_value_type);
+	_decode64 = ::make_signal<64>(_byte_order, _value_type, _extended_value_type);
+
 	_raw_to_phys = ::raw_to_phys;
 	_phys_to_raw = ::phys_to_raw;
 }
