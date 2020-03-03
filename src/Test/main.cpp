@@ -218,7 +218,7 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 		
 		std::stringstream ss;
 		sig->serializeToStream(ss);
-		BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+		BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
 	}
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding64)

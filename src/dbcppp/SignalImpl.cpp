@@ -32,7 +32,11 @@ double template_decode8(const Signal* sig, const void* _8byte) noexcept
 	if constexpr (aValueType == Signal::ValueType::Signed)
 	{
 		// bit extending
-		data |= ~((data & sigi->_mask_signed) - 1);
+		// trust the compiler to optimize this
+		if (data & sigi->_mask_signed)
+		{
+			data |= sigi->_mask_signed;
+		}
 		return double(*reinterpret_cast<int64_t*>(&data));
 	}
 	return double(data);
@@ -259,7 +263,7 @@ SignalImpl::SignalImpl(
 
 	// save some additional values to speed up decoding
 	_mask =  (1ull << (_bit_size - 1ull) << 1ull) - 1;
-	_mask_signed = 1ull << (_bit_size - 1ull);
+	_mask_signed = ~((1ull << (_bit_size - 1ull)) - 1);
 	_fixed_start_bit =
 		  _byte_order == dbcppp::Signal::ByteOrder::BigEndian
 		? (8 * (7 - (_start_bit / 8))) + (_start_bit % 8) - (_bit_size - 1)
