@@ -116,7 +116,7 @@ struct MakeDecode
 };
 
 template <std::size_t nBytes>
-static decode_func_t make_signal(Signal::ByteOrder byte_order, Signal::ValueType value_type, Signal::ExtendedValueType extended_value_type)
+static decode_func_t make_decode(Signal::ByteOrder byte_order, Signal::ValueType value_type, Signal::ExtendedValueType extended_value_type)
 {
 	return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>::value(byte_order, value_type, extended_value_type);;
 }
@@ -271,8 +271,8 @@ SignalImpl::SignalImpl(
 	_byte_pos_fd = _fixed_start_bit_fd / 8;
 	_fixed_start_bit_fd -= _byte_pos_fd * 8;
 
-	_decode8 = ::make_signal<8>(_byte_order, _value_type, _extended_value_type);
-	_decode64 = ::make_signal<64>(_byte_order, _value_type, _extended_value_type);
+	_decode8 = ::make_decode<8>(_byte_order, _value_type, _extended_value_type);
+	_decode64 = ::make_decode<64>(_byte_order, _value_type, _extended_value_type);
 
 	_raw_to_phys = ::raw_to_phys;
 	_phys_to_raw = ::phys_to_raw;
