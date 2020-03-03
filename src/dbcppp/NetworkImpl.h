@@ -18,7 +18,7 @@ namespace dbcppp
 	public:
 		NetworkImpl(
 			  std::string&& version
-			, std::vector<std::string>&& new_symbols
+			, std::set<std::string>&& new_symbols
 			, BitTimingImpl&& bit_timing
 			, std::map<std::string, NodeImpl>&& nodes
 			, std::map<std::string, ValueTableImpl>&& value_tables
@@ -52,10 +52,22 @@ namespace dbcppp
 		virtual const std::string& getComment() const override;
 
 		virtual const Message* findParentMessage(const Signal* sig) const override;
+		
+		std::string& version();
+		std::set<std::string>& newSymbols();
+		BitTimingImpl& bitTiming();
+		std::map<std::string, NodeImpl>& nodes();
+		std::map<std::string, ValueTableImpl>& valueTables();
+		std::unordered_map<uint64_t, MessageImpl>& messages();
+		std::map<std::string, EnvironmentVariableImpl>& environmentVariables();
+		std::map<std::string, AttributeDefinitionImpl>& attributeDefinitions();
+		std::map<std::string, AttributeImpl>& attributeDefaults();
+		std::map<std::string, AttributeImpl>& attributeValues();
+		std::string& comment();
 
 	private:
 		std::string _version;
-		std::vector<std::string> _new_symbols;
+		std::set<std::string> _new_symbols;
 		BitTimingImpl _bit_timing;
 		std::map<std::string, NodeImpl> _nodes;
 		std::map<std::string, ValueTableImpl> _value_tables;
@@ -64,7 +76,6 @@ namespace dbcppp
 		std::map<std::string, AttributeDefinitionImpl> _attribute_definitions;
 		std::map<std::string, AttributeImpl> _attribute_defaults;
 		std::map<std::string, AttributeImpl> _attribute_values;
-		//std::map<std::string, AttributeRelation> attribute_relation_values;
 		std::string _comment;
 	};
 }

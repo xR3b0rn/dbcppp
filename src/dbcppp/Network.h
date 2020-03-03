@@ -26,7 +26,7 @@ namespace dbcppp
 	public:
 		static std::unique_ptr<Network> create(
 			  std::string&& version
-			, std::vector<std::string>&& new_symbols
+			, std::set<std::string>&& new_symbols
 			, std::unique_ptr<BitTiming>&& bit_timing
 			, std::map<std::string, std::unique_ptr<Node>>&& nodes
 			, std::map<std::string, std::unique_ptr<ValueTable>>&& value_tables
@@ -36,7 +36,8 @@ namespace dbcppp
 			, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_defaults
 			, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
 			, std::string&& comment);
-		static std::unique_ptr<const Network> fromDBCIStream(std::istream& is);
+		static std::unique_ptr<Network> fromDBC(std::istream& is);
+		static std::unique_ptr<Network> fromDBC(std::istream& is, std::unique_ptr<Network> network);
 
 		virtual ~Network() = default;
 		virtual const std::string& getVersion() const = 0;
@@ -60,6 +61,8 @@ namespace dbcppp
 		virtual const std::string& getComment() const = 0;
 		
 		virtual const Message* findParentMessage(const Signal* sig) const = 0;
+
+		void merge(std::unique_ptr<Network>&& other);
 
 		void serializeToStream(std::ostream& os) const;
 	};

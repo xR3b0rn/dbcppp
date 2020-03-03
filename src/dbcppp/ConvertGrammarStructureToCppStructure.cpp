@@ -1,5 +1,6 @@
 
 #include <boost/log/trivial.hpp>
+#include <iterator>
 #include "NetworkImpl.h"
 #include "DBC_Grammar.h"
 #include "ConvertGrammarStructureToCppStructure.h"
@@ -12,7 +13,12 @@ static auto getVersion(const G_Network& gnet)
 }
 static auto getNewSymbols(const G_Network& gnet)
 {
-	return gnet.new_symbols;
+	std::set<std::string> nodes;
+	for (const auto& ns : gnet.new_symbols)
+	{
+		nodes.insert(ns);
+	}
+	return nodes;
 }
 static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
 {
@@ -199,7 +205,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
 		}
 		for (const auto& n : s.receivers)
 		{
-			receivers.insert(n.name);
+			receivers.insert(n);
 		}
 		SignalImpl ns(
 			  m.size
@@ -238,9 +244,9 @@ static auto getMessageTransmitters(const G_Network& gnet, const G_Message& m)
 		});
 	if (iter_mt != gnet.message_transmitters.end())
 	{
-		for (const G_Node& t : iter_mt->transmitters)
+		for (const auto& t : iter_mt->transmitters)
 		{
-			result.insert(t.name);
+			result.insert(t);
 		}
 	}
 	return result;
@@ -359,7 +365,7 @@ static auto getEnvironmentVariables(const G_Network& gnet)
 		uint64_t data_size = 0;
 		for (const auto& n : ev.access_nodes)
 		{
-			access_nodes.insert(n.name);
+			access_nodes.insert(n);
 		}
 		switch (ev.var_type)
 		{
@@ -528,15 +534,15 @@ static auto getComment(const G_Network& gnet)
 NetworkImpl dbcppp::ConvertGrammarStructureToCppStructure(const G_Network& gnet)
 {
 	return NetworkImpl(
-			  getVersion(gnet)
-			, getNewSymbols(gnet)
-			, getBitTiming(gnet)
-			, getNodes(gnet)
-			, getValueTables(gnet)
-			, getMessages(gnet)
-			, getEnvironmentVariables(gnet)
-			, getAttributeDefinitions(gnet)
-			, getAttributeDefaults(gnet)
-			, getAttributeValues(gnet)
-			, getComment(gnet));
+		  getVersion(gnet)
+		, getNewSymbols(gnet)
+		, getBitTiming(gnet)
+		, getNodes(gnet)
+		, getValueTables(gnet)
+		, getMessages(gnet)
+		, getEnvironmentVariables(gnet)
+		, getAttributeDefinitions(gnet)
+		, getAttributeDefaults(gnet)
+		, getAttributeValues(gnet)
+		, getComment(gnet));
 }

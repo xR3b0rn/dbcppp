@@ -13,29 +13,35 @@ namespace dbcppp
 
 	struct G_Version
 	{
+		std::string::iterator position;
 		std::string version;
 	};
 	struct G_NewSymbols
 	{
+		std::string::iterator position;
 		std::vector<std::string> new_symbols;
 	};
 	struct G_BitTiming
 	{
+		std::string::iterator position;
 		uint64_t baudrate;
 		uint64_t BTR1;
 		uint64_t BTR2;
 	};
 	struct G_Node
 	{
+		std::string::iterator position;
 		std::string name;
 	};
 	struct G_ValueTable
 	{
+		std::string::iterator position;
 		std::string name;
 		std::map<double, std::string> value_encoding_descriptions;
 	};
 	struct G_Signal
 	{
+		std::string::iterator position;
 		std::string name;
 		boost::optional<std::string> multiplexer_indicator;
 		uint64_t start_bit;
@@ -47,10 +53,11 @@ namespace dbcppp
 		double minimum;
 		double maximum;
 		std::string unit;
-		std::vector<G_Node> receivers;
+		std::vector<std::string> receivers;
 	};
 	struct G_Message
 	{
+		std::string::iterator position;
 		uint64_t id;
 		std::string name;
 		uint64_t size;
@@ -59,11 +66,13 @@ namespace dbcppp
 	};
 	struct G_MessageTransmitter
 	{
+		std::string::iterator position;
 		uint64_t id;
-		std::vector<G_Node> transmitters;
+		std::vector<std::string> transmitters;
 	};
 	struct G_EnvironmentVariable
 	{
+		std::string::iterator position;
 		std::string name;
 		uint64_t var_type;
 		double minimum;
@@ -72,15 +81,17 @@ namespace dbcppp
 		double initial_value;
 		uint64_t id;
 		std::string access_type;
-		std::vector<G_Node> access_nodes;
+		std::vector<std::string> access_nodes;
 	};
 	struct G_EnvironmentVariableData
 	{
+		std::string::iterator position;
 		std::string name;
 		uint64_t size;
 	};
 	struct G_SignalType
 	{
+		std::string::iterator position;
 		std::string name;
 		uint64_t size;
 		char byte_order;
@@ -95,54 +106,65 @@ namespace dbcppp
 	};
 	struct G_CommentNetwork
 	{
+		std::string::iterator position;
 		std::string comment;
 	};
 	struct G_CommentNode
 	{
+		std::string::iterator position;
 		std::string node_name;
 		std::string comment;
 	};
 	struct G_CommentMessage
 	{
+		std::string::iterator position;
 		uint64_t message_id;
 		std::string comment;
 	};
 	struct G_CommentSignal
 	{
+		std::string::iterator position;
 		uint64_t message_id;
 		std::string signal_name;
 		std::string comment;
 	};
 	struct G_CommentEnvVar
 	{
+		std::string::iterator position;
 		std::string env_var_name;
 		std::string comment;
 	};
 	using variant_comment_t = boost::variant<G_CommentNetwork, G_CommentNode, G_CommentMessage, G_CommentSignal, G_CommentEnvVar>;
 	struct G_Comment
 	{
+		std::string::iterator position;
 		variant_comment_t comment;
 	};
 	struct G_AttributeValueTypeInt
 	{
+		std::string::iterator position;
 		int64_t minimum;
 		int64_t maximum;
 	};
 	struct G_AttributeValueTypeHex
 	{
+		std::string::iterator position;
 		int64_t minimum;
 		int64_t maximum;
 	};
 	struct G_AttributeValueTypeFloat
 	{
+		std::string::iterator position;
 		double minimum;
 		double maximum;
 	};
 	struct G_AttributeValueTypeString
 	{
+		std::string::iterator position;
 	};
 	struct G_AttributeValueTypeEnum
 	{
+		std::string::iterator position;
 		std::vector<std::string> values;
 	};
 	using variant_attribute_value_t =
@@ -152,38 +174,45 @@ namespace dbcppp
 			G_AttributeValueTypeEnum>;
 	struct G_AttributeValue
 	{
+		std::string::iterator position;
 		variant_attribute_value_t value;
 	};
 	struct G_AttributeDefinition
 	{
+		std::string::iterator position;
 		boost::optional<std::string> object_type;
 		std::string name;
 		G_AttributeValue value_type;
 	};
 	struct G_Attribute
 	{
+		std::string::iterator position;
 		std::string name;
 		variant_attr_value_t value;
 	};
 	struct G_AttributeNetwork
 	{
+		std::string::iterator position;
 		std::string attribute_name;
 		variant_attr_value_t value;
 	};
 	struct G_AttributeNode
 	{
+		std::string::iterator position;
 		std::string attribute_name;
 		std::string node_name;
 		variant_attr_value_t value;
 	};
 	struct G_AttributeMessage
 	{
+		std::string::iterator position;
 		std::string attribute_name;
 		uint64_t message_id;
 		variant_attr_value_t value;
 	};
 	struct G_AttributeSignal
 	{
+		std::string::iterator position;
 		std::string attribute_name;
 		uint64_t message_id;
 		std::string signal_name;
@@ -191,6 +220,7 @@ namespace dbcppp
 	};
 	struct G_AttributeEnvVar
 	{
+		std::string::iterator position;
 		std::string attribute_name;
 		std::string env_var_name;
 		variant_attr_value_t value;
@@ -198,27 +228,32 @@ namespace dbcppp
 	using variant_attribute_t = boost::variant<G_AttributeNetwork, G_AttributeNode, G_AttributeMessage, G_AttributeSignal, G_AttributeEnvVar>;
 	struct G_ValueDescriptionSignal
 	{
+		std::string::iterator position;
 		uint64_t message_id;
 		std::string signal_name;
 		std::map<double, std::string> value_descriptions;
 	};
 	struct G_ValueDescriptionEnvVar
 	{
+		std::string::iterator position;
 		std::string env_var_name;
 		std::map<double, std::string> value_descriptions;
 	};
 	struct G_ValueDescription
 	{
+		std::string::iterator position;
 		boost::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar> description;
 	};
 	struct G_SignalExtendedValueType
 	{
+		std::string::iterator position;
         uint64_t message_id;
         std::string signal_name;
         uint64_t value;
 	};
 	struct G_Network
 	{
+		std::string::iterator position;
 		G_Version version;
 		std::vector<std::string> new_symbols;
 		boost::optional<G_BitTiming> bit_timing;
