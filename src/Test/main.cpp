@@ -19,25 +19,25 @@
 #include <array>
 #include <fstream>
 #include <iostream>
-#include <iostream>
+#include <algorithm>
 #include <functional>
 #include <ctime>
 #include <chrono>
 #include <random>
+#include <string>
 
 #include <boost/endian/conversion.hpp>
 
+#include "Config.h"
 
-#include "../dbcppp/DBC_Grammar.h"
 #include "../dbcppp/Network.h"
-#include "../dbcppp/DBC_Grammar.h"
-#include "../dbcppp/SignalImpl.h"
 
 #define BOOST_TEST_MODULE test
 #include <boost/test/included/unit_test.hpp>
 namespace utf = boost::unit_test;
 
-    double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
+
+double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 {
     if (sig.getBitSize() == 0)
     {
@@ -79,6 +79,11 @@ namespace utf = boost::unit_test;
             ++dstBit;
         }
     }
+    switch (sig.getExtendedValueType())
+    {
+    case dbcppp::Signal::ExtendedValueType::Float: return *reinterpret_cast<float*>(&retVal);
+    case dbcppp::Signal::ExtendedValueType::Double: return *reinterpret_cast<double*>(&retVal);
+    }
     if (sig.getValueType() == dbcppp::Signal::ValueType::Signed)
     {
         if (retVal & (1ull << (sig.getBitSize() - 1)))
@@ -92,144 +97,176 @@ namespace utf = boost::unit_test;
     }
     return double(retVal);
 }
-/*
-BOOST_AUTO_TEST_CASE(Test_Parsing)
+
+std::vector<std::string> dbc_to_vec(std::istream& is)
 {
-    auto net = dbcppp::Network::create();
-    // TODO: create test DBC-file
-}*/
+    std::vector<std::string> result;
+    std::string line;
+    while (std::getline(is, line))
+    {
+        if (line != "")
+        {
+            result.push_back(line);
+        }
+    }
+    return result;
+}
 
 BOOST_AUTO_TEST_CASE(DBCParsing)
 {
-    std::ifstream idbc{"D:/sample.dbc"};
-    auto net = dbcppp::Network::create();
-    std::clock_t begin = std::clock();
+    std::string dbc_file(TEST_DBC);
+    
+    BOOST_TEST_MESSAGE("Testing DBC AST tree for correctness!");
 
-    if (!(idbc >> *net))
+    if (dbc_file != "")
     {
-        std::cout << "DBC parsing failed!" << std::endl;
-        //return 1;
-    }
-    std::cout << double(std::clock() - begin) / CLOCKS_PER_SEC << std::endl;;
-
-    std::cout << "Network" << std::endl;
-    std::cout
-            << "version: " << net->getVersion() << "\n"
-            << "bit timing " << net->getBitTiming().getBaudrate()
-            << std::endl;
-
-    std::cout << " signal_extended_value_types (" << net->getSignalExtendedValues().size() << ")" << std::endl;
-    for (auto element : net->getSignalExtendedValues())
-    {
-        std::cout << "      " << element->getMessageId() << " " << element->getSignalName() << " " << element->getValue() << std::endl;
-    }
-
-    for (auto& message : net->getMessages())
-    {
-        std::cout << message.first
-                  << " name: " << message.second->getName()
-                  << std::endl;
-
-        for (auto& signal : message.second->getSignals())
+        std::vector<std::string> spec;
         {
-            for(auto& valtype : net->getSignalExtendedValues())
+            std::ifstream idbc(dbc_file);
+            spec = dbc_to_vec(idbc);
+        }
+        std::ifstream idbc(dbc_file);
+        auto net = dbcppp::Network::fromDBCIStream(idbc);
+        std::clock_t begin = std::clock();
+
+        BOOST_REQUIRE_MESSAGE(net, "DBC parsing failed!");
+
+        std::stringstream ss;
+        net->serializeToStream(ss);
+        auto imp = dbc_to_vec(ss);
+
+        for (const auto& line : imp)
+        {
+            auto iter = std::find(spec.begin(), spec.end(), line);
+            BOOST_CHECK_MESSAGE(iter != spec.end(), "line: \"" << line << "\" doesn't match any line in the DBC file!");
+            if (iter != spec.end())
             {
-                if(valtype->getMessageId() == message.first && signal.second->getName() == valtype->getSignalName())
-                {
-                    std::cout << valtype->getMessageId() <<   " "  << valtype->getSignalName() << " " << valtype->getValue()  << std::endl;
-                }
-                else
-                {
-                    std::cout << "default" << std::endl;
-                }
+                spec.erase(iter);
             }
         }
-
-        for (auto& signal : message.second->getSignals())
         {
-            std::cout << "     "
-                      << signal.first
-                      << " name: " << signal.second->getName()
-                      << ", start bit: " << signal.second->getStartBit()
-                      << ", start bit: " << signal.second->getStartBit()
-                      << ", bit size : " << signal.second->getBitSize()
-                      << ", factor " << signal.second->getFactor()
-                      << ", offset " << signal.second->getOffset()
-                      << ", min " << signal.second->getMinimum()
-                      << ", max " << signal.second->getMaximum()
-                      << ", comment" << signal.second->getComment()
-                      << std::endl;
-
-            std::cout << "Attributes values" ;
-            for (auto& element : signal.second->getAttributeValues()) {
-                std::cout << element.first << std::endl;
+            std::stringstream ss;
+            for (const auto& line : spec)
+            {
+                ss << line << "\n";
             }
+            BOOST_CHECK_MESSAGE(spec.empty(), "Spec isn't empty!\nNot found lines:\n" << ss.str());
         }
     }
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding8)
 {
-    std::cout << "Testing decode8-function with 99999 randomly generated tests..." << std::endl;
+    std::size_t n_tests = 99999;
 
+    BOOST_TEST_MESSAGE("Testing decode8-function with " << n_tests << " randomly generated tests...");
+
+    uint32_t seed = static_cast<uint32_t>(time(0));
     std::random_device dev;
-    std::mt19937 rng(dev());
+    std::default_random_engine rng(seed);
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
     using namespace dbcppp;
-    SignalImpl sig(Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, 56, 5, 8);
+
     std::vector<uint8_t> data;
-    for (std::size_t i = 0; i < 99999; i++)
+    std::vector<std::size_t> indices;
+    for (std::size_t i = 0; i < 64; i++) indices.push_back(i);
+    for (std::size_t i = 0; i < n_tests; i++)
     {
+        std::unique_ptr<Signal> sig;
         auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
         auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_start_bit = dist(rng) % 54;
-        do
+        auto rnd_bit_size = dist(rng) % 64 + 1;
+        Signal::ExtendedValueType rnd_extended_value_type = Signal::ExtendedValueType::Integer;
+        switch (dist(rng) % 3)
         {
-            auto rnd_bit_size = dist(rng) % (64 - rnd_start_bit);
-            sig = SignalImpl(rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 8);
-        } while (sig.getError() != Signal::ErrorCode::NoError);
+        case 1: rnd_extended_value_type = Signal::ExtendedValueType::Float; rnd_bit_size = 32; break;
+        case 2: rnd_extended_value_type = Signal::ExtendedValueType::Double; rnd_bit_size = 64; break;
+        }
+        if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
+        {
+            uint64_t rnd_start_bit = 0;
+            if (rnd_bit_size != 64)
+            {
+                dist(rng) % (64 - rnd_bit_size);
+            }
+            sig = Signal::create(8, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
+                rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", Signal::ExtendedValueType::Integer);
+        }
+        else
+        {
+            std::random_device rd;
+            std::mt19937 g(rd());
+            std::shuffle(indices.begin(), indices.end(), g);
+            for (auto rnd_start_bit : indices)
+            {
+                sig = Signal::create(8, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
+                    rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", Signal::ExtendedValueType::Integer);
+                if (sig)
+                {
+                    break;
+                }
+            }
+        }
 
         data.clear();
         for (std::size_t j = 0; j < 8; j++)
         {
             data.push_back(uint8_t(dist(rng) % 0xFF));
         }
-        auto dec_easy = easy_decode(sig, data);
-        auto dec_sig = sig.decode8(&data[0]);
-
-        BOOST_CHECK(dec_easy == dec_sig);
+        auto dec_easy = easy_decode(*sig, data);
+        auto dec_sig = sig->decode8(&data[0]);
+        
+        std::stringstream ss;
+        sig->serializeToStream(ss);
+        BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
     }
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding64)
 {
-    std::cout << "Testing decode64-function with 99999 randomly generated tests..." << std::endl;
+    //std::size_t n_tests = 99999;
 
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
+    //BOOST_TEST_MESSAGE("Testing decode64-function with " << n_tests << " randomly generated tests...");
 
-    using namespace dbcppp;
-    SignalImpl sig(Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, 56, 5, 8);
-    std::vector<uint8_t> data;
-    for (std::size_t i = 0; i < 99999; i++)
-    {
-        auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
-        auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_start_bit = dist(rng) % 54;
-        do
-        {
-            auto rnd_bit_size = dist(rng) % (64 - rnd_start_bit);
-            sig = SignalImpl(rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 8);
-        } while (sig.getError() != Signal::ErrorCode::NoError);
+    //uint32_t seed = static_cast<uint32_t>(time(0));
+    //std::random_device dev;
+    //std::default_random_engine rng(seed);
+    //std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
-        data.clear();
-        for (std::size_t j = 0; j < 64; j++)
-        {
-            data.push_back(uint8_t(dist(rng) % 0xFF));
-        }
-        auto dec_easy = easy_decode(sig, data);
-        auto dec_sig = sig.decode8(&data[0]);
+    //using namespace dbcppp;
+    //
+    //std::vector<uint8_t> data;
+    //for (std::size_t i = 0; i < n_tests; i++)
+    //{
+    //    std::unique_ptr<Signal> sig;
+    //    auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
+    //    auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
+    //    auto rnd_bit_size = dist(rng) % 64;
+    //    if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
+    //    {
+    //        auto rnd_start_bit = dist(rng) % (512 - rnd_bit_size);
+    //        msg->removeSignal("Signal");
+    //        sig = msg->addSignal("Signal", rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 64);
+    //    }
+    //    else
+    //    {
+    //        while (!sig)
+    //        {
+    //            auto rnd_start_bit = dist(rng) % 512;
+    //            msg->removeSignal("Signal");
+    //            sig = msg->addSignal("Signal", rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 64);
+    //        }
+    //    }
 
-        BOOST_CHECK(dec_easy == dec_sig);
-    }
+    //    data.clear();
+    //    for (std::size_t j = 0; j < 64; j++)
+    //    {
+    //        data.push_back(uint8_t(dist(rng) % 0xFF));
+    //    }
+    //    auto dec_easy = easy_decode(*sig, data);
+    //    auto dec_sig = sig->decode64(&data[0]);
+    //    
+    //    std::stringstream ss;
+    //    sig->serializeToStream(ss);
+    //    BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+    //}
 }

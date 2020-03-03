@@ -2,7 +2,9 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include "ValueTable.h"
+#include "SignalTypeImpl.h"
 
 namespace dbcppp
 {
@@ -10,11 +12,20 @@ namespace dbcppp
 		: public ValueTable
 	{
 	public:
-		virtual const std::string& getName() const override;
-		virtual std::vector<std::pair<uint64_t, const std::string*>> getValueDescriptions() const override;
-		virtual const std::string* getValueDescriptionById(uint64_t id) const override;
+		ValueTableImpl(
+			  std::string&& name
+			, boost::optional<SignalTypeImpl>&& signal_type
+			, std::map<double, std::string>&& value_encoding_descriptions);
+		ValueTableImpl(ValueTableImpl&&) = default;
 
+		virtual const std::string& getName() const override;
+		virtual boost::optional<const SignalType&> getSignalType() const override;
+		virtual std::vector<std::pair<double, const std::string*>> getValueEncodingDescriptions() const override;
+		virtual const std::string* getValueEncodingDescriptions(double value) const override;
+
+	private:
 		std::string _name;
-		std::map<uint64_t, std::string> _value_descriptions;
+		boost::optional<SignalTypeImpl> _signal_type;
+		std::map<double, std::string> _value_encoding_descriptions;
 	};
 }

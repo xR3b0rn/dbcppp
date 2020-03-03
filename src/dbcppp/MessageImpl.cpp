@@ -1,8 +1,61 @@
 
 #include "MessageImpl.h"
+#include <boost/move/unique_ptr.hpp>
 
 using namespace dbcppp;
 
+
+std::unique_ptr<Message> Message::create(
+	  uint64_t id
+	, std::string&& name
+	, uint64_t message_size
+	, std::string&& transmitter
+	, std::set<std::string>&& message_transmitters
+	, std::map<std::string, std::unique_ptr<Signal>>&& signals
+	, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+	, std::string&& comment)
+{
+	std::map<std::string, SignalImpl> ss;
+	std::map<std::string, AttributeImpl> avs;
+	for (auto& s : signals)
+	{
+		ss.insert(std::make_pair(s.first, std::move(static_cast<SignalImpl&>(*s.second))));
+		s.second.reset(nullptr);
+	}
+	for (auto& av : attribute_values)
+	{
+		avs.insert(std::make_pair(av.first, std::move(static_cast<AttributeImpl&>(*av.second))));
+		av.second.reset(nullptr);
+	}
+	return std::make_unique<MessageImpl>(
+		  id
+		, std::move(name)
+		, message_size
+		, std::move(transmitter)
+		, std::move(message_transmitters)
+		, std::move(ss)
+		, std::move(avs)
+		, std::move(comment));
+}
+MessageImpl::MessageImpl(
+	  uint64_t id
+	, std::string&& name
+	, uint64_t message_size
+	, std::string&& transmitter
+	, std::set<std::string>&& message_transmitters
+	, std::map<std::string, SignalImpl>&& signals
+	, std::map<std::string, AttributeImpl>&& attribute_values
+	, std::string&& comment)
+	
+	: _id(std::move(id))
+	, _name(std::move(name))
+	, _message_size(std::move(message_size))
+	, _transmitter(std::move(transmitter))
+	, _message_transmitters(std::move(message_transmitters))
+	, _signals(std::move(signals))
+	, _attribute_values(std::move(attribute_values))
+	, _comment(std::move(comment))
+{}
 uint64_t MessageImpl::getId() const
 {
 	return _id;
@@ -15,29 +68,20 @@ uint64_t MessageImpl::getMessageSize() const
 {
 	return _message_size;
 }
-const Node* MessageImpl::getTransmitter() const
+const std::string& MessageImpl::getTransmitter() const
 {
 	return _transmitter;
 }
-bool MessageImpl::hasTransmitter(const std::string& name) const
+bool MessageImpl::hasMessageTransmitter(const std::string& name) const
 {
-	bool result = false;
-	for (auto& n : _transmitters)
-	{
-		if (n->getName() == name)
-		{
-			result = true;
-			break;
-		}
-	}
-	return result;
+	return _message_transmitters.find(name) != _message_transmitters.end();
 }
-std::vector<const Node*> MessageImpl::getTransmitters() const
+std::vector<const std::string*> MessageImpl::getMessageTransmitters() const
 {
-	std::vector<const Node*> result;
-	for (auto& n : _transmitters)
+	std::vector<const std::string*> result;
+	for (auto& n : _message_transmitters)
 	{
-		result.emplace_back(n);
+		result.emplace_back(&n);
 	}
 	return result;
 }
@@ -54,7 +98,7 @@ const Signal* MessageImpl::getSignalByName(const std::string& name) const
 std::vector<std::pair<std::string, const Signal*>> MessageImpl::getSignals() const
 {
 	std::vector<std::pair<std::string, const Signal*>> result;
-	for (auto& s : _signals)
+	for (const auto& s : _signals)
 	{
 		result.emplace_back(s.first, &s.second);
 	}
@@ -82,4 +126,18 @@ std::vector<std::pair<std::string, const Attribute*>> MessageImpl::getAttributeV
 const std::string& MessageImpl::getComment() const
 {
 	return _comment;
+}
+const std::map<std::string, SignalImpl>& MessageImpl::signals() const
+{
+	return _signals;
+}
+
+void Message::serializeToStream(std::ostream& os) const
+{
+	os << "BO_ " << getId() << " " << getName() << ": " << getMessageSize() << " " << getTransmitter();
+	for (const auto& s : getSignals())
+	{
+		os << "\n ";
+		s.second->serializeToStream(os);
+	}
 }

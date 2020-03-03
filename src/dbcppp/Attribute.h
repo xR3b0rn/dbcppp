@@ -10,21 +10,23 @@
 
 namespace dbcppp
 {
+	class Network;
 	class DBCPPP_API Attribute
 	{
 	public:
-		struct IntegerValue { int64_t value; };
-		struct HexValue { int64_t value; };
-		struct FloatValue { double value; };
-		struct EnumValue { int64_t value; };
-		struct StringValue { std::string value; };
-
 		using hex_value_t = int64_t;
-		using value_t = boost::variant<IntegerValue, HexValue, FloatValue, EnumValue, StringValue>;
+		using value_t = boost::variant<int64_t, double, std::string>;
+
+		static std::unique_ptr<Attribute> create(
+			  std::string&& name
+			, AttributeDefinition::ObjectType object_type
+			, value_t&& value);
 
 		virtual ~Attribute() = default;
 		virtual const std::string& getName() const = 0;
 		virtual AttributeDefinition::ObjectType getObjectType() const = 0;
 		virtual const value_t& getValue() const = 0;
+
+		void serializeToStream(std::ostream& os, const Network& net) const;
 	};
 }

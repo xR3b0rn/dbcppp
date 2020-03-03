@@ -11,6 +11,23 @@ namespace dbcppp
 		: public EnvironmentVariable
 	{
 	public:
+		EnvironmentVariableImpl(
+			  std::string&& name
+			, VarType var_type
+			, double minimum
+			, double maximum
+			, std::string&& unit
+			, double initial_value
+			, uint64_t ev_id
+			, AccessType access_type
+			, std::set<std::string>&& access_nodes
+			, std::map<double, std::string>&& value_descriptions
+			, uint64_t data_size
+			, std::map<std::string, AttributeImpl>&& attribute_values
+			, std::string&& comment);
+		EnvironmentVariableImpl(EnvironmentVariableImpl&&) = default;
+		EnvironmentVariableImpl& operator=(EnvironmentVariableImpl&&);
+
 		virtual const std::string& getName() const override;
 		virtual VarType getVarType() const override;
 		virtual double getMinimum() const override;
@@ -19,10 +36,10 @@ namespace dbcppp
 		virtual double getInitialValue() const override;
 		virtual uint64_t getEvId() const override;
 		virtual AccessType getAccessType() const override;
-		virtual const Node* getAccessNodeByName(const std::string& name) const override;
-		virtual std::vector<const Node*> getAccessNodes() const override;
-		virtual const std::string* getValueDescriptionById(uint64_t id) const override;
-		virtual std::vector<std::pair<uint64_t, const std::string*>> getValueDescriptions() const override;
+		virtual bool hasAccessNode(const std::string& name) const override;
+		virtual std::vector<const std::string*> getAccessNodes() const override;
+		virtual const std::string* getValueDescriptionById(double id) const override;
+		virtual std::vector<std::pair<double, const std::string*>> getValueDescriptions() const override;
 		virtual uint64_t getDataSize() const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
@@ -36,8 +53,8 @@ namespace dbcppp
 		double _initial_value;
 		uint64_t _ev_id;
 		AccessType _access_type;
-		std::set<NodeImpl*> _access_nodes;
-		std::map<uint64_t, std::string> _value_descriptions;
+		std::set<std::string> _access_nodes;
+		std::map<double, std::string> _value_descriptions;
 		uint64_t _data_size;
 		std::map<std::string, AttributeImpl> _attribute_values;
 		std::string _comment;

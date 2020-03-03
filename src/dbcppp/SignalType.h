@@ -13,6 +13,19 @@ namespace dbcppp
 	class SignalType
 	{
 	public:
+		static std::unique_ptr<SignalType> create(
+			  std::string&& name
+			, uint64_t signal_size
+			, Signal::ByteOrder byte_order
+			, Signal::ValueType value_type
+			, double factor
+			, double offset
+			, double minimum
+			, double maximum
+			, std::string&& unit
+			, double default_value
+			, std::string&& value_table);
+
 		virtual ~SignalType() = default;
 		virtual const std::string& getName() const = 0;
 		virtual uint64_t getSignalSize() const = 0;
@@ -25,5 +38,7 @@ namespace dbcppp
 		virtual const std::string& getUnit() const = 0;
 		virtual double getDefaultValue() const = 0;
 		virtual const std::string& getValueTable() const = 0;
+		
+		void serializeToStream(std::ostream& os) const;
 	};
 }

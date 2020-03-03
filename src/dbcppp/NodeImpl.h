@@ -1,6 +1,9 @@
 
 #pragma once
 
+#include <vector>
+#include <memory>
+
 #include "Node.h"
 #include "AttributeImpl.h"
 
@@ -10,6 +13,12 @@ namespace dbcppp
 		: public Node
 	{
 	public:
+		NodeImpl(
+			  std::string&& name
+			, std::string&& comment
+			, std::map<std::string, AttributeImpl>&& attribute_values);
+		NodeImpl(NodeImpl&&) = default;
+		NodeImpl& operator=(NodeImpl&&) = default;
 		virtual const std::string& getName() const override;
 		virtual const std::string& getComment() const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;

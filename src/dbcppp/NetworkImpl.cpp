@@ -1,8 +1,106 @@
 
+#include "Network.h"
 #include "NetworkImpl.h"
+#include "DBC_Grammar.h"
 
 using namespace dbcppp;
 
+std::unique_ptr<Network> Network::create(
+	  std::string&& version
+	, std::vector<std::string>&& new_symbols
+	, std::unique_ptr<BitTiming>&& bit_timing
+	, std::map<std::string, std::unique_ptr<Node>>&& nodes
+	, std::map<std::string, std::unique_ptr<ValueTable>>&& value_tables
+	, std::unordered_map<uint64_t, std::unique_ptr<Message>>&& messages
+	, std::map<std::string, std::unique_ptr<EnvironmentVariable>>&& environment_variables
+	, std::map<std::string, std::unique_ptr<AttributeDefinition>>&& attribute_definitions
+	, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_defaults
+	, std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+	, std::string&& comment)
+{
+	BitTimingImpl bt = std::move(static_cast<BitTimingImpl&>(*bit_timing));
+	bit_timing.reset(nullptr);
+	std::map<std::string, NodeImpl> ns;
+	std::map<std::string, ValueTableImpl> vts;
+	std::unordered_map<uint64_t, MessageImpl> ms;
+	std::map<std::string, EnvironmentVariableImpl> evs;
+	std::map<std::string, AttributeDefinitionImpl> ads;
+	std::map<std::string, AttributeImpl> avds;
+	std::map<std::string, AttributeImpl> avs;
+	for (auto& n : nodes)
+	{
+		ns.insert(std::make_pair(n.first, std::move(static_cast<NodeImpl&>(*n.second))));
+		n.second.reset(nullptr);
+	}
+	for (auto& vt : value_tables)
+	{
+		vts.insert(std::make_pair(vt.first, std::move(static_cast<ValueTableImpl&>(*vt.second))));
+		vt.second.reset(nullptr);
+	}
+	for (auto& m : messages)
+	{
+		ms.insert(std::make_pair(m.first, std::move(static_cast<MessageImpl&>(*m.second))));
+		m.second.reset(nullptr);
+	}
+	for (auto& ev : environment_variables)
+	{
+		evs.insert(std::make_pair(ev.first, std::move(static_cast<EnvironmentVariableImpl&>(*ev.second))));
+		ev.second.reset(nullptr);
+	}
+	for (auto& ad : attribute_definitions)
+	{
+		ads.insert(std::make_pair(ad.first, std::move(static_cast<AttributeDefinitionImpl&>(*ad.second))));
+		ad.second.reset(nullptr);
+	}
+	for (auto& ad : attribute_defaults)
+	{
+		avds.insert(std::make_pair(ad.first, std::move(static_cast<AttributeImpl&>(*ad.second))));
+		ad.second.reset(nullptr);
+	}
+	for (auto& ad : attribute_values)
+	{
+		avs.insert(std::make_pair(ad.first, std::move(static_cast<AttributeImpl&>(*ad.second))));
+		ad.second.reset(nullptr);
+	}
+	return std::make_unique<NetworkImpl>(
+		  std::move(version)
+		, std::move(new_symbols)
+		, std::move(bt)
+		, std::move(ns)
+		, std::move(vts)
+		, std::move(ms)
+		, std::move(evs)
+		, std::move(ads)
+		, std::move(avds)
+		, std::move(avs)
+		, std::move(comment));
+}
+
+NetworkImpl::NetworkImpl(
+	  std::string&& version
+	, std::vector<std::string>&& new_symbols
+	, BitTimingImpl&& bit_timing
+	, std::map<std::string, NodeImpl>&& nodes
+	, std::map<std::string, ValueTableImpl>&& value_tables
+	, std::unordered_map<uint64_t, MessageImpl>&& messages
+	, std::map<std::string, EnvironmentVariableImpl>&& environment_variables
+	, std::map<std::string, AttributeDefinitionImpl>&& attribute_definitions
+	, std::map<std::string, AttributeImpl>&& attribute_defaults
+	, std::map<std::string, AttributeImpl>&& attribute_values
+	, std::string&& comment)
+
+	: _version(std::move(version))
+	, _new_symbols(std::move(new_symbols))
+	, _bit_timing(std::move(bit_timing))
+	, _nodes(std::move(nodes))
+	, _value_tables(std::move(value_tables))
+	, _messages(std::move(messages))
+	, _environment_variables(std::move(environment_variables))
+	, _attribute_definitions(std::move(attribute_definitions))
+	, _attribute_defaults(std::move(attribute_defaults))
+	, _attribute_values(std::move(attribute_values))
+	, _comment(std::move(comment))
+{}
 const std::string& NetworkImpl::getVersion() const
 {
 	return _version;
@@ -75,7 +173,7 @@ const Message* NetworkImpl::getMessageById(uint64_t id) const
 std::vector<std::pair<uint64_t, const Message*>> NetworkImpl::getMessages() const
 {
 	std::vector<std::pair<uint64_t, const Message*>> result;
-	for (auto& m : _messages)
+	for (const auto& m : _messages)
 	{
 		result.emplace_back(m.first, &m.second);
 	}
@@ -97,25 +195,6 @@ std::vector<std::pair<std::string, const EnvironmentVariable*>> NetworkImpl::get
 	for (auto& ev : _environment_variables)
 	{
 		result.emplace_back(ev.first, &ev.second);
-	}
-	return result;
-}
-const SignalType* NetworkImpl::getSignalTypeByName(const std::string& name) const
-{
-	const SignalType* result = nullptr;
-	auto iter = _signal_types.find(name);
-	if (iter != _signal_types.end())
-	{
-		result = &iter->second;
-	}
-	return result;
-}
-std::vector<std::pair<std::string, const SignalType*>> NetworkImpl::getSignalTypes() const
-{
-	std::vector<std::pair<std::string, const SignalType*>> result;
-	for (auto& st : _signal_types)
-	{
-		result.emplace_back(st.first, &st.second);
 	}
 	return result;
 }
@@ -176,19 +255,240 @@ std::vector<std::pair<std::string, const Attribute*>> NetworkImpl::getAttributeV
 	}
 	return result;
 }
-
-std::vector<const SignalExtendedValueType*> NetworkImpl::getSignalExtendedValues() const
-{
-    std::vector<const SignalExtendedValueType*> result;
-    for (auto& sigval : _signal_extended_value_types)
-    {
-       result.emplace_back(&sigval);
-    }
-    return result;
-}
-
 const std::string& NetworkImpl::getComment() const
 {
 	return _comment;
 }
+const Message* NetworkImpl::findParentMessage(const Signal* sig) const
+{
+	const Message* result = nullptr;
+	for (const auto& p : _messages)
+	{
+		const MessageImpl& msg = p.second;
+		auto iter = msg.signals().find(sig->getName());
+		if (iter != msg.signals().end() && &iter->second == sig)
+		{
+			result = &msg;
+			break;
+		}
+	}
+	return result;
+}
 
+void Network::serializeToStream(std::ostream& os) const
+{
+	os << "VERSION \"";
+	if (getVersion() != "")
+	{
+		os << getVersion();
+	}
+	os << "\"";
+	os << "\n";
+	os << "NS_:";
+	for (const auto& ns : getNewSymbols())
+	{
+		os << "\n " << *ns;
+	}
+	os << "\n";
+	getBitTiming().serializeToStream(os);
+	os << "\n";
+	os << "BU_:";
+	for (const auto& n : getNodes())
+	{
+		os << " " << n.second->getName(); 
+	}
+	for (const auto& vt : getValueTables())
+	{
+		os << "\n";
+		vt.second->serializeToStream(os);
+	}
+	for (const auto& m : getMessages())
+	{
+		os << "\n";
+		m.second->serializeToStream(os);
+	}
+	// serialize message_transmitters
+	for (const auto& m : getMessages())
+	{
+		auto transmitters = m.second->getMessageTransmitters();
+		if (transmitters.size())
+		{
+			os << "\n";
+			os << "BO_TX_BU_ " << m.second->getId() << " :";
+			auto iter = transmitters.begin();
+			os << " " << **iter;
+			for (iter++; iter != transmitters.end(); iter++)
+			{
+				os << ", " << **iter;
+			}
+			os << ";";
+		}
+	}
+	for (const auto& ev : getEnvironmentVariables())
+	{
+		os << "\n";
+		ev.second->serializeToStream(os);
+	}
+	for (const auto& ev : getEnvironmentVariables())
+	{
+		if (ev.second->getVarType() == EnvironmentVariable::VarType::Data)
+		{
+			os << "\n";
+			os << "ENVVAR_DATA_ " << ev.second->getName() << " : " << ev.second->getDataSize() << ";";
+		}
+	}
+	for (const auto& vt : getValueTables())
+	{
+		if (vt.second->getSignalType())
+		{
+			os << "\n";
+			vt.second->getSignalType()->serializeToStream(os);
+		}
+	}
+	// serialize comments
+	// Network comment
+	if (getComment() != "")
+	{
+		os << "\n";
+		os << "CM_ \"" << getComment() << "\";";
+	}
+	// Node comments
+	for (const auto& n : getNodes())
+	{
+		if (n.second->getComment() != "")
+		{
+			os << "\n";
+			os << "CM_ BU_ " << n.second->getName() << " \"" << n.second->getComment() << "\"" << ";";
+		}
+	}
+	// Message comments
+	for (const auto& m : getMessages())
+	{
+		if (m.second->getComment() != "")
+		{
+			os << "\n";
+			os << "CM_ BO_ " << m.second->getId() << " \"" << m.second->getComment() << "\"" << ";";
+		}
+	}
+	// Signal comments
+	for (const auto& m : getMessages())
+	{
+		for (const auto& s : m.second->getSignals())
+		{
+			if (s.second->getComment() != "")
+			{
+				os << "\n";
+				os << "CM_ SG_ " << m.second->getId() << " " << s.second->getName() << " \"" << s.second->getComment() << "\"" << ";";
+			}
+		}
+	}
+	// EnvironmentVariable comments
+	for (const auto& ev : getEnvironmentVariables())
+	{
+		if (ev.second->getComment() != "")
+		{
+			os << "\n";
+			os << "CM_ EV_ " << ev.second->getName() << " \"" << ev.second->getComment() << "\"" << ";";
+		}
+	}
+	for (const auto& ad : getAttributeDefinitions())
+	{
+		os << "\n";
+		ad.second->serializeToStream(os);
+	}
+	for (const auto& ad : getAttributeDefaults())
+	{
+		os << "\n";
+		ad.second->serializeToStream(os, *this);
+	}
+	// Serialize Attribute Values
+	for (const auto& val : getAttributeValues())
+	{
+		os << "\n";
+		val.second->serializeToStream(os, *this);
+	}
+	for (const auto& n : getNodes())
+	{
+		for (const auto& val : n.second->getAttributeValues())
+		{
+			os << "\n";
+			val.second->serializeToStream(os, *this);
+		}
+	}
+	for (const auto& m : getMessages())
+	{
+		for (const auto& val : m.second->getAttributeValues())
+		{
+			os << "\n";
+			val.second->serializeToStream(os, *this);
+		}
+	}
+	for (const auto& m : getMessages())
+	{
+		for (const auto& s : m.second->getSignals())
+		{
+			for (const auto& val : s.second->getAttributeValues())
+			{
+				os << "\n";
+				val.second->serializeToStream(os, *this);
+			}
+		}
+	}
+	for (const auto& ev : getEnvironmentVariables())
+	{
+		for (const auto& val : ev.second->getAttributeValues())
+		{
+			os << "\n";
+			val.second->serializeToStream(os, *this);
+		}
+	}
+	// Serialize value descriptions
+	for (const auto& m : getMessages())
+	{
+		for (const auto& s : m.second->getSignals())
+		{
+			auto vds = s.second->getValueDescriptions();
+			if (vds.size())
+			{
+				os << "\n";
+				os << "VAL_ " << m.second->getId() << " " << s.second->getName();
+				for (const auto& vd : vds)
+				{
+					os << " " << vd.first << " \"" << *vd.second << "\"";
+				}
+				os << ";";
+			}
+		}
+	}
+	for (const auto& ev : getEnvironmentVariables())
+	{
+		auto vds = ev.second->getValueDescriptions();
+		if (vds.size())
+		{
+			os << "\n";
+			os << "VAL_ " << ev.second->getName();
+			for (const auto& vd : vds)
+			{
+				os << " " << vd.first << " \"" << *vd.second << "\"";
+			}
+			os << ";";
+		}
+	}
+	for (const auto& m : getMessages())
+	{
+		for (const auto& s : m.second->getSignals())
+		{
+			if (s.second->getExtendedValueType() != Signal::ExtendedValueType::Integer)
+			{
+				uint64_t type = 0;
+				switch (s.second->getExtendedValueType())
+				{
+				case Signal::ExtendedValueType::Float: type = 1; break;
+				case Signal::ExtendedValueType::Double: type = 2; break;
+				}
+				os << "\n";
+				os << "SIG_VALTYPE_ " << m.second->getId() << " " << s.second->getName() << " : " << type << ";";
+			}
+		}
+	}
+}

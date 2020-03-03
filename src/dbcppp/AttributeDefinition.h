@@ -8,9 +8,9 @@
 
 #include "Export.h"
 
-
 namespace dbcppp
 {
+	class Network;
 	class DBCPPP_API AttributeDefinition
 	{
 	public:
@@ -46,9 +46,16 @@ namespace dbcppp
 		};
 		using value_type_t = boost::variant<ValueTypeInt, ValueTypeHex, ValueTypeFloat, ValueTypeString, ValueTypeEnum>;
 		
+		static std::unique_ptr<AttributeDefinition> create(
+			  std::string&& name
+			, ObjectType object_type
+			, value_type_t&& value_type);
+
 		virtual ~AttributeDefinition() = default;
 		virtual ObjectType getObjectType() const = 0;
 		virtual const std::string& getName() const = 0;
 		virtual const value_type_t& getValueType() const = 0;
+
+		void serializeToStream(std::ostream& os) const;
 	};
 }

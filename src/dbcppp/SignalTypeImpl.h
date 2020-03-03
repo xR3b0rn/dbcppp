@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include "SignalType.h"
 #include "ValueTable.h"
 
@@ -10,6 +11,20 @@ namespace dbcppp
 		: public SignalType
 	{
 	public:
+		SignalTypeImpl(
+			  std::string&& name
+			, uint64_t signal_size
+			, Signal::ByteOrder byte_order
+			, Signal::ValueType value_type
+			, double factor
+			, double offset
+			, double minimum
+			, double maximum
+			, std::string&& unit
+			, double default_value
+			, std::string&& value_table);
+		SignalTypeImpl(SignalTypeImpl&&) = default;
+		SignalTypeImpl& operator=(SignalTypeImpl&&) = default;
 		virtual const std::string& getName() const override;
 		virtual uint64_t getSignalSize() const override;
 		virtual Signal::ByteOrder getByteOrder() const override;
@@ -32,7 +47,6 @@ namespace dbcppp
 		double _maximum;
 		std::string _unit;
 		double _default_value;
-		//ValueTable* _value_table;
 		std::string _value_table;
 	};
 }
