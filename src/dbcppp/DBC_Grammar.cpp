@@ -347,8 +347,8 @@ public:
 		_new_symbols %= qi::lit("NS_") > ':' > *_new_symbol;
 
 		_bit_timing.name("BitTiming");
-		_bit_timing %= qi::lit("BS_") > ':' > -_bit_timing_inner;
-		_bit_timing_inner %= iter_pos > _baudrate > ':' > _BTR1 > ',' > _BTR2;
+		_bit_timing %= qi::lit("BS_") >> ':' >> -_bit_timing_inner;
+		_bit_timing_inner %= iter_pos >> _baudrate >> ':' >> _BTR1 >> ',' >> _BTR2;
 		_baudrate.name("Baudrate");
 		_baudrate %= _unsigned_integer;
 		_BTR1.name("BTR1");
