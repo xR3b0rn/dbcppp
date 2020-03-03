@@ -7,7 +7,7 @@ using namespace dbcppp;
 
 std::unique_ptr<Network> Network::create(
 	  std::string&& version
-	, std::vector<std::string>&& new_symbols
+	, std::set<std::string>&& new_symbols
 	, std::unique_ptr<BitTiming>&& bit_timing
 	, std::map<std::string, std::unique_ptr<Node>>&& nodes
 	, std::map<std::string, std::unique_ptr<ValueTable>>&& value_tables
@@ -78,7 +78,7 @@ std::unique_ptr<Network> Network::create(
 
 NetworkImpl::NetworkImpl(
 	  std::string&& version
-	, std::vector<std::string>&& new_symbols
+	, std::set<std::string>&& new_symbols
 	, BitTimingImpl&& bit_timing
 	, std::map<std::string, NodeImpl>&& nodes
 	, std::map<std::string, ValueTableImpl>&& value_tables
@@ -274,7 +274,88 @@ const Message* NetworkImpl::findParentMessage(const Signal* sig) const
 	}
 	return result;
 }
-
+std::string& NetworkImpl::version()
+{
+	return _version;
+}
+std::set<std::string>& NetworkImpl::newSymbols()
+{
+	return _new_symbols;
+}
+BitTimingImpl& NetworkImpl::bitTiming()
+{
+	return _bit_timing;
+}
+std::map<std::string, NodeImpl>& NetworkImpl::nodes()
+{
+	return _nodes;
+}
+std::map<std::string, ValueTableImpl>& NetworkImpl::valueTables()
+{
+	return _value_tables;
+}
+std::unordered_map<uint64_t, MessageImpl>& NetworkImpl::messages()
+{
+	return _messages;
+}
+std::map<std::string, EnvironmentVariableImpl>& NetworkImpl::environmentVariables()
+{
+	return _environment_variables;
+}
+std::map<std::string, AttributeDefinitionImpl>& NetworkImpl::attributeDefinitions()
+{
+	return _attribute_definitions;
+}
+std::map<std::string, AttributeImpl>& NetworkImpl::attributeDefaults()
+{
+	return _attribute_defaults;
+}
+std::map<std::string, AttributeImpl>& NetworkImpl::attributeValues()
+{
+	return _attribute_values;
+}
+std::string& NetworkImpl::comment()
+{
+	return _comment;
+}
+void Network::merge(std::unique_ptr<Network>&& other)
+{
+	auto& self = static_cast<NetworkImpl&>(*this);
+	auto& o = static_cast<NetworkImpl&>(*other);
+	for (auto& ns : o.newSymbols())
+	{
+		self.newSymbols().insert(std::move(ns));
+	}
+	for (auto& n : o.nodes())
+	{
+		self.nodes().insert(std::move(n));
+	}
+	for (auto& vt : o.valueTables())
+	{
+		self.valueTables().insert(std::move(vt));
+	}
+	for (auto& m : o.messages())
+	{
+		self.messages().insert(std::move(m));
+	}
+	for (auto& ev : o.environmentVariables())
+	{
+		self.environmentVariables().insert(std::move(ev));
+	}
+	for (auto& ad : o.attributeDefinitions())
+	{
+		self.attributeDefinitions().insert(std::move(ad));
+	}
+	for (auto& ad : o.attributeDefaults())
+	{
+		self.attributeDefaults().insert(std::move(ad));
+	}
+	for (auto& av : o.attributeValues())
+	{
+		self.attributeValues().insert(std::move(av));
+	}
+	other.reset(nullptr);
+}
 void Network::serializeToStream(std::ostream& os) const
 {
 	os << "VERSION \"";
