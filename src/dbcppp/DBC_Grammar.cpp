@@ -675,7 +675,7 @@ private:
 };
 std::unique_ptr<Network> Network::fromDBC(std::istream& is)
 {
-	std::unique_ptr<const Network> result;
+	std::unique_ptr<Network> result;
 	std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 	auto begin{str.begin()}, end{str.end()};
 	NetworkGrammar<std::string::iterator> g(begin);
