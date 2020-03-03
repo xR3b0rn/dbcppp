@@ -111,11 +111,7 @@ struct MakeDecode
 		{
 			return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>::value(byte_order, value_type, extended_value_type);
 		}
-		else if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
-		{
-			return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>::value(byte_order, value_type, extended_value_type);
-		}
-		return nullptr;
+		return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>::value(byte_order, value_type, extended_value_type);
 	}
 };
 
