@@ -47,7 +47,7 @@ make install
 int main()
 {
     std::ifstream dbc_file{"your_dbc.dbc"};
-    std::unique_ptr<const dbcppp::Network> net = dbcppp::Network::fromDBC(dbc_file);
+    std::unique_ptr<dbcppp::Network> net = dbcppp::Network::fromDBC(dbc_file);
     if (net)
     {
         can_frame frame;
