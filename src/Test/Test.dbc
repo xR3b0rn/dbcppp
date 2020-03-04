@@ -30,7 +30,7 @@ NS_:
  BU_BO_REL_
  SG_MUL_VAL_
 
-BS_: 1 : 15, 2
+BS_: 1 : 2, 2
 
 BU_: Bus0 Bus1 Bus2 Receiver
 
@@ -110,7 +110,6 @@ EV_ EnvVar0: 0 [0|1] "unit" 0.5 0 DUMMY_NODE_VECTOR0 Bus0, Bus1, Bus2;
 
 ENVVAR_DATA_ EnvVar0 : 8;
 
-SGTYPE_ SgType0 : 10@1+ (2,0) [-3|2] "unit" 2, ValueTable0;
 
 CM_ "Network comment";
 CM_ BU_ Bus0 "Node comment";
@@ -123,20 +122,20 @@ BA_DEF_ "Network attribute definition 1" HEX -1 1;
 BA_DEF_ "Network attribute definition 2" FLOAT -1 1;
 BA_DEF_ "Network attribute definition 3" STRING;
 BA_DEF_ "Network attribute definition 4" ENUM "enum0", "enum1";
-BA_DEF_ BU_ "Node attribute definition" ENUM "enum0", "enum1";
-BA_DEF_ BO_ "Message attribute definition" ENUM "enum0", "enum1";
-BA_DEF_ SG_ "Signal attribute definition" ENUM "enum0", "enum1";
-BA_DEF_ EV_ "EnvVar attribute definition" ENUM "enum0", "enum1";
+BA_DEF_ BU_ "Node attribute definition" STRING;
+BA_DEF_ BO_ "Message attribute definition" STRING;
+BA_DEF_ SG_ "Signal attribute definition" STRING;
+BA_DEF_ EV_ "EnvVar attribute definition" STRING;
 
-BA_DEF_DEF_ "BaDefDef0" "value";
-BA_DEF_DEF_ "BaDefDef1" 0;
-BA_DEF_DEF_ "BaDefDef2" 2.5;
+BA_DEF_DEF_ "Network attribute definition 3" "value";
+BA_DEF_DEF_ "Network attribute definition 0" 0;
+BA_DEF_DEF_ "Network attribute definition 2" 2.5;
 
-BA_ "Network Attribute" "value";
-BA_ "Node Attribute" BU_ Bus0 2;
-BA_ "Message Attribute" BO_ 1 1;
-BA_ "Signal Attribute" SG_ 0 s1 "value";
-BA_ "EnvVar Attribute" EV_ EnvVar0 "value";
+BA_ "Network attribute definition 0" 1;
+BA_ "Node attribute definition" BU_ Bus0 "value1";
+BA_ "Message attribute definition" BO_ 1 "value1";
+BA_ "Signal attribute definition" SG_ 0 s1 "value1";
+BA_ "EnvVar attribute definition" EV_ EnvVar0 "value1";
 
 VAL_ 0 s0 1.2 "VAL_1" 2.2 "VAL_2";
 VAL_ EnvVar0 0.1 "VAL_1" 1.1 "VAL_3";

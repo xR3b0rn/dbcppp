@@ -345,8 +345,8 @@ public:
 		_new_symbols %= qi::lit("NS_") > ':' > *_new_symbol;
 
 		_bit_timing.name("BitTiming");
-		_bit_timing %= qi::lit("BS_") > ':' > -_bit_timing_inner;
-		_bit_timing_inner %= iter_pos > _baudrate > ':' > _BTR1 > ',' > _BTR2;
+		_bit_timing %= qi::lit("BS_") > ':' >> -_bit_timing_inner;
+		_bit_timing_inner %= iter_pos >> _baudrate >> ':' >> _BTR1 >> ',' >> _BTR2;
 		_baudrate.name("Baudrate");
 		_baudrate %= _unsigned_integer;
 		_BTR1.name("BTR1");
@@ -694,16 +694,15 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
 	NetworkGrammar<std::string::iterator> g(begin);
 	G_Network gnet;
 	bool succeeded = phrase_parse(begin, end, g, ascii::space, gnet);
-	succeeded &= begin == end;
-	if (!succeeded)
-	{
-		auto[line, column] = getErrPos(str.begin(), begin);
-		std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
-	}
-	if (succeeded)
+	if (succeeded && (begin == end))
 	{
 		auto network = ConvertGrammarStructureToCppStructure(gnet);
 		result = std::make_unique<NetworkImpl>(std::move(network));
+	}
+	else
+	{
+		auto[line, column] = getErrPos(str.begin(), begin);
+		std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
 	}
 	return result;
 }
