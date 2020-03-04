@@ -268,8 +268,6 @@ public:
 	{
 		using boost::spirit::repository::qi::iter_pos;
 
-		auto drain = [](const auto& a, const auto& b) {};
-
 		_network.name("Network");
 		_network %=
 			   iter_pos
@@ -392,7 +390,7 @@ public:
 		_signals.name("Signals");
 		_signals %= *_signal;
 		_signal.name("Signal");
-		_signal %= iter_pos >> qi::lit("SG_ ") > _signal_name > _multiplexer_indicator > ':' > _start_bit > '|'
+		_signal %= iter_pos >> qi::lexeme[qi::lit("SG_") >> qi::omit[qi::space]] > _signal_name > _multiplexer_indicator > ':' > _start_bit > '|'
 			> _signal_size > '@' > _byte_order > _value_type > '('
 			> _factor > ',' > _offset > ')' > '[' > _minimum > '|' > _maximum > ']' > _unit > _receivers;
 		_signal_name.name("SignalName");
@@ -425,15 +423,15 @@ public:
 		_message_transmitters.name("MessageTransmitters");
 		_message_transmitters %= *_message_transmitter;
 		_message_transmitter.name("MessageTransmitter");
-		_message_transmitter %= iter_pos >> qi::lit("BO_TX_BU_ ") > _message_id > ':' > _transmitters > ';';
+		_message_transmitter %= iter_pos >> qi::lexeme[qi::lit("BO_TX_BU_") >> qi::omit[qi::space]] > _message_id > ':' > _transmitters > ';';
 		_transmitters.name("NodeNames");
 		_transmitters %= _transmitter % ',';
 
 		_environment_variables.name("EnvironmentVariables");
 		_environment_variables %= *_environment_variable;
 		_environment_variable.name("EnvironmentVariable");
-		_environment_variable %= iter_pos >> qi::lit("EV_ ") > _env_var_name > ':' > _env_var_type > '[' > _minimum > '|' > _maximum > ']'
-			> _unit > _initial_value > _ev_id > _access_type > _access_nodes > ';';
+		_environment_variable %= iter_pos >> qi::lexeme[qi::lit("EV_") >> qi::omit[qi::space]] > _env_var_name > ':' > _env_var_type
+			> '[' > _minimum > '|' > _maximum > ']' > _unit > _initial_value > _ev_id > _access_type > _access_nodes > ';';
 		_env_var_name.name("EnvVarName");
 		_env_var_name %= _C_identifier;
 		_env_var_type.name("EnvVarType");
@@ -450,14 +448,14 @@ public:
 		_environment_variable_datas.name("EnvironmentVariableDatas");
 		_environment_variable_datas %= *_environment_variable_data;
 		_environment_variable_data.name("EnvironmentVariableData");
-		_environment_variable_data %= iter_pos >> qi::lit("ENVVAR_DATA_ ") > _env_var_name > ':' > _data_size > ';';
+		_environment_variable_data %= iter_pos >> qi::lexeme[qi::lit("ENVVAR_DATA_") >> qi::omit[qi::space]] > _env_var_name > ':' > _data_size > ';';
 		_data_size.name("DataSize");
 		_data_size %= _unsigned_integer;
 
 		_signal_types.name("SignalTypes");
 		_signal_types %= *_signal_type;
 		_signal_type.name("SignalType");
-		_signal_type %= iter_pos >> qi::lit("SGTYPE_ ") > _signal_type_name > ':' > _signal_size > '@'
+		_signal_type %= iter_pos >> qi::lexeme[qi::lit("SGTYPE_") >> qi::omit[qi::space]] > _signal_type_name > ':' > _signal_size > '@'
 			> _byte_order > _value_type > '(' > _factor > ',' > _offset > ')' > '['
 			> _minimum > '|' >> _maximum > ']' > _unit > _default_value > ',' > _value_table_name > ';';
 		_signal_type_name.name("SignalTypeName");
@@ -468,7 +466,8 @@ public:
 		_comments.name("Comments");
 		_comments %= *_comment;
 		_comment.name("Comment");
-		_comment %= qi::lit("CM_ ") > (_comment_node | _comment_message | _comment_signal | _comment_env_var | _comment_network);
+		_comment %= qi::lexeme[qi::lit("CM_") >> qi::omit[qi::space]]
+			> (_comment_node | _comment_message | _comment_signal | _comment_env_var | _comment_network);
 		_comment_network.name("CommentNetwork");
 		_comment_network %= iter_pos >> _char_string > ';';
 		_comment_node.name("CommentNode");
@@ -483,7 +482,8 @@ public:
 		_attribute_definitions.name("AttributeDefinitions");
 		_attribute_definitions %= *_attribute_definition;
 		_attribute_definition.name("AttributeDefinition");
-		_attribute_definition %= iter_pos >> qi::lit("BA_DEF_ ") > _object_type > _attribute_name > _attribute_value_type > ';';
+		_attribute_definition %= iter_pos >> qi::lexeme[qi::lit("BA_DEF_") >> qi::omit[qi::space]] > _object_type > _attribute_name
+			> _attribute_value_type > ';';
 		_object_type.name("ObjectType");
 		_object_type %= -(qi::string("BU_") | qi::string("BO_") | qi::string("SG_") | qi::string("EV_"));
 		_attribute_name.name("AttributeName");
@@ -507,7 +507,7 @@ public:
 		_attribute_defaults.name("AttributeDefaults");
 		_attribute_defaults %= *_attribute_default;
 		_attribute_default.name("AttributeDefault");
-		_attribute_default %= iter_pos >> (qi::lexeme[qi::lit("BA_DEF_DEF_REL_ ") | qi::lit("BA_DEF_DEF_ ")])
+		_attribute_default %= iter_pos >> (qi::lexeme[(qi::lit("BA_DEF_DEF_REL_") | qi::lit("BA_DEF_DEF_"))  >> qi::omit[qi::space]])
 			> _attribute_name > _attribute_value > ';';
 		_attribute_value.name("AttributeValue");
 		_attribute_value %= _double | _signed_integer | _char_string;
@@ -515,7 +515,7 @@ public:
 		_attribute_values.name("AttributeValues");
 		_attribute_values %= *_attribute_value_ent;
 		_attribute_value_ent.name("AttributeValueEnt");
-		_attribute_value_ent %= qi::lit("BA_ ")
+		_attribute_value_ent %= qi::lexeme[qi::lit("BA_") >> qi::omit[qi::space]]
 			>> (_attribute_value_ent_network | _attribute_value_ent_node
 			  | _attribute_value_ent_message | _attribute_value_ent_signal
 			  | _attribute_value_ent_env_var) > ';';
@@ -535,14 +535,14 @@ public:
 		_value_description_sig_env_var.name("ValueDescriptionsSigEnvVar");
 		_value_description_sig_env_var %= iter_pos >> (_value_description_signal | _value_description_env_var);
 		_value_description_signal.name("ValueDescriptionsSignal");
-		_value_description_signal %= iter_pos >> qi::lit("VAL_ ") >> _message_id >> _signal_name >> _value_encoding_descriptions > ';';
+		_value_description_signal %= iter_pos >> qi::lexeme[qi::lit("VAL_") >> qi::omit[qi::space]] >> _message_id >> _signal_name >> _value_encoding_descriptions > ';';
 		_value_description_env_var.name("ValueDescriptionsEnvVar");
-		_value_description_env_var %= iter_pos >>qi::lit("VAL_ ") >> _env_var_name >> _value_encoding_descriptions > ';';
+		_value_description_env_var %= iter_pos >> qi::lexeme[qi::lit("VAL_") >> qi::omit[qi::space]] >> _env_var_name >> _value_encoding_descriptions > ';';
 
 		_signal_extended_value_types.name("SignalExtendedValueTypes");
 		_signal_extended_value_types %= *_signal_extended_value_type;
 		_signal_extended_value_type.name("SignalExtendedValueType");
-		_signal_extended_value_type %= iter_pos >> qi::lit("SIG_VALTYPE_ ") > _message_id > _signal_name > ':' >  _unsigned_integer > ';';
+		_signal_extended_value_type %= iter_pos >> qi::lexeme[qi::lit("SIG_VALTYPE_") >> qi::omit[qi::space]] > _message_id > _signal_name > ':' >  _unsigned_integer > ';';
 		
 		auto error_handler =
 			[begin](const auto& args, const auto& context, const auto& error)
