@@ -271,23 +271,23 @@ public:
 		_network.name("Network");
 		_network %=
 			   iter_pos
-			>> _version
-			>> _new_symbols
-			>> _bit_timing
-			>> _nodes
-			>> _value_tables
-			>> _messages
-			>> _message_transmitters
-			>> _environment_variables
-			>> _environment_variable_datas
-			>> _signal_types
-			>> _comments
-			>> _attribute_definitions
-			>> _attribute_defaults
-			>> _attribute_values
+			> _version
+			> _new_symbols
+			> _bit_timing
+			> _nodes
+			> _value_tables
+			> _messages
+			> _message_transmitters
+			> _environment_variables
+			> _environment_variable_datas
+			> _signal_types
+			> _comments
+			> _attribute_definitions
+			> _attribute_defaults
+			> _attribute_values
 
-			>> _value_descriptions
-			>> _signal_extended_value_types
+			> _value_descriptions
+			> _signal_extended_value_types
 			;
 
 		_unsigned_integer.name("uint");

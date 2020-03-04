@@ -115,7 +115,7 @@ std::vector<std::string> dbc_to_vec(std::istream& is)
 BOOST_AUTO_TEST_CASE(DBCParsing)
 {
 	std::string dbc_file(TEST_DBC);
-	
+
 	BOOST_TEST_MESSAGE("Testing DBC AST tree for correctness!");
 
 	if (dbc_file != "")
@@ -218,10 +218,6 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 		
 		std::stringstream ss;
 		sig->serializeToStream(ss);
-		if (dec_easy != dec_sig)
-		{
-			std::cout << "break" << std::endl;
-		}
 		// since nan != nan we reintepret_cast to uint64_t before we compare
 		BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
 	}
