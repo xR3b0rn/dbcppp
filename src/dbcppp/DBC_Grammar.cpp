@@ -345,8 +345,8 @@ public:
 		_new_symbols %= qi::lit("NS_") > ':' > *_new_symbol;
 
 		_bit_timing.name("BitTiming");
-		_bit_timing %= qi::lit("BS_") >> ':' >> -_bit_timing_inner;
-		_bit_timing_inner %= iter_pos >> _baudrate >> ':' >> _BTR1 >> ',' >> _BTR2;
+		_bit_timing %= qi::lit("BS_") > ':' > -_bit_timing_inner;
+		_bit_timing_inner %= iter_pos > _baudrate > ':' > _BTR1 > ',' > _BTR2;
 		_baudrate.name("Baudrate");
 		_baudrate %= _unsigned_integer;
 		_BTR1.name("BTR1");
@@ -372,12 +372,14 @@ public:
 		_value_encoding_descriptions.name("VAlueEncodingDescriptions");
 		_value_encoding_descriptions %= *_value_encoding_description;
 		_value_encoding_description.name("VAlueEncodingDescription");
+
 		_value_encoding_description %= _double > _char_string;
 
 		_messages.name("Messages");
 		_messages %= *_message;
 		_message.name("Message");
-		_message %= iter_pos >> qi::lit("BO_ ") > _message_id > _message_name > ':' > _message_size > _transmitter > _signals;
+		_message %= iter_pos >> qi::lit("BO_ ") > _message_id > _message_name
+			> ':' > _message_size > qi::skip(ascii::blank)[_transmitter_ > qi::eol] > _signals;
 		_message_id.name("MessageId");
 		_message_id %= _unsigned_integer;
 		_message_name.name("MessageName");
@@ -386,13 +388,16 @@ public:
 		_message_size %= _unsigned_integer;
 		_transmitter.name("NodeName");
 		_transmitter %= _node_name;
+		_transmitter_.name("NodeName");
+		_transmitter_ %= _node_name_;
 
 		_signals.name("Signals");
 		_signals %= *_signal;
 		_signal.name("Signal");
-		_signal %= iter_pos >> qi::lexeme[qi::lit("SG_") >> qi::omit[qi::space]] > _signal_name > _multiplexer_indicator > ':' > _start_bit > '|'
-			> _signal_size > '@' > _byte_order > _value_type > '('
-			> _factor > ',' > _offset > ')' > '[' > _minimum > '|' > _maximum > ']' > _unit > _receivers;
+		_signal %= iter_pos >> qi::lexeme[qi::lit("SG_") >> qi::omit[qi::space]] > _signal_name
+			> _multiplexer_indicator > ':' > _start_bit > '|' > _signal_size > '@' > _byte_order > _value_type
+			> '(' > _factor > ',' > _offset > ')' > '[' > _minimum > '|' > _maximum > ']' > _unit
+			> qi::skip(ascii::blank)[_receivers_ > qi::eol];
 		_signal_name.name("SignalName");
 		_signal_name %= _C_identifier;
 		_multiplexer_indicator.name("SignalMultiplexerIndicator");
@@ -419,6 +424,8 @@ public:
 		_receivers %= qi::skip(ascii::blank)[*_receiver_ > qi::eol];
 		_receiver_.name("NodeName");
 		_receiver_ %= _node_name_;
+		_receivers_.name("NodeNames");
+		_receivers_ %= _receiver_ % ',';
 
 		_message_transmitters.name("MessageTransmitters");
 		_message_transmitters %= *_message_transmitter;
@@ -448,7 +455,8 @@ public:
 		_environment_variable_datas.name("EnvironmentVariableDatas");
 		_environment_variable_datas %= *_environment_variable_data;
 		_environment_variable_data.name("EnvironmentVariableData");
-		_environment_variable_data %= iter_pos >> qi::lexeme[qi::lit("ENVVAR_DATA_") >> qi::omit[qi::space]] > _env_var_name > ':' > _data_size > ';';
+		_environment_variable_data %= iter_pos >> qi::lexeme[qi::lit("ENVVAR_DATA_") >> qi::omit[qi::space]]
+			> _env_var_name > ':' > _data_size > ';';
 		_data_size.name("DataSize");
 		_data_size %= _unsigned_integer;
 
@@ -535,14 +543,17 @@ public:
 		_value_description_sig_env_var.name("ValueDescriptionsSigEnvVar");
 		_value_description_sig_env_var %= iter_pos >> (_value_description_signal | _value_description_env_var);
 		_value_description_signal.name("ValueDescriptionsSignal");
-		_value_description_signal %= iter_pos >> qi::lexeme[qi::lit("VAL_") >> qi::omit[qi::space]] >> _message_id >> _signal_name >> _value_encoding_descriptions > ';';
+		_value_description_signal %= iter_pos >> qi::lexeme[qi::lit("VAL_") >> qi::omit[qi::space]] >> _message_id
+			>> _signal_name >> _value_encoding_descriptions > ';';
 		_value_description_env_var.name("ValueDescriptionsEnvVar");
-		_value_description_env_var %= iter_pos >> qi::lexeme[qi::lit("VAL_") >> qi::omit[qi::space]] >> _env_var_name >> _value_encoding_descriptions > ';';
+		_value_description_env_var %= iter_pos >> qi::lexeme[qi::lit("VAL_") >> qi::omit[qi::space]] >> _env_var_name
+			>> _value_encoding_descriptions > ';';
 
 		_signal_extended_value_types.name("SignalExtendedValueTypes");
 		_signal_extended_value_types %= *_signal_extended_value_type;
 		_signal_extended_value_type.name("SignalExtendedValueType");
-		_signal_extended_value_type %= iter_pos >> qi::lexeme[qi::lit("SIG_VALTYPE_") >> qi::omit[qi::space]] > _message_id > _signal_name > ':' >  _unsigned_integer > ';';
+		_signal_extended_value_type %= iter_pos >> qi::lexeme[qi::lit("SIG_VALTYPE_") >> qi::omit[qi::space]]
+			> _message_id > _signal_name > ':' >  _unsigned_integer > ';';
 		
 		auto error_handler =
 			[begin](const auto& args, const auto& context, const auto& error)
@@ -594,6 +605,7 @@ private:
 	qi::rule<Iter, std::string(), Skipper> _message_name;
 	qi::rule<Iter, uint64_t(), Skipper> _message_size;
 	qi::rule<Iter, std::string(), Skipper> _transmitter;
+	qi::rule<Iter, std::string(), ascii::blank_type> _transmitter_;
 	
 	qi::rule<Iter, std::vector<G_Signal>(), Skipper> _signals;
 	qi::rule<Iter, G_Signal(), Skipper> _signal;
@@ -609,6 +621,7 @@ private:
 	qi::rule<Iter, double(), Skipper> _minimum;
 	qi::rule<Iter, std::string(), Skipper> _unit;
 	qi::rule<Iter, std::vector<std::string>(), Skipper> _receivers;
+	qi::rule<Iter, std::vector<std::string>(), ascii::blank_type> _receivers_;
 	qi::rule<Iter, std::string(), ascii::blank_type> _receiver_;
 
 	qi::rule<Iter, std::vector<G_MessageTransmitter>(), Skipper> _message_transmitters;
