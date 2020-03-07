@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "AttributeDefinition.h"
+#include "../../include/dbcppp/AttributeDefinition.h"
 
 namespace dbcppp
 {
-	class AttributeDefinitionImpl
+	class AttributeDefinitionImpl final
 		: public AttributeDefinition
 	{
 	public:

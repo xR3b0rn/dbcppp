@@ -1,14 +1,14 @@
 
 #pragma once
 
-#include "Message.h"
+#include "../../include/dbcppp/Message.h"
 #include "SignalImpl.h"
 #include "NodeImpl.h"
 #include "AttributeImpl.h"
 
 namespace dbcppp
 {
-	class MessageImpl
+	class MessageImpl final
 		: public Message
 	{
 	public:

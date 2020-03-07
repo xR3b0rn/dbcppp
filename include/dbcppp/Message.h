@@ -6,7 +6,6 @@
 #include <memory>
 
 #include "Export.h"
-#include "Helper.h"
 #include "Node.h"
 #include "Signal.h"
 #include "Attribute.h"
@@ -38,7 +37,7 @@ namespace dbcppp
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
 		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
 		virtual const std::string& getComment() const = 0;
-				
+		
 		void serializeToStream(std::ostream& os) const;
 	};
 }

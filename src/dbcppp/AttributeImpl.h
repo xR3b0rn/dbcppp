@@ -2,11 +2,11 @@
 #pragma once
 
 #include <iostream>
-#include "Attribute.h"
+#include "../../include/dbcppp/Attribute.h"
 
 namespace dbcppp
 {
-	class AttributeImpl
+	class AttributeImpl final
 		: public Attribute
 	{
 	public:

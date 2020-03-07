@@ -30,7 +30,7 @@
 
 #include "Config.h"
 
-#include "../dbcppp/Network.h"
+#include "../../include/dbcppp/Network.h"
 
 #define BOOST_TEST_MODULE test
 #include <boost/test/included/unit_test.hpp>
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
 {
 	std::string dbc_file(TEST_DBC);
 
-	BOOST_TEST_MESSAGE("Testing DBC AST tree for correctness!");
+	BOOST_TEST_MESSAGE("Testing DBC AST tree for correctness...");
 
 	if (dbc_file != "")
 	{
@@ -153,10 +153,12 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
 			BOOST_CHECK_MESSAGE(spec.empty(), "Spec isn't empty!\nNot found lines:\n" << ss.str());
 		}
 	}
+	BOOST_TEST_MESSAGE("Done!");
 }
 BOOST_AUTO_TEST_CASE(Test_Decoding8)
 {
-	std::size_t n_tests = 99999;
+	std::size_t n_tests = 1000000;
+	std::size_t max_msg_byte_size = 64;
 
 	BOOST_TEST_MESSAGE("Testing decode8-function with " << n_tests << " randomly generated tests...");
 
@@ -169,27 +171,37 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 
 	std::vector<uint8_t> data;
 	std::vector<std::size_t> indices;
-	for (std::size_t i = 0; i < 64; i++) indices.push_back(i);
+	for (std::size_t i = 0; i < max_msg_byte_size * 8; i++) indices.push_back(i);
 	for (std::size_t i = 0; i < n_tests; i++)
 	{
 		std::unique_ptr<Signal> sig;
+		auto rnd_msg_byte_size = dist(rng) % max_msg_byte_size + 1;
 		auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
 		auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-		auto rnd_bit_size = dist(rng) % 64 + 1;
+		auto rnd_bit_size = dist(rng) % (((rnd_msg_byte_size > 8) ? 8 : rnd_msg_byte_size) * 8) + 1;
 		Signal::ExtendedValueType rnd_extended_value_type = Signal::ExtendedValueType::Integer;
-		switch (dist(rng) % 3)
+		auto rnd_evt = dist(rng) % 3;
+		if (rnd_msg_byte_size >= 4)
 		{
-		case 1: rnd_extended_value_type = Signal::ExtendedValueType::Float; rnd_bit_size = 32; break;
-		case 2: rnd_extended_value_type = Signal::ExtendedValueType::Double; rnd_bit_size = 64; break;
+			if (rnd_evt == 1)
+			{
+				rnd_extended_value_type = Signal::ExtendedValueType::Float;
+				rnd_bit_size = 32;
+			}
+			else if (rnd_msg_byte_size >= 8 && rnd_evt == 2)
+			{
+				rnd_extended_value_type = Signal::ExtendedValueType::Double;
+				rnd_bit_size = 64;
+			}
 		}
 		if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
 		{
 			uint64_t rnd_start_bit = 0;
-			if (rnd_bit_size != 64)
+			if ((rnd_msg_byte_size * 8 - rnd_bit_size) != 0)
 			{
-				rnd_start_bit = dist(rng) % (64 - rnd_bit_size);
+				rnd_start_bit = dist(rng) % (rnd_msg_byte_size * 8 - rnd_bit_size);
 			}
-			sig = Signal::create(8, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
+			sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
 				rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
 		}
 		else
@@ -199,7 +211,7 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 			std::shuffle(indices.begin(), indices.end(), g);
 			for (auto rnd_start_bit : indices)
 			{
-				sig = Signal::create(8, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
+				sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
 					rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
 				if (sig)
 				{
@@ -207,67 +219,21 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 				}
 			}
 		}
-
 		data.clear();
-		for (std::size_t j = 0; j < 8; j++)
-		{
-			data.push_back(uint8_t(dist(rng) % 0xFF));
-		}
+		for (std::size_t j = 0; j < max_msg_byte_size; j++) data.push_back(uint8_t(dist(rng) % 0xFF));
 		auto dec_easy = easy_decode(*sig, data);
-		auto dec_sig = sig->decode8(&data[0]);
+		auto dec_sig = sig->decode(&data[0]);
 		
 		std::stringstream ss;
 		sig->serializeToStream(ss);
+		switch (sig->getExtendedValueType())
+		{
+		case Signal::ExtendedValueType::Integer: ss << " Intger"; break;
+		case Signal::ExtendedValueType::Float: ss << " Float"; break;
+		case Signal::ExtendedValueType::Double: ss << " Double"; break;
+		}
 		// since nan != nan we reintepret_cast to uint64_t before we compare
 		BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
 	}
-}
-BOOST_AUTO_TEST_CASE(Test_Decoding64)
-{
-	//std::size_t n_tests = 99999;
-
-	//BOOST_TEST_MESSAGE("Testing decode64-function with " << n_tests << " randomly generated tests...");
-
-	//uint32_t seed = static_cast<uint32_t>(time(0));
-	//std::random_device dev;
-	//std::default_random_engine rng(seed);
-	//std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
-
-	//using namespace dbcppp;
-	//
-	//std::vector<uint8_t> data;
-	//for (std::size_t i = 0; i < n_tests; i++)
-	//{
-	//    std::unique_ptr<Signal> sig;
-	//    auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
-	//    auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-	//    auto rnd_bit_size = dist(rng) % 64;
-	//    if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
-	//    {
-	//        auto rnd_start_bit = dist(rng) % (512 - rnd_bit_size);
-	//        msg->removeSignal("Signal");
-	//        sig = msg->addSignal("Signal", rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 64);
-	//    }
-	//    else
-	//    {
-	//        while (!sig)
-	//        {
-	//            auto rnd_start_bit = dist(rng) % 512;
-	//            msg->removeSignal("Signal");
-	//            sig = msg->addSignal("Signal", rnd_byte_order, rnd_value_type, rnd_bit_size, rnd_start_bit, 64);
-	//        }
-	//    }
-
-	//    data.clear();
-	//    for (std::size_t j = 0; j < 64; j++)
-	//    {
-	//        data.push_back(uint8_t(dist(rng) % 0xFF));
-	//    }
-	//    auto dec_easy = easy_decode(*sig, data);
-	//    auto dec_sig = sig->decode64(&data[0]);
-	//    
-	//    std::stringstream ss;
-	//    sig->serializeToStream(ss);
-	//    BOOST_CHECK_MESSAGE(dec_easy == dec_sig, "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
-	//}
+	BOOST_TEST_MESSAGE("Done!");
 }

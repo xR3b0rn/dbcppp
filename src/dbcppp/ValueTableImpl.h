@@ -3,12 +3,12 @@
 
 #include <map>
 #include <memory>
-#include "ValueTable.h"
+#include "../../include/dbcppp/ValueTable.h"
 #include "SignalTypeImpl.h"
 
 namespace dbcppp
 {
-	class ValueTableImpl
+	class ValueTableImpl final
 		: public ValueTable
 	{
 	public:

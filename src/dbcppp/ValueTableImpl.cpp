@@ -1,5 +1,5 @@
 
-#include "Network.h"
+#include "../../include/dbcppp/Network.h"
 #include "ValueTableImpl.h"
 
 using namespace dbcppp;

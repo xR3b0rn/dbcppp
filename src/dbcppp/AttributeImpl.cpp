@@ -1,8 +1,7 @@
 
 #include <boost/variant.hpp>
 #include "AttributeImpl.h"
-#include "Signal.h"
-#include "Network.h"
+#include "../../include/dbcppp/Network.h"
 
 using namespace dbcppp;
 

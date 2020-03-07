@@ -4,9 +4,8 @@
 #include <string>
 #include <memory>
 
-#include "Export.h"
-#include "Signal.h"
-#include "Node.h"
+#include "../../include/dbcppp/Signal.h"
+#include "../../include/dbcppp/Node.h"
 #include "AttributeImpl.h"
 
 namespace dbcppp
@@ -82,9 +81,9 @@ namespace dbcppp
 		// for performance
 		uint64_t _mask;
 		uint64_t _mask_signed;
-		uint64_t _fixed_start_bit;
-		uint64_t _fixed_start_bit_fd;
-		uint64_t _byte_pos_fd;
+		uint64_t _fixed_start_bit_0;
+		uint64_t _fixed_start_bit_1;
+		uint64_t _byte_pos;
 
 		Signal::ErrorCode _error;
 	};

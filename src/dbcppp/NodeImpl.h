@@ -4,12 +4,12 @@
 #include <vector>
 #include <memory>
 
-#include "Node.h"
+#include "../../include/dbcppp/Node.h"
 #include "AttributeImpl.h"
 
 namespace dbcppp
 {
-	class NodeImpl
+	class NodeImpl final
 		: public Node
 	{
 	public:

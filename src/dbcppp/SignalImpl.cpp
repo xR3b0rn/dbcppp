@@ -1,29 +1,83 @@
 
-#include "Helper.h"
+#include <boost/endian/conversion.hpp>
 #include "SignalImpl.h"
 
 using namespace dbcppp;
 
-template <Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
-double template_decode8(const Signal* sig, const void* _8byte) noexcept
+enum class Alignment
+{
+	size_inbetween_first_64_bit,
+	signal_exceeds_64_bit_size_but_signal_fits_into_64_bit,
+	signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit
+};
+
+template <Alignment aAlignment, Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
+double template_decode(const Signal* sig, const void* nbytes) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
-	uint64_t data = *reinterpret_cast<const uint64_t*>(_8byte);
-	if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
+	uint64_t data;
+	if constexpr (aAlignment == Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit)
 	{
-		// only reverse byte order when native byte order isn't big endian
-		boost::endian::native_to_big_inplace(data);
+		data = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
+		uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos + 8];
+		if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
+		{
+			boost::endian::native_to_big_inplace(data);
+			data &= sigi->_mask;
+			data <<= sigi->_fixed_start_bit_0;
+			data1 >>= sigi->_fixed_start_bit_1;
+			data |= data1;
+		}
+		else
+		{
+			boost::endian::native_to_little_inplace(data);
+			data >>= sigi->_fixed_start_bit_0;
+			data1 &= sigi->_mask;
+			data1 <<= sigi->_fixed_start_bit_1;
+			data |= data1;
+		}
+		if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
+		{
+			return *reinterpret_cast<double*>(&data);
+		}
+		if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
+		{
+			return *reinterpret_cast<float*>(&data);
+		}
+		if constexpr (aValueType == Signal::ValueType::Signed)
+		{
+			if (data & sigi->_mask_signed)
+			{
+				data |= sigi->_mask_signed;
+			}
+			return double(*reinterpret_cast<int64_t*>(&data));
+		}
+		return double(data);
 	}
 	else
 	{
-		// only reverse byte order when native byte order isn't little endian
-		boost::endian::native_to_little_inplace(data);
+		if constexpr (aAlignment == Alignment::size_inbetween_first_64_bit)
+		{
+			data = *reinterpret_cast<const uint64_t*>(nbytes);
+		}
+		else
+		{
+			data = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
+		}
+		if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
+		{
+			boost::endian::native_to_big_inplace(data);
+		}
+		else
+		{
+			boost::endian::native_to_little_inplace(data);
+		}
+		if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
+		{
+			return *reinterpret_cast<double*>(&data);
+		}
+		data >>= sigi->_fixed_start_bit_0;
 	}
-	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
-	{
-		return *reinterpret_cast<double*>(&data);
-	}
-	data >>= sigi->_fixed_start_bit;
 	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
 	{
 		return *reinterpret_cast<float*>(&data);
@@ -41,84 +95,87 @@ double template_decode8(const Signal* sig, const void* _8byte) noexcept
 	}
 	return double(data);
 }
-template <Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
-double template_decode64(const Signal* sig, const void* _64byte) noexcept
+
+constexpr uint64_t enum_mask(Alignment a, Signal::ByteOrder bo, Signal::ValueType vt, Signal::ExtendedValueType evt)
 {
-	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
-	uint8_t data8[64];
-	std::memcpy(data8, _64byte, 64);
-	if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
+	uint64_t result = 0;
+	switch (a)
 	{
-		// only reverse byte order when native byte order isn't big endian
-		native_to_big_inplace_64(reinterpret_cast<uint64_t*>(data8));
+	case Alignment::size_inbetween_first_64_bit:									result |= 0b1; break;
+	case Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit:			result |= 0b10; break;
+	case Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit: result |= 0b100; break;
 	}
-	else
+	switch (bo)
 	{
-		// only reverse byte order when native byte order isn't little endian
-		native_to_little_inplace_64(reinterpret_cast<uint64_t*>(data8));
+	case Signal::ByteOrder::LittleEndian:											result |= 0b1000; break;
+	case Signal::ByteOrder::BigEndian:												result |= 0b10000; break;
 	}
-	uint64_t data = *reinterpret_cast<uint64_t*>(&data8[sigi->_byte_pos_fd]);
-	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
+	switch (vt)
 	{
-		return *reinterpret_cast<double*>(&data);
+	case Signal::ValueType::Signed:													result |= 0b100000; break;
+	case Signal::ValueType::Unsigned:												result |= 0b1000000; break;
 	}
-	data >>= sigi->_fixed_start_bit_fd;
-	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
+	switch (evt)
 	{
-		return *reinterpret_cast<float*>(&data);
+	case Signal::ExtendedValueType::Integer:										result |= 0b10000000; break;
+	case Signal::ExtendedValueType::Float:											result |= 0b100000000; break;
+	case Signal::ExtendedValueType::Double:											result |= 0b1000000000; break;
 	}
-	data &= sigi->_mask;
-	if constexpr (aValueType == Signal::ValueType::Signed)
-	{
-		// bit extending
-		data |= ~((data & sigi->_mask_signed) - 1);
-		return double(*reinterpret_cast<int64_t*>(&data));
-	}
-	return double(data);
+	return result;
 }
-
 using decode_func_t = double (*)(const Signal*, const void*) noexcept;
-template <std::size_t nBytes, Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
-struct MakeDecode
+decode_func_t make_decode(Alignment a, Signal::ByteOrder bo, Signal::ValueType vt, Signal::ExtendedValueType evt)
 {
-	static decode_func_t value(
-		  Signal::ByteOrder byte_order
-		, Signal::ValueType value_type
-		, Signal::ExtendedValueType extended_value_type)
+	constexpr auto si64b			= Alignment::size_inbetween_first_64_bit;
+	constexpr auto se64bsbsfi64b	= Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit;
+	constexpr auto se64bsasdnfi64b	= Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit;
+	constexpr auto le				= Signal::ByteOrder::LittleEndian;
+	constexpr auto be				= Signal::ByteOrder::BigEndian;
+	constexpr auto sig				= Signal::ValueType::Signed;
+	constexpr auto usig				= Signal::ValueType::Unsigned;
+	constexpr auto i				= Signal::ExtendedValueType::Integer;
+	constexpr auto f				= Signal::ExtendedValueType::Float;
+	constexpr auto d				= Signal::ExtendedValueType::Double;
+	switch (enum_mask(a, bo, vt, evt))
 	{
-		if (aByteOrder == byte_order &&
-			aValueType == value_type &&
-			aExtendedValueType == extended_value_type)
-		{
-			if constexpr (nBytes == 8)
-			{
-				return template_decode8<aByteOrder, aValueType, aExtendedValueType>;
-			}
-			else
-			{
-				return template_decode64<aByteOrder, aValueType, aExtendedValueType>;
-			}
-		}
-		if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
-		{
-			return MakeDecode<nBytes, Signal::ByteOrder::LittleEndian, aValueType, aExtendedValueType>::value(byte_order, value_type, extended_value_type);
-		}
-		else if constexpr (aValueType == Signal::ValueType::Signed)
-		{
-			return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Unsigned, aExtendedValueType>::value(byte_order, value_type, extended_value_type);
-		}
-		else if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
-		{
-			return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Float>::value(byte_order, value_type, extended_value_type);
-		}
-		return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Integer>::value(byte_order, value_type, extended_value_type);
+	case enum_mask(si64b, le, sig, i):				return template_decode<si64b, le, sig, i>;
+	case enum_mask(si64b, le, sig, f):				return template_decode<si64b, le, sig, f>;
+	case enum_mask(si64b, le, sig, d):				return template_decode<si64b, le, sig, d>;
+	case enum_mask(si64b, le, usig, i):				return template_decode<si64b, le, usig, i>;
+	case enum_mask(si64b, le, usig, f):				return template_decode<si64b, le, usig, f>;
+	case enum_mask(si64b, le, usig, d):				return template_decode<si64b, le, usig, d>;
+	case enum_mask(si64b, be, sig, i):				return template_decode<si64b, be, sig, i>;
+	case enum_mask(si64b, be, sig, f):				return template_decode<si64b, be, sig, f>;
+	case enum_mask(si64b, be, sig, d):				return template_decode<si64b, be, sig, d>;
+	case enum_mask(si64b, be, usig, i):				return template_decode<si64b, be, usig, i>;
+	case enum_mask(si64b, be, usig, f):				return template_decode<si64b, be, usig, f>;
+	case enum_mask(si64b, be, usig, d):				return template_decode<si64b, be, usig, d>;
+	case enum_mask(se64bsbsfi64b, le, sig, i):		return template_decode<se64bsbsfi64b, le, sig, i>;
+	case enum_mask(se64bsbsfi64b, le, sig, f):		return template_decode<se64bsbsfi64b, le, sig, f>;
+	case enum_mask(se64bsbsfi64b, le, sig, d):		return template_decode<se64bsbsfi64b, le, sig, d>;
+	case enum_mask(se64bsbsfi64b, le, usig, i):		return template_decode<se64bsbsfi64b, le, usig, i>;
+	case enum_mask(se64bsbsfi64b, le, usig, f):		return template_decode<se64bsbsfi64b, le, usig, f>;
+	case enum_mask(se64bsbsfi64b, le, usig, d):		return template_decode<se64bsbsfi64b, le, usig, d>;
+	case enum_mask(se64bsbsfi64b, be, sig, i):		return template_decode<se64bsbsfi64b, be, sig, i>;
+	case enum_mask(se64bsbsfi64b, be, sig, f):		return template_decode<se64bsbsfi64b, be, sig, f>;
+	case enum_mask(se64bsbsfi64b, be, sig, d):		return template_decode<se64bsbsfi64b, be, sig, d>;
+	case enum_mask(se64bsbsfi64b, be, usig, i):		return template_decode<se64bsbsfi64b, be, usig, i>;
+	case enum_mask(se64bsbsfi64b, be, usig, f):		return template_decode<se64bsbsfi64b, be, usig, f>;
+	case enum_mask(se64bsbsfi64b, be, usig, d):		return template_decode<se64bsbsfi64b, be, usig, d>;
+	case enum_mask(se64bsasdnfi64b, le, sig, i):	return template_decode<se64bsasdnfi64b, le, sig, i>;
+	case enum_mask(se64bsasdnfi64b, le, sig, f):	return template_decode<se64bsasdnfi64b, le, sig, f>;
+	case enum_mask(se64bsasdnfi64b, le, sig, d):	return template_decode<se64bsasdnfi64b, le, sig, d>;
+	case enum_mask(se64bsasdnfi64b, le, usig, i):	return template_decode<se64bsasdnfi64b, le, usig, i>;
+	case enum_mask(se64bsasdnfi64b, le, usig, f):	return template_decode<se64bsasdnfi64b, le, usig, f>;
+	case enum_mask(se64bsasdnfi64b, le, usig, d):	return template_decode<se64bsasdnfi64b, le, usig, d>;
+	case enum_mask(se64bsasdnfi64b, be, sig, i):	return template_decode<se64bsasdnfi64b, be, sig, i>;
+	case enum_mask(se64bsasdnfi64b, be, sig, f):	return template_decode<se64bsasdnfi64b, be, sig, f>;
+	case enum_mask(se64bsasdnfi64b, be, sig, d):	return template_decode<se64bsasdnfi64b, be, sig, d>;
+	case enum_mask(se64bsasdnfi64b, be, usig, i):	return template_decode<se64bsasdnfi64b, be, usig, i>;
+	case enum_mask(se64bsasdnfi64b, be, usig, f):	return template_decode<se64bsasdnfi64b, be, usig, f>;
+	case enum_mask(se64bsasdnfi64b, be, usig, d):	return template_decode<se64bsasdnfi64b, be, usig, d>;
 	}
-};
-
-template <std::size_t nBytes>
-static decode_func_t make_decode(Signal::ByteOrder byte_order, Signal::ValueType value_type, Signal::ExtendedValueType extended_value_type)
-{
-	return MakeDecode<nBytes, Signal::ByteOrder::BigEndian, Signal::ValueType::Signed, Signal::ExtendedValueType::Double>::value(byte_order, value_type, extended_value_type);;
+	return nullptr;
 }
 
 double raw_to_phys(const Signal* sig, double raw) noexcept
@@ -131,7 +188,6 @@ double phys_to_raw(const Signal* sig, double phys) noexcept
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
 	return (phys - sigi->getOffset()) / sigi->getFactor();
 }
-
 std::unique_ptr<Signal> Signal::create(
 	  uint64_t message_size
 	, std::string&& name
@@ -223,6 +279,7 @@ SignalImpl::SignalImpl(
 	, _extended_value_type(std::move(extended_value_type))
 	, _error(Signal::ErrorCode::NoError)
 {
+	message_size = message_size < 8 ? 8 : message_size;
 	// check for out of frame size error
 	switch (byte_order)
 	{
@@ -260,19 +317,77 @@ SignalImpl::SignalImpl(
 	// save some additional values to speed up decoding
 	_mask =  (1ull << (_bit_size - 1ull) << 1ull) - 1;
 	_mask_signed = ~((1ull << (_bit_size - 1ull)) - 1);
-	_fixed_start_bit =
-		  _byte_order == dbcppp::Signal::ByteOrder::BigEndian
-		? (8 * (7 - (_start_bit / 8))) + (_start_bit % 8) - (_bit_size - 1)
-		: _start_bit;
-	_fixed_start_bit_fd =
-		  (_byte_order == dbcppp::Signal::ByteOrder::BigEndian
-		? (8 * (63 - (_start_bit / 8))) + (_start_bit % 8) - (_bit_size - 1)
-		: _start_bit);
-	_byte_pos_fd = _fixed_start_bit_fd / 8;
-	_fixed_start_bit_fd -= _byte_pos_fd * 8;
 
-	_decode8 = ::make_decode<8>(_byte_order, _value_type, _extended_value_type);
-	_decode64 = ::make_decode<64>(_byte_order, _value_type, _extended_value_type);
+	_byte_pos = _start_bit / 8;
+
+	uint64_t nbytes;
+	if (_byte_order == ByteOrder::LittleEndian)
+	{
+		nbytes = (_start_bit % 8 + _bit_size + 7) / 8;
+	}
+	else
+	{
+		nbytes = (_bit_size + (7 - _start_bit % 8) + 7) / 8;
+	}
+	Alignment alignment = Alignment::size_inbetween_first_64_bit;
+	// check whether the data is in the first 8 bytes
+	// so we can optimize out one memory access
+	if (_byte_pos + nbytes <= 8)
+	{
+		alignment = Alignment::size_inbetween_first_64_bit;
+		if (_byte_order == ByteOrder::LittleEndian)
+		{
+			_fixed_start_bit_0 = _start_bit;
+		}
+		else
+		{
+			_fixed_start_bit_0 = (8 * (7 - (_start_bit / 8))) + (_start_bit % 8) - (_bit_size - 1);
+		}
+	}
+	// check whether we can align the data on 64 bit
+	else if (_byte_pos  % 8 + nbytes <= 8)
+	{
+		alignment = Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit;
+		// align the byte pos on 64 bit
+		_byte_pos -= _byte_pos % 8;
+		_fixed_start_bit_0 = _start_bit - _byte_pos * 8;
+		if (_byte_order == ByteOrder::BigEndian)
+		{
+			_fixed_start_bit_0 = (8 * (7 - (_fixed_start_bit_0 / 8))) + (_fixed_start_bit_0 % 8) - (_bit_size - 1);
+		}
+	}
+	// we aren't able to align the data on 64 bit, so check whether the data fits into on uint64_t
+	else if (nbytes <= 8)
+	{
+		alignment = Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit;
+		_fixed_start_bit_0 = _start_bit - _byte_pos * 8;
+		if (_byte_order == ByteOrder::BigEndian)
+		{
+			_fixed_start_bit_0 = (8 * (7 - (_fixed_start_bit_0 / 8))) + (_fixed_start_bit_0 % 8) - (_bit_size - 1);
+		}
+	}
+	// we aren't able to align the data on 64 bit, and we aren't able to fit the data into one uint64_t
+	// so we have to compose the resulting value
+	else
+	{
+		alignment = Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit;
+		if (_byte_order == ByteOrder::BigEndian)
+		{
+			uint64_t nbits_last_byte = (7 - _start_bit % 8) + _bit_size - 64;
+			_fixed_start_bit_0 = nbits_last_byte;
+			_fixed_start_bit_1 = 8 - nbits_last_byte;
+			_mask = (1ull << (_start_bit % 8 + 57)) - 1;
+		}
+		else
+		{
+			_fixed_start_bit_0 = _start_bit - _byte_pos * 8;
+			_fixed_start_bit_1 = 64 - _start_bit % 8;
+			uint64_t nbits_last_byte = _bit_size + _start_bit % 8 - 64;
+			_mask = (1ull << nbits_last_byte) - 1ull;
+		}
+	}
+
+	_decode = ::make_decode(alignment, _byte_order, _value_type, _extended_value_type);
 
 	_raw_to_phys = ::raw_to_phys;
 	_phys_to_raw = ::phys_to_raw;

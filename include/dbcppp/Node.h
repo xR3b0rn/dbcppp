@@ -5,7 +5,6 @@
 #include <string>
 #include <memory>
 
-#include "Helper.h"
 #include "Export.h"
 #include "Attribute.h"
 

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Network.h"
+#include "../../include/dbcppp/Network.h"
 #include "BitTimingImpl.h"
 #include "ValueTableImpl.h"
 #include "MessageImpl.h"
@@ -12,7 +12,7 @@
 
 namespace dbcppp
 {
-	class NetworkImpl
+	class NetworkImpl final
 		: public Network
 	{
 	public:

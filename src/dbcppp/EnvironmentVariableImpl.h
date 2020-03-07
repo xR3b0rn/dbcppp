@@ -1,13 +1,13 @@
 
 #pragma once
 
-#include "EnvironmentVariable.h"
+#include "../../include/dbcppp/EnvironmentVariable.h"
 #include "NodeImpl.h"
 #include "AttributeImpl.h"
 
 namespace dbcppp
 {
-	class EnvironmentVariableImpl
+	class EnvironmentVariableImpl final
 		: public EnvironmentVariable
 	{
 	public:

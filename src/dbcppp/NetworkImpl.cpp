@@ -1,5 +1,5 @@
 
-#include "Network.h"
+#include "../../include/dbcppp/Network.h"
 #include "NetworkImpl.h"
 #include "DBC_Grammar.h"
 

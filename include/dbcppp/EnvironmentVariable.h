@@ -8,7 +8,6 @@
 #include <cstddef>
 
 #include "Export.h"
-#include "Helper.h"
 #include "Node.h"
 #include "Attribute.h"
 
