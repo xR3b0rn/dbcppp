@@ -91,7 +91,8 @@ namespace dbcppp
 		///
 		/// This function uses a optimized method of reversing the byte order and extracting
 		/// the value from the given data.
-		/// !!! Note: This function takes at least 8 bytes, if you pass less, then you end in undefined behaviour! !!!
+		/// !!! Note: This function takes at least 8 bytes and at least as many as the signal needs to be represented,
+		///     if you pass less, the program ends up in undefined behaviour! !!!
 		///
 		/// @param nbyte a n byte array (!!! at least 8 bytes !!!) which is representing the can data.
 		///               the data must be in this order:
@@ -99,7 +100,7 @@ namespace dbcppp
 		///               bit_8  - bit_15: bytes[1]
 		///               ...
 		///               bit_n-7 - bit_n: bytes[n / 8]
-		///               (like the Unix CAN frames does store the data)	
+		///               (like the Unix CAN frames does store the data)
 		inline double decode(const void* bytes) const noexcept { return _decode(this, bytes); }
 
 		inline double raw_to_phys(double raw) const { return _raw_to_phys(this, raw); }
