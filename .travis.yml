@@ -5,16 +5,13 @@ arch:
 os: linux
 dist: xenial
 
-services:
-  - postgresql
-
 branches:
   only:
     - master
 
 matrix:
   include:
-    - compiler: gcc
+    - compiler: g++
       addons:
         apt:
           update: true
