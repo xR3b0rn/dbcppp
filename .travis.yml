@@ -8,7 +8,7 @@ branches:
 matrix:
   include:
     - os: linux
-      arch: ppc64le
+      arch: s390x
       compiler: g++
       sudo: true
       addons:
