@@ -1,0 +1,54 @@
+language: generic
+os: linux
+dist: xenial
+
+services:
+  - postgresql
+
+branches:
+  only:
+    - master
+
+linux-conan: &linux-conan
+  language: python
+  python: "3.7"
+  services:
+    - docker
+  install:
+    - .conan/travis/install.sh
+  script:
+    - .conan/travis/run.sh
+
+osx-conan: &osx-conan
+  os: osx
+  install:
+    - .conan/travis/install.sh
+  script:
+    - .conan/travis/run.sh
+
+matrix:
+  include:
+    - compiler: gcc
+      addons:
+        apt:
+          update: true
+          sources:
+            - sourceline: 'ppa:mhier/libboost-latest'
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-9
+            - libpq-dev
+            - boost1.70
+      env:
+        - CXX=g++-9 BUILD=Release
+ 
+script:
+    ############################################################################
+    # Build main and tests
+    ############################################################################
+     - mkdir -p build
+     - cd build
+     - cmake .. 
+     - make
+     - make RunTests
+     
