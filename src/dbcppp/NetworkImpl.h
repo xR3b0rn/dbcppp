@@ -39,6 +39,7 @@ namespace dbcppp
 		virtual const Node* findNode(std::function<bool(const Node&)>&& pred) const override;
 		virtual void forEachNode(std::function<void(const Node&)>&& cb) const override;
 		virtual const ValueTable* getValueTableByName(const std::string& name) const override;
+		virtual const ValueTable* findValueTable(std::function<bool(const ValueTable&)>&& pred) const override;
 		virtual void forEachValueTable(std::function<void(const ValueTable&)>&& cb) const override;
 		virtual const Message* getMessageById(uint64_t id) const override;
 		virtual const Message* findMessage(std::function<bool(const Message&)>&& pred) const override;
@@ -51,10 +52,10 @@ namespace dbcppp
 		virtual void forEachAttributeDefinition(std::function<void(const AttributeDefinition&)>&& cb) const override;
 		virtual const Attribute* getAttributeDefaultByName(const std::string& name) const override;
 		virtual const Attribute* findAttributeDefault(std::function<bool(const Attribute&)>&& pred) const override;
-		virtual void forEachAttributeDefaults(std::function<void(const Attribute&)>&& cb) const override;
+		virtual void forEachAttributeDefault(std::function<void(const Attribute&)>&& cb) const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
-		virtual void forEachAttributeValues(std::function<void(const Attribute&)>&& cb) const override;
+		virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
 		virtual const std::string& getComment() const override;
 
 		virtual const Message* findParentMessage(const Signal* sig) const override;

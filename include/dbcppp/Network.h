@@ -48,6 +48,7 @@ namespace dbcppp
 		virtual const Node* findNode(std::function<bool(const Node&)>&& pred) const = 0;
 		virtual void forEachNode(std::function<void(const Node&)>&& cb) const= 0;
 		virtual const ValueTable* getValueTableByName(const std::string& name) const = 0;
+		virtual const ValueTable* findValueTable(std::function<bool(const ValueTable&)>&& pred) const = 0;
 		virtual void forEachValueTable(std::function<void(const ValueTable&)>&& cb) const = 0;
 		virtual const Message* getMessageById(uint64_t id) const = 0;
 		virtual const Message* findMessage(std::function<bool(const Message&)>&& pred) const = 0;
@@ -60,10 +61,10 @@ namespace dbcppp
 		virtual void forEachAttributeDefinition(std::function<void(const AttributeDefinition&)>&& cb) const = 0;
 		virtual const Attribute* getAttributeDefaultByName(const std::string& name) const = 0;
 		virtual const Attribute* findAttributeDefault(std::function<bool(const Attribute&)>&& pred) const = 0;
-		virtual void forEachAttributeDefaults(std::function<void(const Attribute&)>&& cb) const = 0;
+		virtual void forEachAttributeDefault(std::function<void(const Attribute&)>&& cb) const = 0;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
 		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
-		virtual void forEachAttributeValues(std::function<void(const Attribute&)>&& cb) const = 0;
+		virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
 		virtual const std::string& getComment() const = 0;
 		
 		virtual const Message* findParentMessage(const Signal* sig) const = 0;

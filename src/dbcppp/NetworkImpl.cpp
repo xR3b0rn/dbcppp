@@ -161,6 +161,19 @@ const ValueTable* NetworkImpl::getValueTableByName(const std::string& name) cons
 	}
 	return result;
 }
+const ValueTable* NetworkImpl::findValueTable(std::function<bool(const ValueTable&)>&& pred) const
+{
+	const ValueTable* result = nullptr;
+	for (const auto& vt : _value_tables)
+	{
+		if (pred(vt.second))
+		{
+			result = &vt.second;
+			break;
+		}
+	}
+	return result;
+}
 void NetworkImpl::forEachValueTable(std::function<void(const ValueTable&)>&& cb) const
 {
 	for (const auto& vt : _value_tables)
@@ -281,7 +294,7 @@ const Attribute* NetworkImpl::findAttributeDefault(std::function<bool(const Attr
 	}
 	return result;
 }
-void NetworkImpl::forEachAttributeDefaults(std::function<void(const Attribute&)>&& cb) const
+void NetworkImpl::forEachAttributeDefault(std::function<void(const Attribute&)>&& cb) const
 {
 	for (const auto& ad : _attribute_defaults)
 	{
@@ -311,7 +324,7 @@ const Attribute* NetworkImpl::findAttributeValue(std::function<bool(const Attrib
 	}
 	return result;
 }
-void NetworkImpl::forEachAttributeValues(std::function<void(const Attribute&)>&& cb) const
+void NetworkImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
 {
 	for (const auto& av : _attribute_values)
 	{
@@ -562,13 +575,13 @@ void Network::serializeToStream(std::ostream& os) const
 			os << "\n";
 			ad.serializeToStream(os);
 		});
-	forEachAttributeDefaults(
+	forEachAttributeDefault(
 		[&](const Attribute& ad)
 		{
 			os << "\n";
 			ad.serializeToStream(os, *this);
 		});
-	forEachAttributeValues(
+	forEachAttributeValue(
 		[&](const Attribute& val)
 		{
 			os << "\n";

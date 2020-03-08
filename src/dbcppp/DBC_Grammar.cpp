@@ -714,7 +714,7 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is, std::unique_ptr<Netw
 }
 extern "C"
 {
-	DBCPPP_API struct dbcppp_Network* dbcppp_load_from_file(const char* filename)
+	DBCPPP_API struct dbcppp_Network* dbcppp_LoadFromFile(const char* filename)
 	{
 		NetworkImpl* result = nullptr;
 		std::ifstream is(filename);
@@ -738,7 +738,7 @@ extern "C"
 		}
 		return reinterpret_cast<dbcppp_Network*>(result);
 	}
-	DBCPPP_API void free_network(struct dbcppp_network* net)
+	DBCPPP_API void dbcppp_FreeNetwork(struct dbcppp_network* net)
 	{
 		delete reinterpret_cast<NetworkImpl*>(net);
 	}
