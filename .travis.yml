@@ -71,5 +71,5 @@ script:
      - cd build
      - cmake .. 
      - make
-     - make RunTests
+     # - make RunTests
      
