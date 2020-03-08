@@ -26,6 +26,8 @@ matrix:
         # Download and install recent boost
         - |
           if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
+            echo "Systems Byte Order:"
+            lscpu | grep "Byte Order"
             BOOST_URL="https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz"
             wget ${BOOST_URL}
             tar -xzf boost_1_72_0.tar.gz
