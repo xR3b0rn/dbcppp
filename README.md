@@ -100,7 +100,6 @@ double template_decode(const Signal* sig, const void* nbytes) noexcept
 00007FF8025BCAFD  movsd       xmm0,mmword ptr [data]  
 00007FF8025BCB03  ret  
 ```
-Assembly was generated using Compiler Explorer: https://godbolt.org/z/dHRqE4
 # Known issues
 * decode64 isn't working correctly on LittleEndian-maschine if the ValueType of the Signal is BigEndian
 * both decode functions weren't tested on a BigEndian-maschine
