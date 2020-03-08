@@ -1,4 +1,5 @@
 
+#include <limits>
 #include <boost/endian/conversion.hpp>
 #include "SignalImpl.h"
 
@@ -246,24 +247,6 @@ std::unique_ptr<Signal> Signal::create(
 	}
 	return result;
 }
-static constexpr bool IEEE_754_FLOAT()
-{
-	union hack
-	{
-		uint32_t in;
-		float out;
-	} hack{uint32_t(0b00111111100110011001100110011010)};
-	return hack.out == 1.2000000476837158203125;
-}
-static constexpr bool IEEE_754_DOUBLE()
-{
-	union
-	{
-		uint64_t in;
-		double out;
-	} hack{uint64_t(0b0010000100000001000100000000000000111111100110011001100110011010)};
-	return hack.out == 1.04249726566068086052067196799E-149;
-}
 SignalImpl::SignalImpl(
 	  uint64_t message_size
 	, std::string&& name
@@ -337,11 +320,11 @@ SignalImpl::SignalImpl(
 		}
 		break;
 	}
-	if (extended_value_type == ExtendedValueType::Float && !IEEE_754_FLOAT())
+	if (extended_value_type == ExtendedValueType::Float && !std::numeric_limits<float>::is_iec559)
 	{
 		_error = ErrorCode::MaschinesFloatEncodingNotSupported;
 	}
-	if (extended_value_type == ExtendedValueType::Double && !IEEE_754_DOUBLE())
+	if (extended_value_type == ExtendedValueType::Double && !std::numeric_limits<double>::is_iec559)
 	{
 		_error = ErrorCode::MaschinesDoubleEncodingNotSupported;
 	}
