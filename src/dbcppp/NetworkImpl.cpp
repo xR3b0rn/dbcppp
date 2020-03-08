@@ -1,4 +1,5 @@
 
+#include <iomanip>
 #include "../../include/dbcppp/Network.h"
 #include "NetworkImpl.h"
 #include "DBC_Grammar.h"
@@ -420,6 +421,7 @@ void Network::merge(std::unique_ptr<Network>&& other)
 }
 void Network::serializeToStream(std::ostream& os) const
 {
+	os << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 	os << "VERSION \"";
 	if (getVersion() != "")
 	{

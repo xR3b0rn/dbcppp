@@ -44,7 +44,7 @@ BO_ 0 test_msg0: 8 Vector__XXX
 BO_ 1 test_msg_mux0: 8 VehicleBus
  SG_ mux_switch_value M : 0|3@1+ (1,0) [0|7] "" Receiver
  SG_ s0_0 m0 : 3|10@1+ (10,0) [0|10230] "unit" Receiver
- SG_ s0_1 m0 : 13|10@1+ (10,0) [0|0] "unit" Receiver
+ SG_ s0_1 m0 : 13|10@1+ (10,0) [0|4294967295] "unit" Receiver
  SG_ s0_2 m0 : 23|10@1+ (10,0) [0|0] "unit" Receiver
  SG_ s0_3 m0 : 33|10@1+ (10,0) [0|0] "unit" Receiver
  SG_ s0_4 m0 : 43|7@1+ (0.2,0) [0|0] "V" Receiver
