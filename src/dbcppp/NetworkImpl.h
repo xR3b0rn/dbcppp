@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <sstream>
 #include "../../include/dbcppp/Network.h"
 #include "BitTimingImpl.h"
 #include "ValueTableImpl.h"
@@ -59,7 +60,7 @@ namespace dbcppp
 		virtual const std::string& getComment() const override;
 
 		virtual const Message* findParentMessage(const Signal* sig) const override;
-		
+
 		std::string& version();
 		std::set<std::string>& newSymbols();
 		BitTimingImpl& bitTiming();
@@ -84,5 +85,7 @@ namespace dbcppp
 		std::map<std::string, AttributeImpl> _attribute_defaults;
 		std::map<std::string, AttributeImpl> _attribute_values;
 		std::string _comment;
+
+		std::stringstream _error_message;
 	};
 }

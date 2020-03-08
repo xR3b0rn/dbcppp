@@ -15,85 +15,91 @@ template <Alignment aAlignment, Signal::ByteOrder aByteOrder, Signal::ValueType 
 double template_decode(const Signal* sig, const void* nbytes) noexcept
 {
 	const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
-	uint64_t data;
+	union
+	{
+		uint64_t ui;
+		int64_t i;
+		float f;
+		double d;
+	} data;
 	if constexpr (aAlignment == Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit)
 	{
-		data = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
+		data.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
 		uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos + 8];
 		if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
 		{
-			boost::endian::native_to_big_inplace(data);
-			data &= sigi->_mask;
-			data <<= sigi->_fixed_start_bit_0;
+			boost::endian::native_to_big_inplace(data.ui);
+			data.ui &= sigi->_mask;
+			data.ui <<= sigi->_fixed_start_bit_0;
 			data1 >>= sigi->_fixed_start_bit_1;
-			data |= data1;
+			data.ui |= data1;
 		}
 		else
 		{
-			boost::endian::native_to_little_inplace(data);
-			data >>= sigi->_fixed_start_bit_0;
+			boost::endian::native_to_little_inplace(data.ui);
+			data.ui >>= sigi->_fixed_start_bit_0;
 			data1 &= sigi->_mask;
 			data1 <<= sigi->_fixed_start_bit_1;
-			data |= data1;
+			data.ui |= data1;
 		}
 		if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
 		{
-			return *reinterpret_cast<double*>(&data);
+			return data.d;
 		}
 		if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
 		{
-			return *reinterpret_cast<float*>(&data);
+			return data.f;
 		}
 		if constexpr (aValueType == Signal::ValueType::Signed)
 		{
-			if (data & sigi->_mask_signed)
+			if (data.ui & sigi->_mask_signed)
 			{
-				data |= sigi->_mask_signed;
+				data.ui |= sigi->_mask_signed;
 			}
-			return double(*reinterpret_cast<int64_t*>(&data));
+			return double(data.i);
 		}
-		return double(data);
+		return double(data.ui);
 	}
 	else
 	{
 		if constexpr (aAlignment == Alignment::size_inbetween_first_64_bit)
 		{
-			data = *reinterpret_cast<const uint64_t*>(nbytes);
+			data.ui = *reinterpret_cast<const uint64_t*>(nbytes);
 		}
 		else
 		{
-			data = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
+			data.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
 		}
 		if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
 		{
-			boost::endian::native_to_big_inplace(data);
+			boost::endian::native_to_big_inplace(data.ui);
 		}
 		else
 		{
-			boost::endian::native_to_little_inplace(data);
+			boost::endian::native_to_little_inplace(data.ui);
 		}
 		if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
 		{
-			return *reinterpret_cast<double*>(&data);
+			return data.d;
 		}
-		data >>= sigi->_fixed_start_bit_0;
+		data.ui >>= sigi->_fixed_start_bit_0;
 	}
 	if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
 	{
-		return *reinterpret_cast<float*>(&data);
+		return data.f;
 	}
-	data &= sigi->_mask;
+	data.ui &= sigi->_mask;
 	if constexpr (aValueType == Signal::ValueType::Signed)
 	{
 		// bit extending
 		// trust the compiler to optimize this
-		if (data & sigi->_mask_signed)
+		if (data.ui & sigi->_mask_signed)
 		{
-			data |= sigi->_mask_signed;
+			data.ui |= sigi->_mask_signed;
 		}
-		return double(*reinterpret_cast<int64_t*>(&data));
+		return double(data.i);
 	}
-	return double(data);
+	return double(data.ui);
 }
 
 constexpr uint64_t enum_mask(Alignment a, Signal::ByteOrder bo, Signal::ValueType vt, Signal::ExtendedValueType evt)
@@ -240,6 +246,24 @@ std::unique_ptr<Signal> Signal::create(
 	}
 	return result;
 }
+static bool IEEE_754_FLOAT()
+{
+	union hack
+	{
+		uint32_t in;
+		float out;
+	} hack{uint32_t(0b00111111100110011001100110011010)};
+	return hack.out == 1.2000000476837158203125;
+}
+static bool IEEE_754_DOUBLE()
+{
+	union
+	{
+		uint64_t in;
+		double out;
+	} hack{uint64_t(0b0010000100000001000100000000000000111111100110011001100110011010)};
+	return hack.out == 1.04249726566068086052067196799E-149;
+}
 SignalImpl::SignalImpl(
 	  uint64_t message_size
 	, std::string&& name
@@ -312,6 +336,14 @@ SignalImpl::SignalImpl(
 			_error = ErrorCode::WrongBitSizeForExtendedDataType;
 		}
 		break;
+	}
+	if (extended_value_type == ExtendedValueType::Float && !IEEE_754_FLOAT())
+	{
+		_error = ErrorCode::MaschinesFloatEncodingNotSupported;
+	}
+	if (extended_value_type == ExtendedValueType::Double && !IEEE_754_DOUBLE())
+	{
+		_error = ErrorCode::MaschinesDoubleEncodingNotSupported;
 	}
 
 	// save some additional values to speed up decoding

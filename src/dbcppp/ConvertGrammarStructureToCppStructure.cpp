@@ -226,9 +226,24 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
 			, std::move(value_descriptions)
 			, std::move(comment)
 			, extended_value_type);
-		if (ns.getError() == SignalImpl::ErrorCode::SignalExceedsMessageSize)
+		switch (ns.getError())
 		{
-			std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'" << " start_bit + bit_size exceeds the byte size of the message! Ignoring this error will lead to garbage data when using the decode function of this signal.";
+		case SignalImpl::ErrorCode::SignalExceedsMessageSize:
+			std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"
+				<< " start_bit + bit_size exceeds the byte size of the message! Ignoring this error will lead to garbage data when using the decode function of this signal." << std::endl;
+			break;
+		case SignalImpl::ErrorCode::WrongBitSizeForExtendedDataType:
+			std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"
+				<< " bit_size does not fit the bit size of the specified ExtendedValueType." << std::endl;
+			break;
+		case SignalImpl::ErrorCode::MaschinesFloatEncodingNotSupported:
+			std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
+				<< " This warning appears when a signal uses type float but the system this programm is running on does not uses IEEE 754 encoding for floats." << std::endl;
+			break;
+		case SignalImpl::ErrorCode::MaschinesDoubleEncodingNotSupported:
+			std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
+				<< " This warning appears when a signal uses type double but the system this programm is running on does not uses IEEE 754 encoding for doubles." << std::endl;
+			break;
 		}
 		result.insert(std::make_pair(s.name, std::move(ns)));
 	}

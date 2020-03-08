@@ -22,6 +22,8 @@ namespace dbcppp
 			: uint64_t
 		{
 			NoError,
+			MaschinesFloatEncodingNotSupported,
+			MaschinesDoubleEncodingNotSupported,
 			SignalExceedsMessageSize,
 			WrongBitSizeForExtendedDataType
 		};
