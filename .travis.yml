@@ -41,6 +41,13 @@ matrix:
               ./bootstrap
               sudo make -j16 install
               cd ..
+            else
+              cd boost_1_72_0
+              sudo cp -r boost /usr/local/include/
+              cd ..
+              cd cmake-3.16.5
+              sudo make install
+              cd ..
             fi
           fi
       cache:
