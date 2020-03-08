@@ -26,7 +26,7 @@ extern "C"
 	DBCPPP_API void dbcppp_network_for_each_node(struct dbcppp_Network* net, void(*cb)(dbcppp_Node*));
 	DBCPPP_API struct dbcppp_ValueTable* dbcppp_NetworkGetValueTableByName(struct dbcppp_Network* net, const char* name);
 	DBCPPP_API struct dbcppp_ValueTable* dbcppp_NetworkFindValueTable(struct dbcppp_Network* net, bool(*pred)(struct dbcppp_ValueTable*));
-	DBCPPP_API void dbcppp_NetworkForEachValueTale(struct dbcppp_Network* net, void(*cb)(struct dbcppp_ValueTable*));
+	DBCPPP_API void dbcppp_NetworkForEachValueTable(struct dbcppp_Network* net, void(*cb)(struct dbcppp_ValueTable*));
 	DBCPPP_API struct dbcppp_Message* dbcppp_NetworkGetMessageById(struct dbcppp_Network* net, uint64_t id);
 	DBCPPP_API struct dbcppp_Message* dbcppp_NetworkFindMessage(struct dbcppp_Network* net, bool(*pred)(struct dbcppp_Message*));
 	DBCPPP_API void dbcppp_NetworkForEachMessage(struct dbcppp_Network* net, void(*cb)(struct dbcppp_Message*));

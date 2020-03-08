@@ -62,7 +62,7 @@ extern "C"
 			});
 		return reinterpret_cast<dbcppp_ValueTable*>(const_cast<ValueTable*>(vt));
 	}
-	void dbcppp_NetworkForEachValueTale(struct dbcppp_Network* net, void(*cb)(struct dbcppp_ValueTable*))
+	void dbcppp_NetworkForEachValueTable(struct dbcppp_Network* net, void(*cb)(struct dbcppp_ValueTable*))
 	{
 		const NetworkImpl* neti = reinterpret_cast<NetworkImpl*>(net);
 		neti->forEachValueTable(
