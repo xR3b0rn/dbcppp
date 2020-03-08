@@ -33,22 +33,28 @@ namespace dbcppp
 
 		virtual const std::string& getVersion() const override;
 		virtual bool hasNewSymbol(const std::string& name) const override;
-		virtual std::vector<const std::string*> getNewSymbols() const override;
+		virtual void forEachNewSymbol(std::function<void(const std::string&)> cb) const override;
 		virtual const BitTiming& getBitTiming() const override;
 		virtual const Node* getNodeByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const Node*>> getNodes() const override;
+		virtual const Node* findNode(std::function<bool(const Node&)>&& pred) const override;
+		virtual void forEachNode(std::function<void(const Node&)>&& cb) const override;
 		virtual const ValueTable* getValueTableByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const ValueTable*>> getValueTables() const override;
+		virtual void forEachValueTable(std::function<void(const ValueTable&)>&& cb) const override;
 		virtual const Message* getMessageById(uint64_t id) const override;
-		virtual std::vector<std::pair<uint64_t, const Message*>> getMessages() const override;
+		virtual const Message* findMessage(std::function<bool(const Message&)>&& pred) const override;
+		virtual void forEachMessage(std::function<void(const Message&)>&& cb) const override;
 		virtual const EnvironmentVariable* getEnvironmentVariableByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const EnvironmentVariable*>> getEnvironmentVariables() const override;
+		virtual const EnvironmentVariable* findEnvironmentVariable(std::function<bool(const EnvironmentVariable&)>&& pred) const override;
+		virtual void forEachEnvironmentVariable(std::function<void(const EnvironmentVariable&)>&& cb) const override;
 		virtual const AttributeDefinition* getAttributeDefinitionByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const AttributeDefinition*>> getAttributeDefinitions() const override;
+		virtual const AttributeDefinition* findAttributeDefinition(std::function<bool(const AttributeDefinition&)>&& pred) const override;
+		virtual void forEachAttributeDefinition(std::function<void(const AttributeDefinition&)>&& cb) const override;
 		virtual const Attribute* getAttributeDefaultByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeDefaults() const override;
+		virtual const Attribute* findAttributeDefault(std::function<bool(const Attribute&)>&& pred) const override;
+		virtual void forEachAttributeDefaults(std::function<void(const Attribute&)>&& cb) const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
+		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
+		virtual void forEachAttributeValues(std::function<void(const Attribute&)>&& cb) const override;
 		virtual const std::string& getComment() const override;
 
 		virtual const Message* findParentMessage(const Signal* sig) const override;

@@ -38,14 +38,12 @@ boost::optional<const SignalType&> ValueTableImpl::getSignalType() const
 	}
 	return boost::none;
 }
-std::vector<std::pair<double, const std::string*>> ValueTableImpl::getValueEncodingDescriptions() const
+void ValueTableImpl::forEachValueEncodingDescription(std::function<void(double, const std::string&)>&& cb) const
 {
-	std::vector<std::pair<double, const std::string*>> result;
 	for (const auto& ved : _value_encoding_descriptions)
 	{
-		result.emplace_back(std::make_pair(ved.first, &ved.second));
+		cb(ved.first, ved.second);
 	}
-	return result;
 }
 const std::string* ValueTableImpl::getValueEncodingDescriptions(double value) const
 {
@@ -60,14 +58,19 @@ const std::string* ValueTableImpl::getValueEncodingDescriptions(double value) co
 
 void ValueTable::serializeToStream(std::ostream& os) const
 {
-	auto veds = getValueEncodingDescriptions();
-	if (veds.size())
-	{
-		os << "VAL_TABLE_ " << getName();
-		for (const auto& ved : veds)
+	bool first = true;
+	forEachValueEncodingDescription(
+		[&](double value, const std::string& desc)
 		{
-			os << " " << ved.first << " \"" << *ved.second << "\"";
-		}
+			if (first)
+			{
+				first = false;
+				os << "VAL_TABLE_ " << getName();
+			}
+			os << " " << value << " \"" << desc << "\"";
+		});
+	if (!first)
+	{
 		os << ";";
 	}
 }

@@ -76,14 +76,12 @@ bool MessageImpl::hasMessageTransmitter(const std::string& name) const
 {
 	return _message_transmitters.find(name) != _message_transmitters.end();
 }
-std::vector<const std::string*> MessageImpl::getMessageTransmitters() const
+void MessageImpl::forEachMessageTransmitter(std::function<void(const std::string&)>&& cb) const
 {
-	std::vector<const std::string*> result;
-	for (auto& n : _message_transmitters)
+	for (const auto& n : _message_transmitters)
 	{
-		result.emplace_back(&n);
+		cb(n);
 	}
-	return result;
 }
 const Signal* MessageImpl::getSignalByName(const std::string& name) const
 {
@@ -95,14 +93,25 @@ const Signal* MessageImpl::getSignalByName(const std::string& name) const
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const Signal*>> MessageImpl::getSignals() const
+const Signal* MessageImpl::findSignal(std::function<bool(const Signal&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const Signal*>> result;
+	const Signal* result = nullptr;
 	for (const auto& s : _signals)
 	{
-		result.emplace_back(s.first, &s.second);
+		if (pred(s.second))
+		{
+			result = &s.second;
+			break;
+		}
 	}
 	return result;
+}
+void MessageImpl::forEachSignal(std::function<void(const Signal&)>&& cb) const
+{
+	for (const auto& s : _signals)
+	{
+		cb(s.second);
+	}
 }
 const Attribute* MessageImpl::getAttributeValueByName(const std::string& name) const
 {
@@ -114,14 +123,25 @@ const Attribute* MessageImpl::getAttributeValueByName(const std::string& name) c
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const Attribute*>> MessageImpl::getAttributeValues() const
+const Attribute* MessageImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const Attribute*>> result;
-	for (auto& av : _attribute_values)
+	const Attribute* result = nullptr;
+	for (const auto& av : _attribute_values)
 	{
-		result.emplace_back(av.first, &av.second);
+		if (pred(av.second))
+		{
+			result = &av.second;
+			break;
+		}
 	}
 	return result;
+}
+void MessageImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+{
+	for (const auto& av : _attribute_values)
+	{
+		cb(av.second);
+	}
 }
 const std::string& MessageImpl::getComment() const
 {
@@ -135,9 +155,10 @@ const std::map<std::string, SignalImpl>& MessageImpl::signals() const
 void Message::serializeToStream(std::ostream& os) const
 {
 	os << "BO_ " << getId() << " " << getName() << ": " << getMessageSize() << " " << getTransmitter();
-	for (const auto& s : getSignals())
-	{
-		os << "\n ";
-		s.second->serializeToStream(os);
-	}
+	forEachSignal(
+		[&](const Signal& s)
+		{
+			os << "\n ";
+			s.serializeToStream(os);
+		});
 }

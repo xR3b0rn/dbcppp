@@ -28,11 +28,13 @@ namespace dbcppp
 		virtual uint64_t getMessageSize() const override;
 		virtual const std::string& getTransmitter() const override;
 		virtual bool hasMessageTransmitter(const std::string& name) const override;
-		virtual std::vector<const std::string*> getMessageTransmitters() const override;
+		virtual void forEachMessageTransmitter(std::function<void(const std::string&)>&& cb) const override;
 		virtual const Signal* getSignalByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const Signal*>> getSignals() const override;
+		virtual const Signal* findSignal(std::function<bool(const Signal&)>&& pred) const override;
+		virtual void forEachSignal(std::function<void(const Signal&)>&& cb) const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
+		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
+		virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
 		virtual const std::string& getComment() const override;
 		
 		const std::map<std::string, SignalImpl>& signals() const;

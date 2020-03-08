@@ -444,14 +444,12 @@ bool SignalImpl::hasReceiver(const std::string& name) const
 {
 	return _receivers.find(name) != _receivers.end();
 }
-std::vector<const std::string*> SignalImpl::getReceivers() const
+void SignalImpl::forEachReceiver(std::function<void(const std::string&)>&& cb) const
 {
-	std::vector<const std::string*> result;
 	for (const auto& n : _receivers)
 	{
-		result.emplace_back(&n);
+		cb(n);
 	}
-	return result;
 }
 const std::string* SignalImpl::getValueDescriptionById(double id) const
 {
@@ -463,14 +461,12 @@ const std::string* SignalImpl::getValueDescriptionById(double id) const
 	}
 	return result;
 }
-std::vector<std::pair<double, const std::string*>> SignalImpl::getValueDescriptions() const
+void SignalImpl::forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const
 {
-	std::vector<std::pair<double, const std::string*>> result;
-	for (auto& vd : _value_descriptions)
+	for (auto& av : _value_descriptions)
 	{
-		result.emplace_back(vd.first, &vd.second);
+		cb(av.first, av.second);
 	}
-	return result;
 }
 const Attribute* SignalImpl::getAttributeValueByName(const std::string& name) const
 {
@@ -482,14 +478,25 @@ const Attribute* SignalImpl::getAttributeValueByName(const std::string& name) co
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const Attribute*>> SignalImpl::getAttributeValues() const
+const Attribute* SignalImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const Attribute*>> result;
-	for (auto& av : _attribute_values)
+	const Attribute* result = nullptr;
+	for (const auto& av : _attribute_values)
 	{
-		result.emplace_back(av.first, &av.second);
+		if (pred(av.second))
+		{
+			result = &av.second;
+			break;
+		}
 	}
 	return result;
+}
+const void SignalImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+{
+	for (const auto& av : _attribute_values)
+	{
+		cb(av.second);
+	}
 }
 const std::string& SignalImpl::getComment() const
 {
@@ -526,8 +533,9 @@ void Signal::serializeToStream(std::ostream& os) const
 	os << "(" << getFactor() << "," << getOffset() << ") ";
 	os << "[" << getMinimum() << "|" << getMaximum() << "] ";
 	os << "\"" << getUnit() << "\"";
-	for (auto& n : getReceivers())
-	{
-		os << " " << *n;
-	}
+	forEachReceiver(
+		[&](const std::string& n)
+		{
+			os << " " << n;
+		});
 }

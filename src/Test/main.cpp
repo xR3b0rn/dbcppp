@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 	std::size_t n_tests = 1000000;
 	std::size_t max_msg_byte_size = 64;
 
-	BOOST_TEST_MESSAGE("Testing decode8-function with " << n_tests << " randomly generated tests...");
+	BOOST_TEST_MESSAGE("Testing decode-function with " << n_tests << " randomly generated tests...");
 
 	uint32_t seed = static_cast<uint32_t>(time(0));
 	std::random_device dev;

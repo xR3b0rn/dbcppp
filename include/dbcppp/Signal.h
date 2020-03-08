@@ -76,11 +76,12 @@ namespace dbcppp
 		virtual double getMaximum() const = 0;
 		virtual std::string getUnit() const = 0;
 		virtual bool hasReceiver(const std::string& name) const = 0;
-		virtual std::vector<const std::string*> getReceivers() const = 0;
+		virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const = 0;
 		virtual const std::string* getValueDescriptionById(double id) const = 0;
-		virtual std::vector<std::pair<double, const std::string*>> getValueDescriptions() const = 0;
+		virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const = 0;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
-		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
+		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
+		virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
 		virtual const std::string& getComment() const = 0;
 		virtual ExtendedValueType getExtendedValueType() const = 0;
 		virtual ErrorCode getError() const = 0;
@@ -100,7 +101,7 @@ namespace dbcppp
 		///               bit_8  - bit_15: bytes[1]
 		///               ...
 		///               bit_n-7 - bit_n: bytes[n / 8]
-		///               (like the Unix CAN frames does store the data)
+		///               (like the Unix CAN frame does store the data)
 		inline double decode(const void* bytes) const noexcept { return _decode(this, bytes); }
 
 		inline double raw_to_phys(double raw) const { return _raw_to_phys(this, raw); }
@@ -109,8 +110,6 @@ namespace dbcppp
 	protected:
 		// instead of using virtuals dynamic dispatching use function pointers
 		double (*_decode)(const Signal* sig, const void* bytes) noexcept {nullptr};
-		double (*_decode8)(const Signal* sig, const void* _8byte) noexcept {nullptr};
-		double (*_decode64)(const Signal* sig, const void* _64byte) noexcept {nullptr};
 		double (*_raw_to_phys)(const Signal* sig, double raw) noexcept {nullptr};
 		double (*_phys_to_raw)(const Signal* sig, double phys) noexcept {nullptr};
 	};

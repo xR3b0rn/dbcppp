@@ -51,12 +51,13 @@ namespace dbcppp
 		virtual uint64_t getEvId() const = 0;
 		virtual AccessType getAccessType() const = 0;
 		virtual bool hasAccessNode(const std::string& name) const = 0;
-		virtual std::vector<const std::string*> getAccessNodes() const = 0;
+		virtual void forEachAccessNode(std::function<void(const std::string&)>&& cb) const = 0;
 		virtual const std::string* getValueDescriptionById(double id) const = 0;
-		virtual std::vector<std::pair<double, const std::string*>> getValueDescriptions() const = 0;
+		virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const = 0;
 		virtual uint64_t getDataSize() const = 0;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
-		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const = 0;
+		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
+		virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
 		virtual const std::string& getComment() const = 0;
 		
 		void serializeToStream(std::ostream& os) const;
