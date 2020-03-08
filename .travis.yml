@@ -1,28 +1,158 @@
-language: cpp
+language: generic
+os: linux
+dist: xenial
+
+services:
+  - postgresql
+
+branches:
+  only:
+    - master
+
+linux-conan: &linux-conan
+  language: python
+  python: "3.7"
+  services:
+    - docker
+  install:
+    - .conan/travis/install.sh
+  script:
+    - .conan/travis/run.sh
+
+osx-conan: &osx-conan
+  os: osx
+  install:
+    - .conan/travis/install.sh
+  script:
+    - .conan/travis/run.sh
 
 matrix:
   include:
-    # works on Precise and Trusty
-    - os: linux
-      sudo: true
-      compiler: g++
+    - compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-7', 'libpq-dev']
+      env:
+        - CXX=g++-7
+
+    - compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-8', 'libpq-dev']
+      env:
+        - CXX=g++-8
+
+    - compiler: gcc
       addons:
         apt:
           sources: ['ubuntu-toolchain-r-test']
           packages: ['g++-9', 'libpq-dev']
       env:
-         - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
-            
-install:
-    # Download and install recent cmake
-    - |
-      if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
-        CMAKE_URL="http://www.cmake.org/files/v3.5/cmake-3.5.1-Linux-x86_64.tar.gz"
-        mkdir -p ${DEPS_DIR}/cmake
-        travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C ${DEPS_DIR}/cmake
-        export PATH=${DEPS_DIR}/cmake/bin:${PATH}
-      fi
- 
+        - CXX=g++-9
+
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-5.0']
+          packages: ['clang-5.0', 'g++-7', 'libpq-dev']
+      env:
+        - CXX=clang++-5.0
+
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-6.0']
+          packages: ['clang-6.0', 'g++-7', 'libpq-dev']
+      env:
+        - CXX=clang++-6.0
+
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-7']
+          packages: ['clang-7', 'g++-7', 'libpq-dev']
+      env:
+        - CXX=clang++-7
+
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-8']
+          packages: ['clang-8', 'g++-8', 'libpq-dev']
+      env:
+        - CXX=clang++-8
+
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-8']
+          packages: ['clang-8', 'g++-8', 'libpq-dev']
+      env:
+        - CXX=clang++-8
+        - CPPFLAGS=-fms-extensions
+
+    - language: cpp
+      os: osx
+      osx_image: xcode10.1
+      compiler: clang
+      script:
+        - $CXX --version
+        - make -j3 compile
+
+    - <<: *linux-conan
+      env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7
+
+    - <<: *linux-conan
+      env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8
+
+    - <<: *linux-conan
+      env: CONAN_CLANG_VERSIONS=5.0 CONAN_DOCKER_IMAGE=conanio/clang50
+
+    - <<: *linux-conan
+      env: CONAN_CLANG_VERSIONS=6.0 CONAN_DOCKER_IMAGE=conanio/clang60
+
+    - <<: *linux-conan
+      env: CONAN_CLANG_VERSIONS=7.0 CONAN_DOCKER_IMAGE=conanio/clang7
+
+#    - <<: *linux-conan
+#      env: CONAN_CLANG_VERSIONS=8.0 CONAN_DOCKER_IMAGE=conanio/clang8
+
+    - <<: *osx-conan
+      osx_image: xcode10
+      env: CONAN_APPLE_CLANG_VERSIONS=10.0
+
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-8']
+          packages: ['clang-8', 'clang-tools-8', 'g++-8', 'libpq-dev']
+      script:
+        - scan-build-8 --use-c++=clang++-8 --status-bugs make -kj3
+
+    - compiler: clang
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test', 'llvm-toolchain-xenial-8']
+          packages: ['clang-8', 'clang-tidy-8', 'g++-8', 'libpq-dev']
+      env:
+        - CLANG_TIDY=clang-tidy-8
+      script:
+        - make -kj3 clang-tidy
+
+    - compiler: gcc
+      addons:
+        apt:
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-7', 'libpq-dev']
+      env:
+        - CXX=g++-7
+        - CXXFLAGS="-O0 --coverage"
+      before_script:
+        - pip install --user cpp-coveralls
+      after_success:
+        - coveralls --gcov gcov-7 --gcov-options '\-lp' --exclude src/test
  
 script:
     ############################################################################
