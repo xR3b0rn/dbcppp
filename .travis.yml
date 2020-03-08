@@ -9,7 +9,7 @@ matrix:
       addons:
         apt:
           sources:
-            ppa:ubuntu-toolchain-r/test
+            - ppa:ubuntu-toolchain-r/test
           packages:
             - g++-9
             - gcc-9
