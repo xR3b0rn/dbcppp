@@ -1,3 +1,4 @@
+![travis-ci](https://travis-ci.org/xR3b0rn/dbcppp.svg?branch=master "travis-ci")
 # dbcppp (DBC C++ parser)
 A C++ DBC file parser based on `boost.spirit`. This library is designed for decoding performance.
 # Features

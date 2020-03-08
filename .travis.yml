@@ -1,34 +1,21 @@
 language: generic
 os: linux
 dist: xenial
-
-services:
-  - postgresql
+arch:
+  - amd64
+  - ppc64le
 
 branches:
   only:
     - master
 
-linux-conan: &linux-conan
-  language: python
-  python: "3.7"
-  services:
-    - docker
-  install:
-    - .conan/travis/install.sh
-  script:
-    - .conan/travis/run.sh
-
-osx-conan: &osx-conan
-  os: osx
-  install:
-    - .conan/travis/install.sh
-  script:
-    - .conan/travis/run.sh
-
 matrix:
   include:
-    - compiler: gcc
+   - os: linux
+     arch: amd64
+   - os: linux
+     arch: ppc64le
+    - compiler: g++
       addons:
         apt:
           update: true
@@ -41,7 +28,7 @@ matrix:
             - boost1.70
       env:
         - CXX=g++-9 BUILD=Release
- 
+  
 script:
     ############################################################################
     # Build main and tests
