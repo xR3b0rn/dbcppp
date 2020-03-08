@@ -1,16 +1,20 @@
 language: generic
 os: linux
 dist: xenial
+arch:
+  - amd64
+  - ppc64le
 
 branches:
   only:
     - master
 
 matrix:
-  arch:
-    - amd64
-    - ppc64le
   include:
+   - os: linux
+     arch: amd64
+   - os: linux
+     arch: ppc64le
     - compiler: g++
       addons:
         apt:
@@ -21,7 +25,6 @@ matrix:
           packages:
             - g++-9
             - libpq-dev
-            - libboost-all-dev
             - boost1.70
       env:
         - CXX=g++-9 BUILD=Release
