@@ -29,7 +29,7 @@ matrix:
             BOOST_URL="https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz"
             mkdir -p ${DEPS_DIR}/boost
             wget ${BOOST_URL}
-            tar -xzv boost_1_72_0.tar.gz
+            tar -xzvf boost_1_72_0.tar.gz
             cd boost_1_72_0
             ./bootstrap.sh
             ./b2 -j12 install
