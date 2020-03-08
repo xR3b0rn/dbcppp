@@ -8,7 +8,7 @@ branches:
 matrix:
   include:
     - os: linux
-      arch: amd64
+      arch: ppc64le
       compiler: g++
       addons:
         apt:
@@ -19,11 +19,11 @@ matrix:
           packages:
             - g++-9
             - libpq-dev
-            - boost1.70
+            - boost1.64
       env:
         - CXX=g++-9 BUILD=Release
     - os: linux
-      arch: ppc64le
+      arch: amd64
       compiler: g++
       addons:
         apt:
