@@ -4,6 +4,7 @@ matrix:
   include:
     # works on Precise and Trusty
     - os: linux
+      sudo: true
       compiler: gcc
       addons:
         apt:
@@ -13,7 +14,8 @@ matrix:
       env:
          - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
 before_install:
-    - eval "${MATRIX_EVAL}"
+    - add-apt-repository ppa:ubuntu-toolchain-r/test
+    - apt-get update
    
 install:
     - if [ "$CXX" = "clang++" ] && [ "$TRAVIS_OS_NAME" = "linux" ]; then export CXX="clang++-3.7" CC="clang-3.7"; fi
