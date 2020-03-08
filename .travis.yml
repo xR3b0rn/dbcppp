@@ -34,6 +34,9 @@ matrix:
             #./bootstrap.sh
             #./b2 --without-atomic --without-chrono --without-container --without-context --without-contract --without-coroutine --without-date_time --without-exception --without-fiber --without-filesystem --without-graph --without-graph_parallel --without-headers --without-iostreams --without-locale --without-log --without-math --without-mpi --without-program_options --without-python --without-random --without-regex --without-serialization --without-stacktrace --without-system --without-test --without-thread --without-timer --without-type_erasure --without-wave install
             cd ..
+            wget https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5-Linux-x86_64.sh
+            chmod +x cmake-3.16.5-Linux-x86_64.sh
+            sudo ./cmake-3.16.5-Linux-x86_64.sh
           fi
     - os: linux
       arch: amd64
