@@ -158,8 +158,8 @@ script:
     ############################################################################
     # Build main and tests
     ############################################################################
-     - mkdir -p build
-     - cd build
+     - mkdir -p dbcppp/build
+     - cd dbcppp/build
      - cmake .. 
      - make
      - make RunTests
