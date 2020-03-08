@@ -55,15 +55,16 @@ int main()
         {
             receive_can_frame_from_somewhere(&frame);
             receive_canfd_frame_from_somewhere(&fd_frame);
-            auto& msg = net->getMessageById(frame.id);
-            std::cout << "Received message: " << msg->getName() << std::endl;
-            for (auto signal : msg->getSignals())
+            const Message* msg = net->getMessageById(frame.id);
+            if (msg)
             {
-                // either this for standard CAN frames
-                double raw = signal->decode(frame.data);
-                // or this for FD CAN frames
-                // double raw = signal->decode(fd_frame.data);
-                std::cout << "\t" << signal->name << "=" << signal->raw_to_phys(raw) << std::endl;
+                std::cout << "Received message: " << msg->getName() << std::endl;
+                msg.forEachSignal(
+                    [&](const Signal& signal)
+                    {
+                        double raw = signal.decode(frame.data);
+                        std::cout << "\t" << signal.getName() << "=" << signal.rawToPhys(raw) << std::endl;
+                    });
             }
         }
     }
