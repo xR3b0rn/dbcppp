@@ -233,7 +233,7 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 		case Signal::ExtendedValueType::Double: ss << " Double"; break;
 		}
 		// since nan != nan we reintepret_cast to uint64_t before we compare
-		BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+		BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "No. " + std::to_string(i) + ":\t\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
 	}
 	BOOST_TEST_MESSAGE("Done!");
 }
