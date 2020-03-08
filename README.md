@@ -72,19 +72,33 @@ int main()
 
 ```
 # Decode-function
-The signals decode function is using prestored masks and fixed offsets to speed up calculation, therefore the decoding-function should be almost as fast as a code generated decode function would be. The assembly of the `decode8` on its critical path (signed and byte swap must happen) looks similar to this:
+The signals decode function is using prestored masks and fixed offsets to speed up calculation, therefore the decoding-function should be almost as fast as a code generated decode function would be. The assembly of the `decode`-function on its critical path (signed and byte swap must happen) looks like this (VS19 10.0.18362.0 compiler):
 ```
-decode8(unsigned long, unsigned long, unsigned long, unsigned long):
-        bswap   rdi
-        shr     rdi, cl
-        pxor    xmm0, xmm0
-        and     rsi, rdi
-        mov     rax, rsi
-        or      rax, rdx
-        test    rsi, rdx
-        cmovne  rsi, rax
-        cvtsi2sd        xmm0, rsi
-        ret
+template <Alignment aAlignment, Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
+double template_decode(const Signal* sig, const void* nbytes) noexcept
+00007FF8025BCA73  mov         rax,rcx  
+00007FF8025BCA76  mov         rcx,qword ptr [rcx+140h]  
+00007FF8025BCA7D  xorps       xmm0,xmm0  
+00007FF8025BCA80  bswap       r8  
+00007FF8025BCA83  shr         r8,cl  
+00007FF8025BCA86  and         r8,qword ptr [rax+130h]  
+00007FF8025BCA8D  mov         rcx,qword ptr [rax+138h]  
+00007FF8025BCA94  mov         rax,rcx  
+00007FF8025BCA97  or          rcx,r8  
+00007FF8025BCA9A  and         rax,r8  
+00007FF8025BCA9D  cmove       rcx,r8  
+00007FF8025BCAA1  cvtsi2sd    xmm0,rcx  
+00007FF8025BCAA6  ret   
+```
+On the best path (no byteswap must take place and ExtendedValueType == Double) the decode function only has 5 instructions:
+```
+template <Alignment aAlignment, Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
+double template_decode(const Signal* sig, const void* nbytes) noexcept
+00007FF8025BCAF0  mov         rax,qword ptr [rdx]  
+00007FF8025BCAF3  mov         qword ptr [rsp+8],rcx  
+00007FF8025BCAF8  mov         qword ptr [sig],rax  
+00007FF8025BCAFD  movsd       xmm0,mmword ptr [data]  
+00007FF8025BCB03  ret  
 ```
 Assembly was generated using Compiler Explorer: https://godbolt.org/z/dHRqE4
 # Known issues
