@@ -36,7 +36,7 @@ matrix:
             cd ..
             wget https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5-Linux-x86_64.sh
             chmod +x cmake-3.16.5-Linux-x86_64.sh
-            sudo ./cmake-3.16.5-Linux-x86_64.sh
+            sudo ./cmake-3.16.5-Linux-x86_64.sh --skip-license
           fi
     - os: linux
       arch: amd64
