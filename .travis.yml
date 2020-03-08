@@ -28,7 +28,7 @@ matrix:
             - boost1.70
       env:
         - CXX=g++-9 BUILD=Release
- 
+  
 script:
     ############################################################################
     # Build main and tests
