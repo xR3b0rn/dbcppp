@@ -246,7 +246,7 @@ std::unique_ptr<Signal> Signal::create(
 	}
 	return result;
 }
-static bool IEEE_754_FLOAT()
+static constexpr bool IEEE_754_FLOAT()
 {
 	union hack
 	{
@@ -255,7 +255,7 @@ static bool IEEE_754_FLOAT()
 	} hack{uint32_t(0b00111111100110011001100110011010)};
 	return hack.out == 1.2000000476837158203125;
 }
-static bool IEEE_754_DOUBLE()
+static constexpr bool IEEE_754_DOUBLE()
 {
 	union
 	{
