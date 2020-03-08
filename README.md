@@ -5,8 +5,7 @@ A C++ DBC file parser based on `boost.spirit`. This library is designed for decd
 * verbose parser output in error case
 * DBC is editable through C++ interface exported from the library
 * read DBC file
-* decode functionality for ISO CAN frames (8 data bytes)
-* decode functionality for FD CAN frames (64 data bytes) (doesn't work properly yet)
+* decode functionality for frames of arbitrarily byte length
 ## DBC data types
 ### Supported
 * version
@@ -58,12 +57,12 @@ int main()
             receive_canfd_frame_from_somewhere(&fd_frame);
             auto& msg = net->getMessageById(frame.id);
             std::cout << "Received message: " << msg->getName() << std::endl;
-            for (auto* signal : msg->getSignals())
+            for (auto signal : msg->getSignals())
             {
                 // either this for standard CAN frames
-                double raw = signal->decode8(frame.data);
+                double raw = signal->decode(frame.data);
                 // or this for FD CAN frames
-                // double raw = signal->decode64(fd_frame.data);
+                // double raw = signal->decode(fd_frame.data);
                 std::cout << "\t" << signal->name << "=" << signal->raw_to_phys(raw) << std::endl;
             }
         }
