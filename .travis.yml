@@ -38,7 +38,7 @@ matrix:
             tar -xzf cmake-3.16.5.tar.gz
             cd cmake-3.16.5
             ./bootstrap
-            make -j16 install
+            sudo make -j16 install
             cd ..
           fi
     - os: linux
