@@ -19,7 +19,6 @@ matrix:
           packages:
             - g++-9
             - libpq-dev
-            - boost1.64
       env:
         - CXX=g++-9 BUILD=Release
       install:
@@ -31,7 +30,7 @@ matrix:
             travis_retry wget --no-check-certificate --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${DEPS_DIR}/boost
             cd boost
             ./bootstrap.sh
-            ./b2 -j12
+            ./b2 -j12 install
             export PATH=${DEPS_DIR}/boost/stage:${PATH}
           fi
     - os: linux
