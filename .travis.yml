@@ -31,18 +31,29 @@ matrix:
     - compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-7', 'libpq-dev']
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:mhier/libboost-latest'
+          packages:
+            - g++-7
+            - libpq-dev
+            - boost1.70
       env:
-        - CXX=g++-7
+        - CXX=g++-7 BUILD=Release
 
     - compiler: gcc
       addons:
         apt:
-          sources: ['ubuntu-toolchain-r-test']
-          packages: ['g++-8', 'libpq-dev']
+          update: true
+          sources:
+            - sourceline: 'ppa:mhier/libboost-latest'
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - libpq-dev
+            - boost1.70
       env:
-        - CXX=g++-8
+        - CXX=g++-8 BUILD=Release
 
     - compiler: gcc
       addons:
