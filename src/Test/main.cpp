@@ -183,12 +183,12 @@ BOOST_AUTO_TEST_CASE(Test_Decoding8)
 		auto rnd_evt = dist(rng) % 3;
 		if (rnd_msg_byte_size >= 4)
 		{
-			if (rnd_evt == 1)
+			if (std::numeric_limits<float>::is_iec559 && rnd_evt == 1)
 			{
 				rnd_extended_value_type = Signal::ExtendedValueType::Float;
 				rnd_bit_size = 32;
 			}
-			else if (rnd_msg_byte_size >= 8 && rnd_evt == 2)
+			else if (std::numeric_limits<double>::is_iec559 && rnd_msg_byte_size >= 8 && rnd_evt == 2)
 			{
 				rnd_extended_value_type = Signal::ExtendedValueType::Double;
 				rnd_bit_size = 64;
