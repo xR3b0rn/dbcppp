@@ -102,7 +102,7 @@ double template_decode(const Signal* sig, const void* nbytes) noexcept
 00007FF8025BCB03  ret  
 ```
 # Known issues
-* the decoding function for float is failing on Big Endian maschines
+* the decoding function for float is failing on IBM System/360 systems
 # Similar projects
   * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` for grammar parsing
   * [CAN BUS tools in Python 3 (cantools)](https://github.com/eerimoq/cantools) 
