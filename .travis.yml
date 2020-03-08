@@ -10,6 +10,7 @@ matrix:
     - os: linux
       arch: ppc64le
       compiler: g++
+      sudo: true
       addons:
         apt:
           update: true
@@ -22,13 +23,14 @@ matrix:
       env:
         - CXX=g++-9 BUILD=Release
       install:
-        # Download and install recent cmake
+        # Download and install recent boost
         - |
           if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
             BOOST_URL="https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz"
             mkdir -p ${DEPS_DIR}/boost
-            travis_retry wget --no-check-certificate --quiet -O - ${BOOST_URL} | tar --strip-components=1 -xz -C ${DEPS_DIR}/boost
-            cd boost
+            wget ${BOOST_URL}
+            tar --strip-components=1 -xz
+            cd boost_1_72_0
             ./bootstrap.sh
             ./b2 -j12 install
             export PATH=${DEPS_DIR}/boost/stage:${PATH}
