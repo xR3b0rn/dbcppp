@@ -43,6 +43,10 @@ matrix:
             sudo make -j16 install
             cd ..
           fi
+      cache:
+        directories:
+          - cmake-3.16.5
+          - boost_1_72_0
     - os: linux
       arch: amd64
       compiler: g++
