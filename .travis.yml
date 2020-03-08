@@ -8,11 +8,8 @@ matrix:
       compiler: g++
       addons:
         apt:
-          sources:
-            - ppa:ubuntu-toolchain-r/test
-          packages:
-            - g++-9
-            - gcc-9
+          sources: ['ubuntu-toolchain-r-test']
+          packages: ['g++-9', 'libpq-dev']
       env:
          - MATRIX_EVAL="CC=gcc-9 && CXX=g++-9"
             
