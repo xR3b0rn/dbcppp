@@ -155,12 +155,14 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
 	}
 	BOOST_TEST_MESSAGE("Done!");
 }
-BOOST_AUTO_TEST_CASE(Test_Decoding8)
+BOOST_AUTO_TEST_CASE(Test_decoding)
 {
 	std::size_t n_tests = 1000000;
 	std::size_t max_msg_byte_size = 64;
 
 	BOOST_TEST_MESSAGE("Testing decode-function with " << n_tests << " randomly generated tests...");
+	BOOST_TEST_MESSAGE("std::numeric_limits<float>::is_iec559 == " << std::numeric_limits<float>::is_iec559);
+	BOOST_TEST_MESSAGE("std::numeric_limits<double>::is_iec559 == " << std::numeric_limits<double>::is_iec559);
 
 	uint32_t seed = static_cast<uint32_t>(time(0));
 	std::random_device dev;
