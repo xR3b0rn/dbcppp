@@ -155,6 +155,24 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
 	}
 	BOOST_TEST_MESSAGE("Done!");
 }
+constexpr bool IS_IEEE_754_FLOAT()
+{
+	union
+	{
+		float in;
+		uint32_t out;
+	} hack{-526337.1f};
+	return hack.out == 0b11001001000000001000000000010010l;
+}
+constexpr bool IS_IEEE_754_DOUBLE()
+{
+	union
+	{
+		double in;
+		uint64_t out;
+	} hack{3.20335023364400436880415660458E-144};
+	return hack.out == 0b0010001000100100000000000000011100010010001100100001001000110100;
+}
 BOOST_AUTO_TEST_CASE(Test_decoding)
 {
 	std::size_t n_tests = 1000000;
@@ -163,6 +181,8 @@ BOOST_AUTO_TEST_CASE(Test_decoding)
 	BOOST_TEST_MESSAGE("Testing decode-function with " << n_tests << " randomly generated tests...");
 	BOOST_TEST_MESSAGE("std::numeric_limits<float>::is_iec559 == " << std::numeric_limits<float>::is_iec559);
 	BOOST_TEST_MESSAGE("std::numeric_limits<double>::is_iec559 == " << std::numeric_limits<double>::is_iec559);
+	BOOST_TEST_MESSAGE("IS_IEEE_754_FLOAT() == " << IS_IEEE_754_FLOAT());
+	BOOST_TEST_MESSAGE("IS_IEEE_754_DOUBLE() == " << IS_IEEE_754_DOUBLE());
 
 	uint32_t seed = static_cast<uint32_t>(time(0));
 	std::random_device dev;
@@ -222,7 +242,7 @@ BOOST_AUTO_TEST_CASE(Test_decoding)
 			}
 		}
 		data.clear();
-		for (std::size_t j = 0; j < max_msg_byte_size; j++) data.push_back(uint8_t(dist(rng) % 0xFF));
+		for (std::size_t j = 0; j < max_msg_byte_size; j++) data.push_back(uint8_t(dist(rng) & 0xFF));
 		auto dec_easy = easy_decode(*sig, data);
 		auto dec_sig = sig->decode(&data[0]);
 		
