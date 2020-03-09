@@ -43,7 +43,13 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 	{
 		return 0;
 	}
-	uint64_t retVal = 0;
+	union
+	{
+		uint64_t ui;
+		int64_t i;
+		float f;
+		double d;
+	} retVal{0};
 	if (sig.getByteOrder() == dbcppp::Signal::ByteOrder::BigEndian)
 	{
 		auto srcBit = sig.getStartBit();
@@ -52,7 +58,7 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 		{
 			if (data[srcBit / 8] & (1ull << (srcBit % 8)))
 			{
-				retVal |= (1ULL << dstBit);
+				retVal.ui |= (1ULL << dstBit);
 			}
 			if ((srcBit % 8) == 0)
 			{
@@ -73,7 +79,7 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 		{
 			if (data[srcBit / 8] & (1 << (srcBit % 8)))
 			{
-				retVal |= (1ULL << dstBit);
+				retVal.ui |= (1ULL << dstBit);
 			}
 			++srcBit;
 			++dstBit;
@@ -81,21 +87,21 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 	}
 	switch (sig.getExtendedValueType())
 	{
-	case dbcppp::Signal::ExtendedValueType::Float: return *reinterpret_cast<float*>(&retVal);
-	case dbcppp::Signal::ExtendedValueType::Double: return *reinterpret_cast<double*>(&retVal);
+	case dbcppp::Signal::ExtendedValueType::Float: return retVal.f;
+	case dbcppp::Signal::ExtendedValueType::Double: return retVal.d;
 	}
 	if (sig.getValueType() == dbcppp::Signal::ValueType::Signed)
 	{
-		if (retVal & (1ull << (sig.getBitSize() - 1)))
+		if (retVal.ui & (1ull << (sig.getBitSize() - 1)))
 		{
 			for (auto i = sig.getBitSize(); i < 64; ++i)
 			{
-				retVal |= (1ULL << i);
+				retVal.ui |= (1ULL << i);
 			}
 		}
-		return double(*reinterpret_cast<int64_t*>(&retVal));
+		return double(retVal.i);
 	}
-	return double(retVal);
+	return double(retVal.ui);
 }
 
 std::vector<std::string> dbc_to_vec(std::istream& is)
