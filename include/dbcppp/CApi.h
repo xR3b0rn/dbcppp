@@ -14,6 +14,8 @@ extern "C"
 	struct dbcppp_EnvironmentVariable;
 	struct dbcppp_AttributeDefinition;
 	struct dbcppp_Attribute;
+	struct dbcppp_SignalType;
+	struct dbcppp_Signal;
 
 	DBCPPP_API struct dbcppp_Network* dbcppp_LoadFromFile(const char* filename);
 	DBCPPP_API void dbcppp_FreeNetwork(struct dbcppp_Network* net);
@@ -43,4 +45,14 @@ extern "C"
 	DBCPPP_API struct dbcppp_Attribute* dbcppp_NetworkFindAttributeValue(struct dbcppp_Network* net, bool(*pred)(struct dbcppp_Attribute*));
 	DBCPPP_API void dbcppp_NetworkForEachAttributeValue(struct dbcppp_Network* net, void(*cb)(struct dbcppp_Attribute*));
 	DBCPPP_API const char* dbcppp_NetworkGetComment(struct dbcppp_Network* net);
+	
+	DBCPPP_API uint64_t dbcppp_BitTimingGetBaudrate(struct dbcppp_BitTiming* bit_timing);
+	DBCPPP_API uint64_t dbcppp_BitTimingGetBTR1(struct dbcppp_BitTiming* bit_timing);
+	DBCPPP_API uint64_t dbcppp_BitTimingGetBTR2(struct dbcppp_BitTiming* bit_timing);
+	
+	DBCPPP_API const char* dbcppp_NodeGetName(struct dbcppp_Node* node);
+	DBCPPP_API dbcppp_Attribute* dbcppp_NodeGetAttributeValueByName(struct dbcppp_Node* node, const char* attribute_name);
+	DBCPPP_API dbcppp_Attribute* dbcppp_NodefindAttributeValue(struct dbcppp_Node* node, bool(*pred)(dbcppp_Attribute*));
+	DBCPPP_API void dbcppp_NodeForEachAttributeValue(struct dbcppp_Node* node, void(*cb)(dbcppp_Attribute*));
+	DBCPPP_API const char* dbcppp_NodeGetComment(struct dbcppp_Node* node);
 }

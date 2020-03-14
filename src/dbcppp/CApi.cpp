@@ -201,4 +201,80 @@ extern "C"
 		const NetworkImpl* neti = reinterpret_cast<NetworkImpl*>(net);
 		return neti->getComment().c_str();
 	}
+
+	uint64_t dbcppp_BitTimingGetBaudrate(struct dbcppp_BitTiming* bit_timing)
+	{
+		const BitTimingImpl* bti = reinterpret_cast<BitTimingImpl*>(bit_timing);
+		return bti->getBaudrate();
+	}
+	uint64_t dbcppp_BitTimingGetBTR1(struct dbcppp_BitTiming* bit_timing)
+	{
+		const BitTimingImpl* bti = reinterpret_cast<BitTimingImpl*>(bit_timing);
+		return bti->getBTR1();
+	}
+	uint64_t dbcppp_BitTimingGetBTR2(struct dbcppp_BitTiming* bit_timing)
+	{
+		const BitTimingImpl* bti = reinterpret_cast<BitTimingImpl*>(bit_timing);
+		return bti->getBTR2();
+	}
+	
+	const char* dbcppp_NodeGetName(struct dbcppp_Node* node)
+	{
+		const NodeImpl* ni = reinterpret_cast<NodeImpl*>(node);
+		return ni->getName().c_str();
+	}
+	dbcppp_Attribute* dbcppp_NodeGetAttributeValueByName(struct dbcppp_Node* node, const char* attribute_name)
+	{
+		const NodeImpl* ni = reinterpret_cast<NodeImpl*>(node);
+		return reinterpret_cast<dbcppp_Attribute*>(const_cast<Attribute*>(ni->getAttributeValueByName(attribute_name)));
+	}
+	dbcppp_Attribute* dbcppp_NodefindAttributeValue(struct dbcppp_Node* node, bool(*pred)(dbcppp_Attribute*))
+	{
+		const NodeImpl* ni = reinterpret_cast<NodeImpl*>(node);
+		const Attribute* a = ni->findAttributeValue(
+			[&](const Attribute& a)
+			{
+				return pred(reinterpret_cast<dbcppp_Attribute*>(const_cast<Attribute*>(&a)));
+			});
+		return reinterpret_cast<dbcppp_Attribute*>(const_cast<Attribute*>(a));
+	}
+	void dbcppp_NodeForEachAttributeValue(struct dbcppp_Node* node, void(*cb)(dbcppp_Attribute*))
+	{
+		const NodeImpl* ni = reinterpret_cast<NodeImpl*>(node);
+		ni->forEachAttributeValue(
+			[&](const Attribute& a)
+			{
+				cb(reinterpret_cast<dbcppp_Attribute*>(const_cast<Attribute*>(&a)));
+			});
+	}
+	const char* dbcppp_NodeGetComment(struct dbcppp_Node* node)
+	{
+		const NodeImpl* ni = reinterpret_cast<NodeImpl*>(node);
+		return ni->getComment().c_str();
+	}
+
+	const char* dbcppp_ValueTableGetName(dbcppp_ValueTable* value_table)
+	{
+		const ValueTableImpl* vti = reinterpret_cast<ValueTableImpl*>(value_table);
+		return vti->getName().c_str();
+	}
+	dbcppp_SignalType* dbcppp_ValueTableGetSignalType(dbcppp_ValueTable* value_table)
+	{
+		const ValueTableImpl* vti = reinterpret_cast<ValueTableImpl*>(value_table);
+		dbcppp_SignalType* result = nullptr;
+		if (vti->getSignalType())
+		{
+			result = reinterpret_cast<dbcppp_SignalType*>(const_cast<SignalType*>(&*vti->getSignalType()));
+		}
+		return result;
+	}
+	void dbcppp_ValueTableForEachValueEncodingDescription(dbcppp_ValueTable* value_table, void(*cb)(double, const char*))
+	{
+		const ValueTableImpl* vti = reinterpret_cast<ValueTableImpl*>(value_table);
+		vti->forEachValueEncodingDescription(
+			[&](double value, const std::string& desc)
+			{
+				cb(value, desc.c_str());
+			});
+	}
 }

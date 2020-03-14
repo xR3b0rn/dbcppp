@@ -45,16 +45,6 @@ void ValueTableImpl::forEachValueEncodingDescription(std::function<void(double, 
 		cb(ved.first, ved.second);
 	}
 }
-const std::string* ValueTableImpl::getValueEncodingDescriptions(double value) const
-{
-	const std::string* result = nullptr;
-	auto iter = _value_encoding_descriptions.find(value);
-	if (iter != _value_encoding_descriptions.end())
-	{
-		result = &iter->second;
-	}
-	return result;
-}
 
 void ValueTable::serializeToStream(std::ostream& os) const
 {

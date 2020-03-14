@@ -20,7 +20,6 @@ namespace dbcppp
 
 		virtual const std::string& getName() const override;
 		virtual boost::optional<const SignalType&> getSignalType() const override;
-		virtual const std::string* getValueEncodingDescriptions(double value) const override;
 		virtual void forEachValueEncodingDescription(std::function<void(double, const std::string&)>&& cb) const override;
 
 	private:
