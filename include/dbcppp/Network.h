@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <istream>
+#include <functional>
 #include <unordered_map>
 
 #include "Export.h"
