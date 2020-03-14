@@ -9,7 +9,7 @@ extern "C"
 	const char* dbcppp_NetworkGetVersion(struct dbcppp_Network* net)
 	{
 		const NetworkImpl* neti = reinterpret_cast<NetworkImpl*>(net);
-		return neti->getComment().c_str();
+		return neti->getVersion().c_str();
 	}
 	bool dbcppp_NetworkHasNewSymbol(struct dbcppp_Network* net, const char* new_symbol)
 	{
