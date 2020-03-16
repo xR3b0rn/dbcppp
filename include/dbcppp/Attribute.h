@@ -26,7 +26,7 @@ namespace dbcppp
 		virtual const std::string& getName() const = 0;
 		virtual AttributeDefinition::ObjectType getObjectType() const = 0;
 		virtual const value_t& getValue() const = 0;
-
+		
 		void serializeToStream(std::ostream& os, const Network& net) const;
 	};
 }

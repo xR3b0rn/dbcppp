@@ -4,9 +4,8 @@
 #include <string>
 #include <memory>
 
-#include "Export.h"
-#include "Signal.h"
-#include "Node.h"
+#include "../../include/dbcppp/Signal.h"
+#include "../../include/dbcppp/Node.h"
 #include "AttributeImpl.h"
 
 namespace dbcppp
@@ -50,11 +49,12 @@ namespace dbcppp
 		virtual double getMaximum() const override;
 		virtual std::string getUnit() const override;
 		virtual bool hasReceiver(const std::string& name) const override;
-		virtual std::vector<const std::string*> getReceivers() const override;
+		virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const override;
 		virtual const std::string* getValueDescriptionById(double id) const override;
-		virtual std::vector<std::pair<double, const std::string*>> getValueDescriptions() const override;
+		virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
+		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
+		virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
 		virtual const std::string& getComment() const override;
 		virtual ExtendedValueType getExtendedValueType() const override;
 		virtual ErrorCode getError() const override;
@@ -82,9 +82,9 @@ namespace dbcppp
 		// for performance
 		uint64_t _mask;
 		uint64_t _mask_signed;
-		uint64_t _fixed_start_bit;
-		uint64_t _fixed_start_bit_fd;
-		uint64_t _byte_pos_fd;
+		uint64_t _fixed_start_bit_0;
+		uint64_t _fixed_start_bit_1;
+		uint64_t _byte_pos;
 
 		Signal::ErrorCode _error;
 	};

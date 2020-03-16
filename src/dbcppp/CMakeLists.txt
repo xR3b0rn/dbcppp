@@ -16,12 +16,17 @@ include_directories(
 file(GLOB header
     "*.h"
 )
+file(GLOB header_interface
+    "../../include/dbcppp/*.h"
+)
 file(GLOB src
     "*.cpp"
 )
+message(STATUS ${header_interface})
 
 target_sources(${PROJECT_NAME}
-    PUBLIC ${header}
+    PRIVATE ${header}
+    PUBLIC ${header_interface}
     PRIVATE ${src}
 )
 

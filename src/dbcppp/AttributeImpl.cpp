@@ -1,8 +1,7 @@
 
 #include <boost/variant.hpp>
 #include "AttributeImpl.h"
-#include "Signal.h"
-#include "Network.h"
+#include "../../include/dbcppp/Network.h"
 
 using namespace dbcppp;
 
@@ -59,13 +58,9 @@ void Attribute::serializeToStream(std::ostream& os, const Network& net) const
 	};
 
 	std::string cmd = "BA_";
-	for (const auto& ad : net.getAttributeDefaults())
+	if (net.getAttributeDefaultByName(this->getName()) == this)
 	{
-		if (ad.second == this)
-		{
-			cmd = "BA_DEF_DEF_";
-			break;
-		}
+		cmd = "BA_DEF_DEF_";
 	}
 	os << cmd << " \"" << getName() << "\"";
 	switch (getObjectType())
@@ -80,21 +75,17 @@ void Attribute::serializeToStream(std::ostream& os, const Network& net) const
 		auto find_node_name =
 			[&]()
 			{
-				for (auto n : net.getNodes())
-				{
-					auto values = n.second->getAttributeValues();
-					auto iter =
-						std::find_if(values.begin(), values.end(),
-							[&](const auto& p)
-							{
-								return p.second == this;
-							});
-					if (iter != values.end())
+				const Node* n = net.findNode(
+					[&](const Node& n)
 					{
-						return n.second->getName();
-					}
-				}
-				return std::string("");
+						const Attribute* av = n.findAttributeValue(
+							[&](const Attribute& av)
+							{
+								return &av == this;
+							});
+						return av != nullptr;
+					});
+				return n ? n->getName() : "";
 			};
 		os << " BU_ " << find_node_name();
 		boost::apply_visitor(Visitor(os), getValue());
@@ -105,21 +96,17 @@ void Attribute::serializeToStream(std::ostream& os, const Network& net) const
 		auto find_message_id =
 			[&]()
 			{
-				for (auto m : net.getMessages())
-				{
-					auto values = m.second->getAttributeValues();
-					auto iter =
-						std::find_if(values.begin(), values.end(),
-							[&](const auto& p)
-							{
-								return p.second == this;
-							});
-					if (iter != values.end())
+				const Message* m = net.findMessage(
+					[&](const Message& m)
 					{
-						return m.second->getId();
-					}
-				}
-				return uint64_t(-1);
+						const Attribute* av = m.findAttributeValue(
+							[&](const Attribute& av)
+							{
+								return &av == this;
+							});
+						return av != nullptr;
+					});
+				return m ? m->getId() : uint64_t(-1);
 			};
 		os << " BO_ " << find_message_id();
 		boost::apply_visitor(Visitor(os), getValue());
@@ -130,24 +117,27 @@ void Attribute::serializeToStream(std::ostream& os, const Network& net) const
 		auto find_signal =
 			[&]() -> const Signal*
 			{
-				for (auto m : net.getMessages())
-				{
-					for (auto s : m.second->getSignals())
+				const Signal* sig = nullptr;
+				const Message* m = net.findMessage(
+					[&](const Message& m)
 					{
-						auto values = s.second->getAttributeValues();
-						auto iter =
-							std::find_if(values.begin(), values.end(),
-								[&](const auto& p)
+						const Signal* s = m.findSignal(
+							[&](const Signal& s)
+							{
+								const Attribute* av = s.findAttributeValue(
+									[&](const Attribute& av)
+									{
+										return &av == this;
+									});
+								if (av != nullptr)
 								{
-									return p.second == this;
-								});
-						if (iter != values.end())
-						{
-							return s.second;
-						}
-					}
-				}
-				return nullptr;
+									sig = &s;
+								}
+								return av != nullptr;
+							});
+						return s != nullptr;
+					});
+				return sig;
 			};
 		const Signal* sig = find_signal();
 		os << " SG_ " << net.findParentMessage(sig)->getId();
@@ -160,21 +150,18 @@ void Attribute::serializeToStream(std::ostream& os, const Network& net) const
 		auto find_environment_variable_name =
 			[&]()
 			{
-				for (auto ev : net.getEnvironmentVariables())
-				{
-					auto values = ev.second->getAttributeValues();
-					auto iter =
-						std::find_if(values.begin(), values.end(),
-							[&](const auto& p)
-							{
-								return p.second == this;
-							});
-					if (iter != values.end())
+				const EnvironmentVariable* ev = net.findEnvironmentVariable(
+					[&](const EnvironmentVariable& ev)
 					{
-						return ev.second->getName();
-					}
-				}
-				return std::string("");
+						const Attribute* av = ev.findAttributeValue(
+							[&](const Attribute& av)
+							{
+								return &av == this;
+							});
+						return av != nullptr;
+					});
+				return ev ? ev->getName() : "";
+
 			};
 		os << " EV_ " << find_environment_variable_name();
 		boost::apply_visitor(Visitor(os), getValue());

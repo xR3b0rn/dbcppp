@@ -2,12 +2,12 @@
 #pragma once
 
 #include <cstdint>
-#include "SignalType.h"
-#include "ValueTable.h"
+#include "../../include/dbcppp/SignalType.h"
+#include "../../include/dbcppp/ValueTable.h"
 
 namespace dbcppp
 {
-	class SignalTypeImpl
+	class SignalTypeImpl final
 		: public SignalType
 	{
 	public:

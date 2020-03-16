@@ -1,5 +1,6 @@
 
-#include "Network.h"
+#include <iomanip>
+#include "../../include/dbcppp/Network.h"
 #include "NetworkImpl.h"
 #include "DBC_Grammar.h"
 
@@ -7,7 +8,7 @@ using namespace dbcppp;
 
 std::unique_ptr<Network> Network::create(
 	  std::string&& version
-	, std::vector<std::string>&& new_symbols
+	, std::set<std::string>&& new_symbols
 	, std::unique_ptr<BitTiming>&& bit_timing
 	, std::map<std::string, std::unique_ptr<Node>>&& nodes
 	, std::map<std::string, std::unique_ptr<ValueTable>>&& value_tables
@@ -78,7 +79,7 @@ std::unique_ptr<Network> Network::create(
 
 NetworkImpl::NetworkImpl(
 	  std::string&& version
-	, std::vector<std::string>&& new_symbols
+	, std::set<std::string>&& new_symbols
 	, BitTimingImpl&& bit_timing
 	, std::map<std::string, NodeImpl>&& nodes
 	, std::map<std::string, ValueTableImpl>&& value_tables
@@ -109,14 +110,12 @@ bool NetworkImpl::hasNewSymbol(const std::string& name) const
 {
 	return std::find(_new_symbols.begin(), _new_symbols.end(), name) != _new_symbols.end();
 }
-std::vector<const std::string*> NetworkImpl::getNewSymbols() const
+void NetworkImpl::forEachNewSymbol(std::function<void(const std::string&)> cb) const
 {
-	std::vector<const std::string*> result;
-	for (auto& ns : _new_symbols)
+	for (const auto& ns : _new_symbols)
 	{
-		result.emplace_back(&ns);
+		cb(ns);
 	}
-	return result;
 }
 const BitTiming& NetworkImpl::getBitTiming() const
 {
@@ -132,14 +131,25 @@ const Node* NetworkImpl::getNodeByName(const std::string& name) const
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const Node*>> NetworkImpl::getNodes() const
+const Node* NetworkImpl::findNode(std::function<bool(const Node&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const Node*>> result;
-	for (auto& n : _nodes)
+	const Node* result = nullptr;
+	for (const auto& n : _nodes)
 	{
-		result.emplace_back(n.first, &n.second);
+		if (pred(n.second))
+		{
+			result = &n.second;
+			break;
+		}
 	}
 	return result;
+}
+void NetworkImpl::forEachNode(std::function<void(const Node&)>&& cb) const
+{
+	for (const auto& n : _nodes)
+	{
+		cb(n.second);
+	}
 }
 const ValueTable* NetworkImpl::getValueTableByName(const std::string& name) const
 {
@@ -151,14 +161,25 @@ const ValueTable* NetworkImpl::getValueTableByName(const std::string& name) cons
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const ValueTable*>> NetworkImpl::getValueTables() const
+const ValueTable* NetworkImpl::findValueTable(std::function<bool(const ValueTable&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const ValueTable*>> result;
-	for (auto& vt : _value_tables)
+	const ValueTable* result = nullptr;
+	for (const auto& vt : _value_tables)
 	{
-		result.emplace_back(vt.first, &vt.second);
+		if (pred(vt.second))
+		{
+			result = &vt.second;
+			break;
+		}
 	}
 	return result;
+}
+void NetworkImpl::forEachValueTable(std::function<void(const ValueTable&)>&& cb) const
+{
+	for (const auto& vt : _value_tables)
+	{
+		cb(vt.second);
+	}
 }
 const Message* NetworkImpl::getMessageById(uint64_t id) const
 {
@@ -170,14 +191,25 @@ const Message* NetworkImpl::getMessageById(uint64_t id) const
 	}
 	return result;
 }
-std::vector<std::pair<uint64_t, const Message*>> NetworkImpl::getMessages() const
+const Message* NetworkImpl::findMessage(std::function<bool(const Message&)>&& pred) const
 {
-	std::vector<std::pair<uint64_t, const Message*>> result;
+	const Message* result = nullptr;
 	for (const auto& m : _messages)
 	{
-		result.emplace_back(m.first, &m.second);
+		if (pred(m.second))
+		{
+			result = &m.second;
+			break;
+		}
 	}
 	return result;
+}
+void NetworkImpl::forEachMessage(std::function<void(const Message&)>&& cb) const
+{
+	for (const auto& m : _messages)
+	{
+		cb(m.second);
+	}
 }
 const EnvironmentVariable* NetworkImpl::getEnvironmentVariableByName(const std::string& name) const
 {
@@ -189,14 +221,25 @@ const EnvironmentVariable* NetworkImpl::getEnvironmentVariableByName(const std::
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const EnvironmentVariable*>> NetworkImpl::getEnvironmentVariables() const
+const EnvironmentVariable* NetworkImpl::findEnvironmentVariable(std::function<bool(const EnvironmentVariable&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const EnvironmentVariable*>> result;
-	for (auto& ev : _environment_variables)
+	const EnvironmentVariable* result = nullptr;
+	for (const auto& ev : _environment_variables)
 	{
-		result.emplace_back(ev.first, &ev.second);
+		if (pred(ev.second))
+		{
+			result = &ev.second;
+			break;
+		}
 	}
 	return result;
+}
+void NetworkImpl::forEachEnvironmentVariable(std::function<void(const EnvironmentVariable&)>&& cb) const
+{
+	for (const auto& ev : _environment_variables)
+	{
+		cb(ev.second);
+	}
 }
 const AttributeDefinition* NetworkImpl::getAttributeDefinitionByName(const std::string& name) const
 {
@@ -208,14 +251,25 @@ const AttributeDefinition* NetworkImpl::getAttributeDefinitionByName(const std::
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const AttributeDefinition*>> NetworkImpl::getAttributeDefinitions() const
+const AttributeDefinition* NetworkImpl::findAttributeDefinition(std::function<bool(const AttributeDefinition&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const AttributeDefinition*>> result;
-	for (auto& ad : _attribute_definitions)
+	const AttributeDefinition* result = nullptr;
+	for (const auto& ad : _attribute_definitions)
 	{
-		result.emplace_back(ad.first, &ad.second);
+		if (pred(ad.second))
+		{
+			result = &ad.second;
+			break;
+		}
 	}
 	return result;
+}
+void NetworkImpl::forEachAttributeDefinition(std::function<void(const AttributeDefinition&)>&& cb) const
+{
+	for (const auto& ad : _attribute_definitions)
+	{
+		cb(ad.second);
+	}
 }
 const Attribute* NetworkImpl::getAttributeDefaultByName(const std::string& name) const
 {
@@ -227,14 +281,25 @@ const Attribute* NetworkImpl::getAttributeDefaultByName(const std::string& name)
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const Attribute*>> NetworkImpl::getAttributeDefaults() const
+const Attribute* NetworkImpl::findAttributeDefault(std::function<bool(const Attribute&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const Attribute*>> result;
-	for (auto& ad : _attribute_defaults)
+	const Attribute* result = nullptr;
+	for (const auto& ad : _attribute_defaults)
 	{
-		result.emplace_back(ad.first, &ad.second);
+		if (pred(ad.second))
+		{
+			result = &ad.second;
+			break;
+		}
 	}
 	return result;
+}
+void NetworkImpl::forEachAttributeDefault(std::function<void(const Attribute&)>&& cb) const
+{
+	for (const auto& ad : _attribute_defaults)
+	{
+		cb(ad.second);
+	}
 }
 const Attribute* NetworkImpl::getAttributeValueByName(const std::string& name) const
 {
@@ -246,14 +311,25 @@ const Attribute* NetworkImpl::getAttributeValueByName(const std::string& name) c
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const Attribute*>> NetworkImpl::getAttributeValues() const
+const Attribute* NetworkImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const Attribute*>> result;
-	for (auto& av : _attribute_values)
+	const Attribute* result = nullptr;
+	for (const auto& av : _attribute_values)
 	{
-		result.emplace_back(av.first, &av.second);
+		if (pred(av.second))
+		{
+			result = &av.second;
+			break;
+		}
 	}
 	return result;
+}
+void NetworkImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+{
+	for (const auto& av : _attribute_values)
+	{
+		cb(av.second);
+	}
 }
 const std::string& NetworkImpl::getComment() const
 {
@@ -274,9 +350,91 @@ const Message* NetworkImpl::findParentMessage(const Signal* sig) const
 	}
 	return result;
 }
-
+std::string& NetworkImpl::version()
+{
+	return _version;
+}
+std::set<std::string>& NetworkImpl::newSymbols()
+{
+	return _new_symbols;
+}
+BitTimingImpl& NetworkImpl::bitTiming()
+{
+	return _bit_timing;
+}
+std::map<std::string, NodeImpl>& NetworkImpl::nodes()
+{
+	return _nodes;
+}
+std::map<std::string, ValueTableImpl>& NetworkImpl::valueTables()
+{
+	return _value_tables;
+}
+std::unordered_map<uint64_t, MessageImpl>& NetworkImpl::messages()
+{
+	return _messages;
+}
+std::map<std::string, EnvironmentVariableImpl>& NetworkImpl::environmentVariables()
+{
+	return _environment_variables;
+}
+std::map<std::string, AttributeDefinitionImpl>& NetworkImpl::attributeDefinitions()
+{
+	return _attribute_definitions;
+}
+std::map<std::string, AttributeImpl>& NetworkImpl::attributeDefaults()
+{
+	return _attribute_defaults;
+}
+std::map<std::string, AttributeImpl>& NetworkImpl::attributeValues()
+{
+	return _attribute_values;
+}
+std::string& NetworkImpl::comment()
+{
+	return _comment;
+}
+void Network::merge(std::unique_ptr<Network>&& other)
+{
+	auto& self = static_cast<NetworkImpl&>(*this);
+	auto& o = static_cast<NetworkImpl&>(*other);
+	for (auto& ns : o.newSymbols())
+	{
+		self.newSymbols().insert(std::move(ns));
+	}
+	for (auto& n : o.nodes())
+	{
+		self.nodes().insert(std::move(n));
+	}
+	for (auto& vt : o.valueTables())
+	{
+		self.valueTables().insert(std::move(vt));
+	}
+	for (auto& m : o.messages())
+	{
+		self.messages().insert(std::move(m));
+	}
+	for (auto& ev : o.environmentVariables())
+	{
+		self.environmentVariables().insert(std::move(ev));
+	}
+	for (auto& ad : o.attributeDefinitions())
+	{
+		self.attributeDefinitions().insert(std::move(ad));
+	}
+	for (auto& ad : o.attributeDefaults())
+	{
+		self.attributeDefaults().insert(std::move(ad));
+	}
+	for (auto& av : o.attributeValues())
+	{
+		self.attributeValues().insert(std::move(av));
+	}
+	other.reset(nullptr);
+}
 void Network::serializeToStream(std::ostream& os) const
 {
+	os << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
 	os << "VERSION \"";
 	if (getVersion() != "")
 	{
@@ -285,66 +443,81 @@ void Network::serializeToStream(std::ostream& os) const
 	os << "\"";
 	os << "\n";
 	os << "NS_:";
-	for (const auto& ns : getNewSymbols())
-	{
-		os << "\n " << *ns;
-	}
+	forEachNewSymbol(
+		[&](const std::string& ns)
+		{
+			os << "\n " << ns;
+		});
 	os << "\n";
 	getBitTiming().serializeToStream(os);
 	os << "\n";
 	os << "BU_:";
-	for (const auto& n : getNodes())
-	{
-		os << " " << n.second->getName(); 
-	}
-	for (const auto& vt : getValueTables())
-	{
-		os << "\n";
-		vt.second->serializeToStream(os);
-	}
-	for (const auto& m : getMessages())
-	{
-		os << "\n";
-		m.second->serializeToStream(os);
-	}
+	forEachNode(
+		[&](const Node& n)
+		{
+			os << " " << n.getName(); 
+		});
+	forEachValueTable(
+		[&](const ValueTable& vt)
+		{
+			os << "\n";
+			vt.serializeToStream(os);
+		});
+	forEachMessage(
+		[&](const Message& m)
+		{
+			os << "\n";
+			m.serializeToStream(os);
+		});
 	// serialize message_transmitters
-	for (const auto& m : getMessages())
-	{
-		auto transmitters = m.second->getMessageTransmitters();
-		if (transmitters.size())
+	forEachMessage(
+		[&](const Message& m)
 		{
-			os << "\n";
-			os << "BO_TX_BU_ " << m.second->getId() << " :";
-			auto iter = transmitters.begin();
-			os << " " << **iter;
-			for (iter++; iter != transmitters.end(); iter++)
+			bool first = true;
+			m.forEachMessageTransmitter(
+				[&](const std::string& n)
+				{
+					if (first)
+					{
+						first = false;
+						os << "\n";
+						os << "BO_TX_BU_ " << m.getId() << " :";
+						os << " " << n;
+					}
+					else
+					{
+						os << ", " << n;
+					}
+				});
+			if (!first)
 			{
-				os << ", " << **iter;
+				os << ";";
 			}
-			os << ";";
-		}
-	}
-	for (const auto& ev : getEnvironmentVariables())
-	{
-		os << "\n";
-		ev.second->serializeToStream(os);
-	}
-	for (const auto& ev : getEnvironmentVariables())
-	{
-		if (ev.second->getVarType() == EnvironmentVariable::VarType::Data)
+		});
+	forEachEnvironmentVariable(
+		[&](const EnvironmentVariable& ev)
 		{
 			os << "\n";
-			os << "ENVVAR_DATA_ " << ev.second->getName() << " : " << ev.second->getDataSize() << ";";
-		}
-	}
-	for (const auto& vt : getValueTables())
-	{
-		if (vt.second->getSignalType())
+			ev.serializeToStream(os);
+		});
+	forEachEnvironmentVariable(
+		[&](const EnvironmentVariable& ev)
 		{
-			os << "\n";
-			vt.second->getSignalType()->serializeToStream(os);
-		}
-	}
+			if (ev.getVarType() == EnvironmentVariable::VarType::Data)
+			{
+				os << "\n";
+				os << "ENVVAR_DATA_ " << ev.getName() << " : " << ev.getDataSize() << ";";
+			}
+		});
+	forEachValueTable(
+		[&](const ValueTable& vt)
+		{
+			if (vt.getSignalType())
+			{
+				os << "\n";
+				vt.getSignalType()->serializeToStream(os);
+			}
+		});
 	// serialize comments
 	// Network comment
 	if (getComment() != "")
@@ -353,142 +526,173 @@ void Network::serializeToStream(std::ostream& os) const
 		os << "CM_ \"" << getComment() << "\";";
 	}
 	// Node comments
-	for (const auto& n : getNodes())
-	{
-		if (n.second->getComment() != "")
+	forEachNode(
+		[&](const Node& n)
 		{
-			os << "\n";
-			os << "CM_ BU_ " << n.second->getName() << " \"" << n.second->getComment() << "\"" << ";";
-		}
-	}
+			if (n.getComment() != "")
+			{
+				os << "\n";
+				os << "CM_ BU_ " << n.getName() << " \"" << n.getComment() << "\"" << ";";
+			}
+		});
 	// Message comments
-	for (const auto& m : getMessages())
-	{
-		if (m.second->getComment() != "")
+	forEachMessage(
+		[&](const Message& m)
 		{
-			os << "\n";
-			os << "CM_ BO_ " << m.second->getId() << " \"" << m.second->getComment() << "\"" << ";";
-		}
-	}
+			if (m.getComment() != "")
+			{
+				os << "\n";
+				os << "CM_ BO_ " << m.getId() << " \"" << m.getComment() << "\"" << ";";
+			}
+		});
 	// Signal comments
-	for (const auto& m : getMessages())
-	{
-		for (const auto& s : m.second->getSignals())
+	forEachMessage(
+		[&](const Message& m)
 		{
-			if (s.second->getComment() != "")
-			{
-				os << "\n";
-				os << "CM_ SG_ " << m.second->getId() << " " << s.second->getName() << " \"" << s.second->getComment() << "\"" << ";";
-			}
-		}
-	}
-	// EnvironmentVariable comments
-	for (const auto& ev : getEnvironmentVariables())
-	{
-		if (ev.second->getComment() != "")
-		{
-			os << "\n";
-			os << "CM_ EV_ " << ev.second->getName() << " \"" << ev.second->getComment() << "\"" << ";";
-		}
-	}
-	for (const auto& ad : getAttributeDefinitions())
-	{
-		os << "\n";
-		ad.second->serializeToStream(os);
-	}
-	for (const auto& ad : getAttributeDefaults())
-	{
-		os << "\n";
-		ad.second->serializeToStream(os, *this);
-	}
-	// Serialize Attribute Values
-	for (const auto& val : getAttributeValues())
-	{
-		os << "\n";
-		val.second->serializeToStream(os, *this);
-	}
-	for (const auto& n : getNodes())
-	{
-		for (const auto& val : n.second->getAttributeValues())
-		{
-			os << "\n";
-			val.second->serializeToStream(os, *this);
-		}
-	}
-	for (const auto& m : getMessages())
-	{
-		for (const auto& val : m.second->getAttributeValues())
-		{
-			os << "\n";
-			val.second->serializeToStream(os, *this);
-		}
-	}
-	for (const auto& m : getMessages())
-	{
-		for (const auto& s : m.second->getSignals())
-		{
-			for (const auto& val : s.second->getAttributeValues())
-			{
-				os << "\n";
-				val.second->serializeToStream(os, *this);
-			}
-		}
-	}
-	for (const auto& ev : getEnvironmentVariables())
-	{
-		for (const auto& val : ev.second->getAttributeValues())
-		{
-			os << "\n";
-			val.second->serializeToStream(os, *this);
-		}
-	}
-	// Serialize value descriptions
-	for (const auto& m : getMessages())
-	{
-		for (const auto& s : m.second->getSignals())
-		{
-			auto vds = s.second->getValueDescriptions();
-			if (vds.size())
-			{
-				os << "\n";
-				os << "VAL_ " << m.second->getId() << " " << s.second->getName();
-				for (const auto& vd : vds)
+			m.forEachSignal(
+				[&](const Signal& s)
 				{
-					os << " " << vd.first << " \"" << *vd.second << "\"";
-				}
+					if (s.getComment() != "")
+					{
+						os << "\n";
+						os << "CM_ SG_ " << m.getId() << " " << s.getName() << " \"" << s.getComment() << "\"" << ";";
+					}
+				});
+		});
+	// EnvironmentVariable comments
+	forEachEnvironmentVariable(
+		[&](const EnvironmentVariable& ev)
+		{
+			if (ev.getComment() != "")
+			{
+				os << "\n";
+				os << "CM_ EV_ " << ev.getName() << " \"" << ev.getComment() << "\"" << ";";
+			}
+		});
+	forEachAttributeDefinition(
+		[&](const AttributeDefinition& ad)
+		{
+			os << "\n";
+			ad.serializeToStream(os);
+		});
+	forEachAttributeDefault(
+		[&](const Attribute& ad)
+		{
+			os << "\n";
+			ad.serializeToStream(os, *this);
+		});
+	forEachAttributeValue(
+		[&](const Attribute& val)
+		{
+			os << "\n";
+			val.serializeToStream(os, *this);
+		});
+	forEachNode(
+		[&](const Node& n)
+		{
+			n.forEachAttributeValue(
+				[&](const Attribute& av)
+				{
+					os << "\n";
+					av.serializeToStream(os, *this);
+				});
+		});
+	forEachMessage(
+		[&](const Message& m)
+		{
+			m.forEachAttributeValue(
+				[&](const Attribute& av)
+				{
+					os << "\n";
+					av.serializeToStream(os, *this);
+				});
+		});
+	forEachMessage(
+		[&](const Message& m)
+		{
+			m.forEachSignal(
+				[&](const Signal& s)
+				{
+					s.forEachAttributeValue(
+						[&](const Attribute& av)
+						{
+							os << "\n";
+							av.serializeToStream(os, *this);
+						});
+				});
+		});
+	forEachEnvironmentVariable(
+		[&](const EnvironmentVariable& ev)
+		{
+			ev.forEachAttributeValue(
+				[&](const Attribute& av)
+				{
+					os << "\n";
+					av.serializeToStream(os, *this);
+				});
+		});
+	// Serialize value descriptions
+	forEachMessage(
+		[&](const Message& m)
+		{
+			m.forEachSignal(
+				[&](const Signal& s)
+				{
+					bool first = true;
+					s.forEachValueDescription(
+						[&](double value, const std::string& desc)
+						{
+							if (first)
+							{
+								first = false;
+								os << "\n";
+								os << "VAL_ " << m.getId() << " " << s.getName();
+							}
+							os << " " << value << " \"" << desc << "\"";
+						});
+					if (!first)
+					{
+						os << ";";
+					}
+				});
+		});
+	forEachEnvironmentVariable(
+		[&](const EnvironmentVariable& ev)
+		{
+			bool first = true;
+			ev.forEachValueDescription(
+				[&](double value, const std::string& desc)
+				{
+					if (first)
+					{
+						first = false;
+						os << "\n";
+						os << "VAL_ " << ev.getName();
+					}
+					os << " " << value << " \"" << desc << "\"";
+				});
+			if (!first)
+			{
 				os << ";";
 			}
-		}
-	}
-	for (const auto& ev : getEnvironmentVariables())
-	{
-		auto vds = ev.second->getValueDescriptions();
-		if (vds.size())
+		});
+	forEachMessage(
+		[&](const Message& m)
 		{
-			os << "\n";
-			os << "VAL_ " << ev.second->getName();
-			for (const auto& vd : vds)
-			{
-				os << " " << vd.first << " \"" << *vd.second << "\"";
-			}
-			os << ";";
-		}
-	}
-	for (const auto& m : getMessages())
-	{
-		for (const auto& s : m.second->getSignals())
-		{
-			if (s.second->getExtendedValueType() != Signal::ExtendedValueType::Integer)
-			{
-				uint64_t type = 0;
-				switch (s.second->getExtendedValueType())
+			m.forEachSignal(
+				[&](const Signal& s)
 				{
-				case Signal::ExtendedValueType::Float: type = 1; break;
-				case Signal::ExtendedValueType::Double: type = 2; break;
-				}
-				os << "\n";
-				os << "SIG_VALTYPE_ " << m.second->getId() << " " << s.second->getName() << " : " << type << ";";
-			}
-		}
-	}
+					if (s.getExtendedValueType() != Signal::ExtendedValueType::Integer)
+					{
+						uint64_t type = 0;
+						switch (s.getExtendedValueType())
+						{
+						case Signal::ExtendedValueType::Float: type = 1; break;
+						case Signal::ExtendedValueType::Double: type = 2; break;
+						}
+						os << "\n";
+						os << "SIG_VALTYPE_ " << m.getId() << " " << s.getName() << " : " << type << ";";
+					}
+				});
+		});
 }

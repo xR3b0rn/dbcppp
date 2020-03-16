@@ -39,14 +39,25 @@ const Attribute* NodeImpl::getAttributeValueByName(const std::string& name) cons
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const Attribute*>> NodeImpl::getAttributeValues() const
+const Attribute* NodeImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const Attribute*>> result;
+	const Attribute* result = nullptr;
 	for (auto& av : _attribute_values)
 	{
-		result.emplace_back(av.first, &av.second);
+		if (pred(av.second))
+		{
+			result = &av.second;
+			break;
+		}
 	}
 	return result;
+}
+void NodeImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+{
+	for (const auto& av : _attribute_values)
+	{
+		cb(av.second);
+	}
 }
 
 void Node::serializeToStream(std::ostream& os) const

@@ -4,12 +4,12 @@
 #include <vector>
 #include <memory>
 
-#include "Node.h"
+#include "../../include/dbcppp/Node.h"
 #include "AttributeImpl.h"
 
 namespace dbcppp
 {
-	class NodeImpl
+	class NodeImpl final
 		: public Node
 	{
 	public:
@@ -22,7 +22,8 @@ namespace dbcppp
 		virtual const std::string& getName() const override;
 		virtual const std::string& getComment() const override;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-		virtual std::vector<std::pair<std::string, const Attribute*>> getAttributeValues() const override;
+		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
+		virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
 
 		std::string _name;
 		std::string _comment;

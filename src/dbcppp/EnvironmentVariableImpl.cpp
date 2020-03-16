@@ -105,14 +105,12 @@ bool EnvironmentVariableImpl::hasAccessNode(const std::string& name) const
 {
 	return _access_nodes.find(name) != _access_nodes.end();
 }
-std::vector<const std::string*> EnvironmentVariableImpl::getAccessNodes() const
+void EnvironmentVariableImpl::forEachAccessNode(std::function<void(const std::string&)>&& cb) const
 {
-	std::vector<const std::string*> result;
-	for (auto& n : _access_nodes)
+	for (const auto& n : _access_nodes)
 	{
-		result.emplace_back(&n);
+		cb(n);
 	}
-	return result;
 }
 const std::string* EnvironmentVariableImpl::getValueDescriptionById(double id) const
 {
@@ -124,14 +122,12 @@ const std::string* EnvironmentVariableImpl::getValueDescriptionById(double id) c
 	}
 	return result;
 }
-std::vector<std::pair<double, const std::string*>> EnvironmentVariableImpl::getValueDescriptions() const
+void EnvironmentVariableImpl::forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const
 {
-	std::vector<std::pair<double, const std::string*>> result;
-	for (auto& vd : _value_descriptions)
+	for (const auto& vd : _value_descriptions)
 	{
-		result.emplace_back(vd.first, &vd.second);
+		cb(vd.first, vd.second);
 	}
-	return result;
 }
 uint64_t EnvironmentVariableImpl::getDataSize() const
 {
@@ -147,14 +143,25 @@ const Attribute* EnvironmentVariableImpl::getAttributeValueByName(const std::str
 	}
 	return result;
 }
-std::vector<std::pair<std::string, const Attribute*>> EnvironmentVariableImpl::getAttributeValues() const
+const Attribute* EnvironmentVariableImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
 {
-	std::vector<std::pair<std::string, const Attribute*>> result;
+	const Attribute* result = nullptr;
 	for (const auto& av : _attribute_values)
 	{
-		result.emplace_back(av.first, &av.second);
+		if (pred(av.second))
+		{
+			result = &av.second;
+			break;
+		}
 	}
 	return result;
+}
+void EnvironmentVariableImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+{
+	for (const auto& av : _attribute_values)
+	{
+		cb(av.second);
+	}
 }
 const std::string& EnvironmentVariableImpl::getComment() const
 {
@@ -180,15 +187,19 @@ void EnvironmentVariable::serializeToStream(std::ostream& os) const
 	case EnvironmentVariable::AccessType::Write: os << "DUMMY_NODE_VECTOR2"; break;
 	case EnvironmentVariable::AccessType::ReadWrite: os << "DUMMY_NODE_VECTOR3"; break;
 	}
-	auto access_nodes = getAccessNodes();
-	if (access_nodes.size())
-	{
-		auto iter = access_nodes.begin();
-		os << " " << **iter;
-		for (iter++; iter != access_nodes.end(); iter++)
+	bool first = true;
+	forEachAccessNode(
+		[&](const std::string& n)
 		{
-			os << ", " << **iter;
-		}
-	}
+			if (first)
+			{
+				os << " " << n;
+				first = false;
+			}
+			else
+			{
+				os << ", " << n;
+			}
+		});
 	os << ";";
 }

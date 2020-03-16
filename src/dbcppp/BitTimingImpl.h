@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "BitTiming.h"
+#include "../../include/dbcppp/BitTiming.h"
 
 namespace dbcppp
 {
-	class BitTimingImpl
+	class BitTimingImpl final
 		: public BitTiming
 	{
 	public:
