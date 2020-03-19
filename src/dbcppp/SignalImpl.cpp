@@ -12,6 +12,7 @@ enum class Alignment
 	signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit
 };
 
+
 template <Alignment aAlignment, Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
 double template_decode(const Signal* sig, const void* nbytes) noexcept
 {
@@ -407,6 +408,7 @@ SignalImpl::SignalImpl(
 	_raw_to_phys = ::raw_to_phys;
 	_phys_to_raw = ::phys_to_raw;
 }
+
 const std::string& SignalImpl::getName() const
 {
 	return _name;

@@ -23,6 +23,7 @@ namespace dbcppp
 			, std::string&& comment);
 		MessageImpl(MessageImpl&&) = default;
 		MessageImpl& operator=(MessageImpl&&) = default;
+
 		virtual uint64_t getId() const override;
 		virtual const std::string& getName() const override;
 		virtual uint64_t getMessageSize() const override;
@@ -31,7 +32,8 @@ namespace dbcppp
 		virtual void forEachMessageTransmitter(std::function<void(const std::string&)>&& cb) const override;
 		virtual const Signal* getSignalByName(const std::string& name) const override;
 		virtual const Signal* findSignal(std::function<bool(const Signal&)>&& pred) const override;
-		virtual void forEachSignal(std::function<void(const Signal&)>&& cb) const override;
+		virtual void forEachSignal(std::function<void(const Signal&)>&& cb) const  override;
+        virtual void forEachSignalbyStartBit(std::function<void(const Signal &)>&& cb) const;
 		virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
 		virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
 		virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
@@ -46,7 +48,10 @@ namespace dbcppp
 		std::string _transmitter;
 		std::set<std::string> _message_transmitters;
 		std::map<std::string, SignalImpl> _signals;
+        std::map<uint64_t, SignalImpl> _signals_order_by_start_bit;
 		std::map<std::string, AttributeImpl> _attribute_values;
 		std::string _comment;
-	};
+
+
+    };
 }

@@ -1,2 +1,3 @@
 
-#define TEST_DBC "@CMAKE_CURRENT_SOURCE_DIR@/Test.dbc"
+#define Core_Lanes_Host_protocol "@CMAKE_CURRENT_SOURCE_DIR@/Core_Lanes_Host_protocol.dbc"
+#define Core_Objects_protocol "@CMAKE_CURRENT_SOURCE_DIR@/Core_Objects_protocol.dbc"

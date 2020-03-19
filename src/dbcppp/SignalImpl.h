@@ -82,7 +82,7 @@ namespace dbcppp
 		// for performance
 		uint64_t _mask;
 		uint64_t _mask_signed;
-		uint64_t _fixed_start_bit_0;
+        uint64_t _fixed_start_bit_0;
 		uint64_t _fixed_start_bit_1;
 		uint64_t _byte_pos;
 

@@ -55,7 +55,47 @@ MessageImpl::MessageImpl(
 	, _signals(std::move(signals))
 	, _attribute_values(std::move(attribute_values))
 	, _comment(std::move(comment))
-{}
+{
+
+    for(const auto& s : _signals)
+    {
+        auto& sig = s.second;
+
+        std::set<std::string> receivers;
+        sig.forEachReceiver
+        (
+                [&](const std::string& receiver)
+                {
+                    receivers.insert(const_cast<std::string&>(receiver));
+                }
+        );
+
+        std::map<std::string, AttributeImpl> attribute_values;
+        std::map<double, std::string> value_descriptions;
+
+        auto _sig = Signal::create(
+                message_size
+                , sig.getName().data()
+                , sig.getMultiplexerIndicator()
+                , sig.getMultiplexerSwitchValue()
+                , sig.getStartBit()
+                , sig.getBitSize()
+                , sig.getByteOrder()
+                , sig.getValueType()
+                , sig.getFactor()
+                , sig.getOffset()
+                , sig.getMinimum()
+                , sig.getMaximum()
+                , sig.getUnit()
+                , std::move(receivers)
+                , {}
+                , {}
+                , sig.getComment().data()
+                , sig.getExtendedValueType()
+        );
+        _signals_order_by_start_bit.insert(std::make_pair(s.second.getStartBit(), std::move(*static_cast<SignalImpl*>(_sig.get()))));
+    }
+}
 uint64_t MessageImpl::getId() const
 {
 	return _id;
@@ -113,6 +153,14 @@ void MessageImpl::forEachSignal(std::function<void(const Signal&)>&& cb) const
 		cb(s.second);
 	}
 }
+void MessageImpl::forEachSignalbyStartBit(std::function<void(const Signal&)>&& cb) const
+{
+    for (const auto& s : _signals_order_by_start_bit)
+    {
+        cb(s.second);
+    }
+}
+
 const Attribute* MessageImpl::getAttributeValueByName(const std::string& name) const
 {
 	const Attribute* result = nullptr;
