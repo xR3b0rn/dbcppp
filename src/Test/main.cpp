@@ -117,6 +117,7 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
             (
                     [&](const dbcppp::Message& m)
                     {
+
                         std::cout << m.getName() << std::endl;
                         std::cout << "for Each Signal by Start Bit" << std::endl;
                         m.forEachSignalbyStartBit
