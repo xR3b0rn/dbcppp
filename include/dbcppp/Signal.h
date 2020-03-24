@@ -90,7 +90,7 @@ namespace dbcppp
 
         void serializeToStream(std::ostream& os) const;
         
-        /// \brief Extracts the raw value from a given 8 byte array
+        /// \brief Extracts the raw value from a given n byte array
         ///
         /// This function uses a optimized method of reversing the byte order and extracting
         /// the value from the given data.
