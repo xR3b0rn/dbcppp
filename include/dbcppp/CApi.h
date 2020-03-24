@@ -6,19 +6,33 @@ extern "C"
 #include "Export.h"
 #include <stdint.h>
 
-	struct dbcppp_Network;
-	struct dbcppp_BitTiming;
-	struct dbcppp_Node;
-	struct dbcppp_ValueTable;
-	struct dbcppp_Message;
-	struct dbcppp_EnvironmentVariable;
-	struct dbcppp_AttributeDefinition;
-	struct dbcppp_Attribute;
-	struct dbcppp_SignalType;
-	struct dbcppp_Signal;
+	struct dbcppp_Network {};
+	struct dbcppp_BitTiming {};
+	struct dbcppp_Node {};
+	struct dbcppp_ValueTable {};
+	struct dbcppp_Message {};
+	struct dbcppp_EnvironmentVariable {};
+	struct dbcppp_AttributeDefinition {};
+	struct dbcppp_Attribute {};
+	struct dbcppp_SignalType {};
+	struct dbcppp_Signal {};
 
 	DBCPPP_API struct dbcppp_Network* dbcppp_LoadFromFile(const char* filename);
 	DBCPPP_API void dbcppp_FreeNetwork(struct dbcppp_Network* net);
+
+	DBCPPP_API dbcppp_Network* dbcppp_NetworkCreate(
+		  const char* version
+		, const char** new_symbols
+		, dbcppp_BitTiming* bit_timing
+		, dbcppp_Node** nodes
+		, dbcppp_ValueTable** value_tables
+		, dbcppp_Message** messages
+		, dbcppp_EnvironmentVariable** environment_variables
+		, dbcppp_AttributeDefinition** attribute_definitions
+		, dbcppp_Attribute** attribute_defaults
+		, dbcppp_Attribute** attribute_values
+		, const char* comment);
+	DBCPPP_API void dbcppp_NetworkFree(dbcppp_Network* network);
 
 	DBCPPP_API const char* dbcppp_NetworkGetVersion(struct dbcppp_Network* net);
 	DBCPPP_API bool dbcppp_NetworkHasNewSymbol(struct dbcppp_Network* net, const char* new_symbol);

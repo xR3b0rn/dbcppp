@@ -6,6 +6,92 @@ using namespace dbcppp;
 
 extern "C"
 {
+	DBCPPP_API dbcppp_Network* dbcppp_NetworkCreate(
+		  const char* version
+		, const char** new_symbols
+		, dbcppp_BitTiming* bit_timing
+		, dbcppp_Node** nodes
+		, dbcppp_ValueTable** value_tables
+		, dbcppp_Message** messages
+		, dbcppp_EnvironmentVariable** environment_variables
+		, dbcppp_AttributeDefinition** attribute_definitions
+		, dbcppp_Attribute** attribute_defaults
+		, dbcppp_Attribute** attribute_values
+		, const char* comment)
+	{
+		std::string v(version);
+		std::set<std::string> ns;
+		while (*new_symbols)
+		{
+			ns.insert(*new_symbols);
+			new_symbols++;
+		}
+		std::unique_ptr<BitTiming> bt(reinterpret_cast<BitTimingImpl*>(bit_timing));
+		std::map<std::string, std::unique_ptr<Node>> n;
+		while (*nodes)
+		{
+			NodeImpl* ni = reinterpret_cast<NodeImpl*>(*nodes);
+			n.insert(std::make_pair(ni->getName(), std::unique_ptr<Node>(ni)));
+			nodes++;
+		}
+		std::map<std::string, std::unique_ptr<ValueTable>> vt;
+		while (*value_tables)
+		{
+			ValueTableImpl* vti = reinterpret_cast<ValueTableImpl*>(*value_tables);
+			vt.insert(std::make_pair(vti->getName(), std::unique_ptr<ValueTable>(vti)));
+			value_tables++;
+		}
+		std::unordered_map<uint64_t, std::unique_ptr<Message>> m;
+		while (*messages)
+		{
+			MessageImpl* mi = reinterpret_cast<MessageImpl*>(*messages);
+			m.insert(std::make_pair(mi->getId(), std::unique_ptr<Message>(mi)));
+			messages++;
+		}
+		std::map<std::string, std::unique_ptr<EnvironmentVariable>> ev;
+		while (*environment_variables)
+		{
+			EnvironmentVariableImpl* evi = reinterpret_cast<EnvironmentVariableImpl*>(*environment_variables);
+			ev.insert(std::make_pair(evi->getName(), std::unique_ptr<EnvironmentVariable>(evi)));
+			environment_variables++;
+		}
+		std::map<std::string, std::unique_ptr<AttributeDefinition>> adef;
+		while (*attribute_definitions)
+		{
+			AttributeDefinitionImpl* adefi = reinterpret_cast<AttributeDefinitionImpl*>(*attribute_definitions);
+			adef.insert(std::make_pair(adefi->getName(), std::unique_ptr<AttributeDefinition>(adefi)));
+			attribute_definitions++;
+		}
+		std::map<std::string, std::unique_ptr<Attribute>> ad;
+		while (*attribute_defaults)
+		{
+			AttributeImpl* adi = reinterpret_cast<AttributeImpl*>(*attribute_defaults);
+			ad.insert(std::make_pair(adi->getName(), std::unique_ptr<Attribute>(adi)));
+			attribute_defaults++;
+		}
+		std::map<std::string, std::unique_ptr<Attribute>> av;
+		while (*attribute_values)
+		{
+			AttributeImpl* avi = reinterpret_cast<AttributeImpl*>(*attribute_values);
+			ad.insert(std::make_pair(avi->getName(), std::unique_ptr<Attribute>(avi)));
+			attribute_values++;
+		}
+		std::string c(comment);
+		auto net = Network::create(
+			  std::move(v), std::move(ns)
+			, std::move(bt), std::move(n)
+			, std::move(vt), std::move(m)
+			, std::move(ev), std::move(adef)
+			, std::move(ad), std::move(av)
+			, std::move(c));
+		Network* result = net.release();
+		return reinterpret_cast<dbcppp_Network*>(result);
+	}
+	DBCPPP_API void dbcppp_NetworkFree(dbcppp_Network* network)
+	{
+		std::unique_ptr<NetworkImpl> un(reinterpret_cast<NetworkImpl*>(network));
+	}
+
 	const char* dbcppp_NetworkGetVersion(struct dbcppp_Network* net)
 	{
 		const NetworkImpl* neti = reinterpret_cast<NetworkImpl*>(net);

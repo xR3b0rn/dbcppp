@@ -1,8 +1,7 @@
 
 #include <boost/log/trivial.hpp>
 #include <iterator>
-#include "NetworkImpl.h"
-#include "DBC_Grammar.h"
+#include "../../include/dbcppp/Network.h"
 #include "ConvertGrammarStructureToCppStructure.h"
 
 using namespace dbcppp;
@@ -22,7 +21,7 @@ static auto getNewSymbols(const G_Network& gnet)
 }
 static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
 {
-	boost::optional<SignalTypeImpl> result;
+	boost::optional<std::unique_ptr<SignalType>> result;
 	auto iter = std::find_if(gnet.signal_types.begin(), gnet.signal_types.end(),
 		[&](const auto& st)
 		{
@@ -31,7 +30,7 @@ static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
 	if (iter != gnet.signal_types.end())
 	{
 		auto& st = *iter;
-		SignalTypeImpl nst(
+		result = SignalType::create(
 			  std::string(st.name)
 			, st.size
 			, st.byte_order == '0' ? Signal::ByteOrder::BigEndian : Signal::ByteOrder::LittleEndian
@@ -42,36 +41,38 @@ static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
 			, st.maximum
 			, std::string(st.unit)
 			, st.default_value
-			, std::string(st.value_table_name)
-			);
-		result = std::move(nst);
+			, std::string(st.value_table_name));
 	}
 	return result;
 }
 static auto getValueTables(const G_Network& gnet)
 {
-	std::map<std::string, ValueTableImpl> result;
+	std::map<std::string, std::unique_ptr<ValueTable>> result;
 	for (auto& vt : gnet.value_tables)
 	{
 		auto sig_type = getSignalType(gnet, vt);
 		auto copy_ved = vt.value_encoding_descriptions;
-		ValueTableImpl nvt(std::string(vt.name), std::move(sig_type), std::move(copy_ved));
+		auto nvt = ValueTable::create(std::string(vt.name), std::move(sig_type), std::move(copy_ved));
 		result.insert(std::make_pair(vt.name, std::move(nvt)));
 	}
 	return result;
 }
 static auto getBitTiming(const G_Network& gnet)
 {
-	BitTimingImpl result;
+	std::unique_ptr<BitTiming> result;
 	if (gnet.bit_timing)
 	{
-		result = BitTimingImpl(gnet.bit_timing->baudrate, gnet.bit_timing->BTR1, gnet.bit_timing->BTR2);
+		result = BitTiming::create(gnet.bit_timing->baudrate, gnet.bit_timing->BTR1, gnet.bit_timing->BTR2);
+	}
+	else
+	{
+		result = BitTiming::create(0, 0, 0);
 	}
 	return result;
 }
 static auto getAttributeValues(const G_Network& gnet, const G_Node& n)
 {
-	std::map<std::string, AttributeImpl> result;
+	std::map<std::string, std::unique_ptr<Attribute>> result;
 	for (const variant_attribute_t& av : gnet.attribute_values)
 	{
 		if (av.type() == typeid(G_AttributeNode) &&
@@ -79,7 +80,7 @@ static auto getAttributeValues(const G_Network& gnet, const G_Node& n)
 		{
 			auto name = boost::get<G_AttributeNode>(av).attribute_name;
 			auto value = boost::get<G_AttributeNode>(av).value;
-			AttributeImpl attribute(std::move(name), AttributeDefinition::ObjectType::Node, std::move(value));
+			auto attribute = Attribute::create(std::move(name), AttributeDefinition::ObjectType::Node, std::move(value));
 			result.insert(std::make_pair(name, std::move(attribute)));
 		}
 	}
@@ -102,19 +103,19 @@ static auto getComment(const G_Network& gnet, const G_Node& n)
 }
 static auto getNodes(const G_Network& gnet)
 {
-	std::map<std::string, NodeImpl> result;
+	std::map<std::string, std::unique_ptr<Node>> result;
 	for (const auto& n : gnet.nodes)
 	{
 		auto comment = getComment(gnet, n);
 		auto attribute_values = getAttributeValues(gnet, n);
-		NodeImpl nn(std::string(n.name), std::move(comment), std::move(attribute_values));
+		auto nn = Node::create(std::string(n.name), std::move(comment), std::move(attribute_values));
 		result.insert(std::make_pair(n.name, std::move(nn)));
 	}
 	return result;
 }
 static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
-	std::map<std::string, AttributeImpl> result;
+	std::map<std::string, std::unique_ptr<Attribute>> result;
 	for (const auto& vav : gnet.attribute_values)
 	{
 		if (vav.type() == typeid(G_AttributeSignal))
@@ -123,8 +124,8 @@ static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const 
 			if (av.message_id == m.id && av.signal_name == s.name)
 			{
 				auto value = av.value;
-				AttributeImpl attr(std::string(av.attribute_name), AttributeDefinition::ObjectType::Signal, std::move(value));
-				result.insert(std::make_pair(av.attribute_name, std::move(attr)));
+				auto attribute = Attribute::create(std::string(av.attribute_name), AttributeDefinition::ObjectType::Signal, std::move(value));
+				result.insert(std::make_pair(av.attribute_name, std::move(attribute)));
 			}
 		}
 	}
@@ -179,7 +180,7 @@ static auto getSignalExtendedValueType(const G_Network& gnet, const G_Message& m
 }
 static auto getSignals(const G_Network& gnet, const G_Message& m)
 {
-	std::map<std::string, SignalImpl> result;
+	std::map<std::string, std::unique_ptr<Signal>> result;
 	for (const G_Signal& s : m.signals)
 	{
 		std::set<std::string> receivers;
@@ -207,7 +208,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
 		{
 			receivers.insert(n);
 		}
-		SignalImpl ns(
+		auto ns = Signal::create(
 			  m.size
 			, std::string(s.name)
 			, multiplexer_indicator
@@ -226,7 +227,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
 			, std::move(value_descriptions)
 			, std::move(comment)
 			, extended_value_type);
-		switch (ns.getError())
+		switch (ns->getError())
 		{
 		case SignalImpl::ErrorCode::SignalExceedsMessageSize:
 			std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"
@@ -268,7 +269,7 @@ static auto getMessageTransmitters(const G_Network& gnet, const G_Message& m)
 }
 static auto getAttributeValues(const G_Network& gnet, const G_Message& m)
 {
-	std::map<std::string, AttributeImpl> result;
+	std::map<std::string, std::unique_ptr<Attribute>> result;
 	for (const auto& vav : gnet.attribute_values)
 	{
 		if (vav.type() == typeid(G_AttributeMessage))
@@ -277,8 +278,8 @@ static auto getAttributeValues(const G_Network& gnet, const G_Message& m)
 			if (av.message_id == m.id)
 			{
 				auto value = av.value;
-				AttributeImpl attr(std::string(av.attribute_name), AttributeDefinition::ObjectType::Message, std::move(value));
-				result.insert(std::make_pair(av.attribute_name, std::move(attr)));
+				auto attribute = Attribute::create(std::string(av.attribute_name), AttributeDefinition::ObjectType::Message, std::move(value));
+				result.insert(std::make_pair(av.attribute_name, std::move(attribute)));
 			}
 		}
 	}
@@ -300,14 +301,14 @@ static auto getComment(const G_Network& gnet, const G_Message& m)
 }
 static auto getMessages(const G_Network& gnet)
 {
-	std::unordered_map<uint64_t, MessageImpl> result;
+	std::unordered_map<uint64_t, std::unique_ptr<Message>> result;
 	for (const auto& m : gnet.messages)
 	{
 		auto message_transmitters = getMessageTransmitters(gnet, m);
 		auto signals = getSignals(gnet, m);
 		auto attribute_values = getAttributeValues(gnet, m);
 		auto comment = getComment(gnet, m);
-		MessageImpl msg(
+		auto msg = Message::create(
 			  m.id
 			, std::string(m.name)
 			, m.size
@@ -336,7 +337,7 @@ static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVaria
 }
 static auto getAttributeValues(const G_Network& gnet, const G_EnvironmentVariable& ev)
 {
-	std::map<std::string, AttributeImpl> result;
+	std::map<std::string, std::unique_ptr<Attribute>> result;
 	for (const auto& vav : gnet.attribute_values)
 	{
 		if (vav.type() == typeid(G_AttributeEnvVar))
@@ -345,8 +346,8 @@ static auto getAttributeValues(const G_Network& gnet, const G_EnvironmentVariabl
 			if (av.env_var_name == ev.name)
 			{
 				auto value = av.value;
-				AttributeImpl attr(std::string(av.attribute_name), AttributeDefinition::ObjectType::EnvironmentVariable, std::move(value));
-				result.insert(std::make_pair(av.attribute_name, std::move(attr)));
+				auto attribute = Attribute::create(std::string(av.attribute_name), AttributeDefinition::ObjectType::EnvironmentVariable, std::move(value));
+				result.insert(std::make_pair(av.attribute_name, std::move(attribute)));
 			}
 		}
 	}
@@ -368,7 +369,7 @@ static auto getComment(const G_Network& gnet, const G_EnvironmentVariable& ev)
 }
 static auto getEnvironmentVariables(const G_Network& gnet)
 {
-	std::map<std::string, EnvironmentVariableImpl> result;
+	std::map<std::string, std::unique_ptr<EnvironmentVariable>> result;
 	for (const auto& ev : gnet.environment_variables)
 	{
 		EnvironmentVariable::VarType var_type;
@@ -413,7 +414,7 @@ static auto getEnvironmentVariables(const G_Network& gnet)
 				break;
 			}
 		}
-		EnvironmentVariableImpl env_var(
+		auto env_var = EnvironmentVariable::create(
 			  std::string(ev.name)
 			, var_type
 			, ev.minimum
@@ -426,15 +427,14 @@ static auto getEnvironmentVariables(const G_Network& gnet)
 			, std::move(value_descriptions)
 			, data_size
 			, std::move(attribute_values)
-			, std::move(comment)
-			);
+			, std::move(comment));
 		result.insert(std::make_pair(ev.name, std::move(env_var)));
 	}
 	return result;
 }
 static auto getAttributeDefinitions(const G_Network& gnet)
 {
-	std::map<std::string, AttributeDefinitionImpl> result;
+	std::map<std::string, std::unique_ptr<AttributeDefinition>> result;
 	struct VisitorValueType
 	{
 		AttributeDefinition::value_type_t operator()(const G_AttributeValueTypeInt& cn)
@@ -498,36 +498,34 @@ static auto getAttributeDefinitions(const G_Network& gnet)
 		}
 		VisitorValueType vvt;
 		boost::apply_visitor(vvt, cvt.value);
-		AttributeDefinitionImpl nad(std::move(std::string(ad.name)), object_type, boost::apply_visitor(vvt, cvt.value));
+		auto nad = AttributeDefinition::create(std::move(std::string(ad.name)), object_type, boost::apply_visitor(vvt, cvt.value));
 		result.insert(std::make_pair(ad.name, std::move(nad)));
 	}
 	return result;
 }
 static auto getAttributeDefaults(const G_Network& gnet)
 {
-	std::map<std::string, AttributeImpl> result;
-	for (const auto& ad : gnet.attribute_defaults)
+	std::map<std::string, std::unique_ptr<Attribute>> result;
+	for (auto& ad : gnet.attribute_defaults)
 	{
-		AttributeImpl nad(std::string(ad.name), AttributeDefinition::ObjectType::Network, ad.value);
+		auto nad = Attribute::create(std::string(ad.name), AttributeDefinition::ObjectType::Network, ad.value);
 		result.insert(std::make_pair(ad.name, std::move(nad)));
 	}
 	return result;
 }
 static auto getAttributeValues(const G_Network& gnet)
 {
-	std::map<std::string, AttributeImpl> result;
+	std::map<std::string, std::unique_ptr<Attribute>> result;
 	for (const auto& av : gnet.attribute_values)
 	{
 		if (av.type() == typeid(G_AttributeNetwork))
 		{
 			auto av_ = boost::get<G_AttributeNetwork>(av);
-			result.insert(
-				  std::make_pair(
-					  av_.attribute_name
-					, AttributeImpl(
-						  std::string(av_.attribute_name)
-						, AttributeDefinition::ObjectType::Network
-						, av_.value)));
+			auto attribute = Attribute::create(
+				  std::string(av_.attribute_name)
+				, AttributeDefinition::ObjectType::Network
+				, std::move(av_.value));
+			result.insert(std::make_pair(av_.attribute_name, std::move(attribute)));
 		}
 	}
 	return result;
@@ -546,9 +544,9 @@ static auto getComment(const G_Network& gnet)
 	return result;
 }
 
-NetworkImpl dbcppp::ConvertGrammarStructureToCppStructure(const G_Network& gnet)
+std::unique_ptr<Network> dbcppp::ConvertGrammarStructureToCppStructure(const G_Network& gnet)
 {
-	return NetworkImpl(
+	return Network::create(
 		  getVersion(gnet)
 		, getNewSymbols(gnet)
 		, getBitTiming(gnet)

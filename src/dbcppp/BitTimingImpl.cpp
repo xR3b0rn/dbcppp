@@ -4,7 +4,7 @@
 
 using namespace dbcppp;
 
-std::unique_ptr<BitTiming> create(uint64_t baudrate, uint64_t BTR1, uint64_t BTR2)
+std::unique_ptr<BitTiming> BitTiming::create(uint64_t baudrate, uint64_t BTR1, uint64_t BTR2)
 {
 	return std::make_unique<BitTimingImpl>(baudrate, BTR1, BTR2);
 }

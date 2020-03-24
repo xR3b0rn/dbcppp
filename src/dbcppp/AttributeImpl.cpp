@@ -8,7 +8,7 @@ using namespace dbcppp;
 std::unique_ptr<Attribute> Attribute::create(
 	  std::string&& name
 	, AttributeDefinition::ObjectType object_type
-	, value_t&& value)
+	, value_t value)
 {
 	return std::make_unique<AttributeImpl>(
 		  std::move(name)

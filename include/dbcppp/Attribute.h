@@ -20,7 +20,7 @@ namespace dbcppp
 		static std::unique_ptr<Attribute> create(
 			  std::string&& name
 			, AttributeDefinition::ObjectType object_type
-			, value_t&& value);
+			, value_t value);
 
 		virtual ~Attribute() = default;
 		virtual const std::string& getName() const = 0;

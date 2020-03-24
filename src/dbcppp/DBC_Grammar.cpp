@@ -696,8 +696,7 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
 	bool succeeded = phrase_parse(begin, end, g, ascii::space, gnet);
 	if (succeeded && (begin == end))
 	{
-		auto network = ConvertGrammarStructureToCppStructure(gnet);
-		result = std::make_unique<NetworkImpl>(std::move(network));
+		result = ConvertGrammarStructureToCppStructure(gnet);
 	}
 	else
 	{
@@ -716,7 +715,7 @@ extern "C"
 {
 	DBCPPP_API struct dbcppp_Network* dbcppp_LoadFromFile(const char* filename)
 	{
-		NetworkImpl* result = nullptr;
+		std::unique_ptr<Network> result;
 		std::ifstream is(filename);
 		if (is.is_open())
 		{
@@ -727,8 +726,7 @@ extern "C"
 			bool succeeded = phrase_parse(begin, end, g, ascii::space, gnet);
 			if (succeeded && (begin == end))
 			{
-				auto network = ConvertGrammarStructureToCppStructure(gnet);
-				result = new NetworkImpl(std::move(network));
+				result = ConvertGrammarStructureToCppStructure(gnet);
 			}
 			else
 			{
@@ -736,7 +734,7 @@ extern "C"
 				std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
 			}
 		}
-		return reinterpret_cast<dbcppp_Network*>(result);
+		return reinterpret_cast<dbcppp_Network*>(result.release());
 	}
 	DBCPPP_API void dbcppp_FreeNetwork(struct dbcppp_network* net)
 	{
