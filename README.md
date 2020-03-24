@@ -60,7 +60,7 @@ int main()
             if (msg)
             {
                 std::cout << "Received message: " << msg->getName() << std::endl;
-                msg.forEachSignal(
+                msg->forEachSignal(
                     [&](const Signal& signal)
                     {
                         double raw = signal.decode(frame.data);
