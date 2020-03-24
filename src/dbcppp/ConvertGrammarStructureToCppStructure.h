@@ -6,5 +6,5 @@
 
 namespace dbcppp
 {
-	std::unique_ptr<Network> ConvertGrammarStructureToCppStructure(const G_Network& gnet);
+    std::unique_ptr<Network> ConvertGrammarStructureToCppStructure(const G_Network& gnet);
 }
