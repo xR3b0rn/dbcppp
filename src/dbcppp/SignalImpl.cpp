@@ -109,24 +109,24 @@ constexpr uint64_t enum_mask(Alignment a, Signal::ByteOrder bo, Signal::ValueTyp
     switch (a)
     {
     case Alignment::size_inbetween_first_64_bit:                                    result |= 0b1; break;
-    case Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit:            result |= 0b10; break;
+    case Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit:         result |= 0b10; break;
     case Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit: result |= 0b100; break;
     }
     switch (bo)
     {
-    case Signal::ByteOrder::LittleEndian:                                            result |= 0b1000; break;
-    case Signal::ByteOrder::BigEndian:                                                result |= 0b10000; break;
+    case Signal::ByteOrder::LittleEndian:                                           result |= 0b1000; break;
+    case Signal::ByteOrder::BigEndian:                                              result |= 0b10000; break;
     }
     switch (vt)
     {
-    case Signal::ValueType::Signed:                                                    result |= 0b100000; break;
-    case Signal::ValueType::Unsigned:                                                result |= 0b1000000; break;
+    case Signal::ValueType::Signed:                                                 result |= 0b100000; break;
+    case Signal::ValueType::Unsigned:                                               result |= 0b1000000; break;
     }
     switch (evt)
     {
     case Signal::ExtendedValueType::Integer:                                        result |= 0b10000000; break;
-    case Signal::ExtendedValueType::Float:                                            result |= 0b100000000; break;
-    case Signal::ExtendedValueType::Double:                                            result |= 0b1000000000; break;
+    case Signal::ExtendedValueType::Float:                                          result |= 0b100000000; break;
+    case Signal::ExtendedValueType::Double:                                         result |= 0b1000000000; break;
     }
     return result;
 }
@@ -145,42 +145,42 @@ decode_func_t make_decode(Alignment a, Signal::ByteOrder bo, Signal::ValueType v
     constexpr auto d                = Signal::ExtendedValueType::Double;
     switch (enum_mask(a, bo, vt, evt))
     {
-    case enum_mask(si64b, le, sig, i):                return template_decode<si64b, le, sig, i>;
-    case enum_mask(si64b, le, sig, f):                return template_decode<si64b, le, sig, f>;
-    case enum_mask(si64b, le, sig, d):                return template_decode<si64b, le, sig, d>;
-    case enum_mask(si64b, le, usig, i):                return template_decode<si64b, le, usig, i>;
-    case enum_mask(si64b, le, usig, f):                return template_decode<si64b, le, usig, f>;
-    case enum_mask(si64b, le, usig, d):                return template_decode<si64b, le, usig, d>;
-    case enum_mask(si64b, be, sig, i):                return template_decode<si64b, be, sig, i>;
-    case enum_mask(si64b, be, sig, f):                return template_decode<si64b, be, sig, f>;
-    case enum_mask(si64b, be, sig, d):                return template_decode<si64b, be, sig, d>;
-    case enum_mask(si64b, be, usig, i):                return template_decode<si64b, be, usig, i>;
-    case enum_mask(si64b, be, usig, f):                return template_decode<si64b, be, usig, f>;
-    case enum_mask(si64b, be, usig, d):                return template_decode<si64b, be, usig, d>;
-    case enum_mask(se64bsbsfi64b, le, sig, i):        return template_decode<se64bsbsfi64b, le, sig, i>;
-    case enum_mask(se64bsbsfi64b, le, sig, f):        return template_decode<se64bsbsfi64b, le, sig, f>;
-    case enum_mask(se64bsbsfi64b, le, sig, d):        return template_decode<se64bsbsfi64b, le, sig, d>;
-    case enum_mask(se64bsbsfi64b, le, usig, i):        return template_decode<se64bsbsfi64b, le, usig, i>;
-    case enum_mask(se64bsbsfi64b, le, usig, f):        return template_decode<se64bsbsfi64b, le, usig, f>;
-    case enum_mask(se64bsbsfi64b, le, usig, d):        return template_decode<se64bsbsfi64b, le, usig, d>;
-    case enum_mask(se64bsbsfi64b, be, sig, i):        return template_decode<se64bsbsfi64b, be, sig, i>;
-    case enum_mask(se64bsbsfi64b, be, sig, f):        return template_decode<se64bsbsfi64b, be, sig, f>;
-    case enum_mask(se64bsbsfi64b, be, sig, d):        return template_decode<se64bsbsfi64b, be, sig, d>;
-    case enum_mask(se64bsbsfi64b, be, usig, i):        return template_decode<se64bsbsfi64b, be, usig, i>;
-    case enum_mask(se64bsbsfi64b, be, usig, f):        return template_decode<se64bsbsfi64b, be, usig, f>;
-    case enum_mask(se64bsbsfi64b, be, usig, d):        return template_decode<se64bsbsfi64b, be, usig, d>;
-    case enum_mask(se64bsasdnfi64b, le, sig, i):    return template_decode<se64bsasdnfi64b, le, sig, i>;
-    case enum_mask(se64bsasdnfi64b, le, sig, f):    return template_decode<se64bsasdnfi64b, le, sig, f>;
-    case enum_mask(se64bsasdnfi64b, le, sig, d):    return template_decode<se64bsasdnfi64b, le, sig, d>;
-    case enum_mask(se64bsasdnfi64b, le, usig, i):    return template_decode<se64bsasdnfi64b, le, usig, i>;
-    case enum_mask(se64bsasdnfi64b, le, usig, f):    return template_decode<se64bsasdnfi64b, le, usig, f>;
-    case enum_mask(se64bsasdnfi64b, le, usig, d):    return template_decode<se64bsasdnfi64b, le, usig, d>;
-    case enum_mask(se64bsasdnfi64b, be, sig, i):    return template_decode<se64bsasdnfi64b, be, sig, i>;
-    case enum_mask(se64bsasdnfi64b, be, sig, f):    return template_decode<se64bsasdnfi64b, be, sig, f>;
-    case enum_mask(se64bsasdnfi64b, be, sig, d):    return template_decode<se64bsasdnfi64b, be, sig, d>;
-    case enum_mask(se64bsasdnfi64b, be, usig, i):    return template_decode<se64bsasdnfi64b, be, usig, i>;
-    case enum_mask(se64bsasdnfi64b, be, usig, f):    return template_decode<se64bsasdnfi64b, be, usig, f>;
-    case enum_mask(se64bsasdnfi64b, be, usig, d):    return template_decode<se64bsasdnfi64b, be, usig, d>;
+    case enum_mask(si64b, le, sig, i):            return template_decode<si64b, le, sig, i>;
+    case enum_mask(si64b, le, sig, f):            return template_decode<si64b, le, sig, f>;
+    case enum_mask(si64b, le, sig, d):            return template_decode<si64b, le, sig, d>;
+    case enum_mask(si64b, le, usig, i):           return template_decode<si64b, le, usig, i>;
+    case enum_mask(si64b, le, usig, f):           return template_decode<si64b, le, usig, f>;
+    case enum_mask(si64b, le, usig, d):           return template_decode<si64b, le, usig, d>;
+    case enum_mask(si64b, be, sig, i):            return template_decode<si64b, be, sig, i>;
+    case enum_mask(si64b, be, sig, f):            return template_decode<si64b, be, sig, f>;
+    case enum_mask(si64b, be, sig, d):            return template_decode<si64b, be, sig, d>;
+    case enum_mask(si64b, be, usig, i):           return template_decode<si64b, be, usig, i>;
+    case enum_mask(si64b, be, usig, f):           return template_decode<si64b, be, usig, f>;
+    case enum_mask(si64b, be, usig, d):           return template_decode<si64b, be, usig, d>;
+    case enum_mask(se64bsbsfi64b, le, sig, i):    return template_decode<se64bsbsfi64b, le, sig, i>;
+    case enum_mask(se64bsbsfi64b, le, sig, f):    return template_decode<se64bsbsfi64b, le, sig, f>;
+    case enum_mask(se64bsbsfi64b, le, sig, d):    return template_decode<se64bsbsfi64b, le, sig, d>;
+    case enum_mask(se64bsbsfi64b, le, usig, i):   return template_decode<se64bsbsfi64b, le, usig, i>;
+    case enum_mask(se64bsbsfi64b, le, usig, f):   return template_decode<se64bsbsfi64b, le, usig, f>;
+    case enum_mask(se64bsbsfi64b, le, usig, d):   return template_decode<se64bsbsfi64b, le, usig, d>;
+    case enum_mask(se64bsbsfi64b, be, sig, i):    return template_decode<se64bsbsfi64b, be, sig, i>;
+    case enum_mask(se64bsbsfi64b, be, sig, f):    return template_decode<se64bsbsfi64b, be, sig, f>;
+    case enum_mask(se64bsbsfi64b, be, sig, d):    return template_decode<se64bsbsfi64b, be, sig, d>;
+    case enum_mask(se64bsbsfi64b, be, usig, i):   return template_decode<se64bsbsfi64b, be, usig, i>;
+    case enum_mask(se64bsbsfi64b, be, usig, f):   return template_decode<se64bsbsfi64b, be, usig, f>;
+    case enum_mask(se64bsbsfi64b, be, usig, d):   return template_decode<se64bsbsfi64b, be, usig, d>;
+    case enum_mask(se64bsasdnfi64b, le, sig, i):  return template_decode<se64bsasdnfi64b, le, sig, i>;
+    case enum_mask(se64bsasdnfi64b, le, sig, f):  return template_decode<se64bsasdnfi64b, le, sig, f>;
+    case enum_mask(se64bsasdnfi64b, le, sig, d):  return template_decode<se64bsasdnfi64b, le, sig, d>;
+    case enum_mask(se64bsasdnfi64b, le, usig, i): return template_decode<se64bsasdnfi64b, le, usig, i>;
+    case enum_mask(se64bsasdnfi64b, le, usig, f): return template_decode<se64bsasdnfi64b, le, usig, f>;
+    case enum_mask(se64bsasdnfi64b, le, usig, d): return template_decode<se64bsasdnfi64b, le, usig, d>;
+    case enum_mask(se64bsasdnfi64b, be, sig, i):  return template_decode<se64bsasdnfi64b, be, sig, i>;
+    case enum_mask(se64bsasdnfi64b, be, sig, f):  return template_decode<se64bsasdnfi64b, be, sig, f>;
+    case enum_mask(se64bsasdnfi64b, be, sig, d):  return template_decode<se64bsasdnfi64b, be, sig, d>;
+    case enum_mask(se64bsasdnfi64b, be, usig, i): return template_decode<se64bsasdnfi64b, be, usig, i>;
+    case enum_mask(se64bsasdnfi64b, be, usig, f): return template_decode<se64bsasdnfi64b, be, usig, f>;
+    case enum_mask(se64bsasdnfi64b, be, usig, d): return template_decode<se64bsasdnfi64b, be, usig, d>;
     }
     return nullptr;
 }
