@@ -263,6 +263,9 @@ extern "C"
     DBCPPP_API void dbcppp_SignalForEachAttributeValue(const dbcppp_Signal* sig, void(*cb)(const dbcppp_Attribute*, void*), void* data);
     DBCPPP_API const char* dbcppp_SignalGetComment(const dbcppp_Signal* sig);
     DBCPPP_API dbcppp_SignalExtendedValueType dbcppp_SignalGetGetExtendedValueType(const dbcppp_Signal* sig);
+    DBCPPP_API double dbcppp_SignalDecode(const dbcppp_Signal* sig, const void* bytes);
+    DBCPPP_API double dbcppp_SignalRawToPhys(const dbcppp_Signal* sig, double raw);
+    DBCPPP_API double dbcppp_SignalPhysToRaw(const dbcppp_Signal* sig, double phys);
 
     DBCPPP_API const dbcppp_SignalType* dbcppp_SignalTypeCreate(
           const char* name

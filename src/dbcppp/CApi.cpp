@@ -1157,6 +1157,21 @@ extern "C"
         default: return dbcppp_SignalExtendedValueType::dbcppp_SignalExtendedValueTypeDouble;
         }
     }
+    DBCPPP_API double dbcppp_SignalDecode(const dbcppp_Signal* sig, const void* bytes)
+    {
+        auto sigi = reinterpret_cast<const SignalImpl*>(sig);
+        return sigi->decode(bytes);
+    }
+    DBCPPP_API double dbcppp_SignalRawToPhys(const dbcppp_Signal* sig, double raw)
+    {
+        auto sigi = reinterpret_cast<const SignalImpl*>(sig);
+        return sigi->rawToPhys(raw);
+    }
+    DBCPPP_API double dbcppp_SignalPhysToRaw(const dbcppp_Signal* sig, double phys)
+    {
+        auto sigi = reinterpret_cast<const SignalImpl*>(sig);
+        return sigi->physToRaw(phys);
+    }
 
     DBCPPP_API const dbcppp_SignalType* dbcppp_SignalTypeCreate(
           const char* name
