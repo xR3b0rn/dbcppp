@@ -415,7 +415,7 @@ extern "C"
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->hasAccessNode(node_name);
     }
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachAccessNode(const dbcppp_EnvironmentVariable* env_var, std::function<void(const char*)>&& cb)
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachAccessNode(const dbcppp_EnvironmentVariable* env_var, void(*cb)(const char*))
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         env_var_i->forEachAccessNode(
@@ -424,7 +424,7 @@ extern "C"
                 cb(name.c_str());
             });
     }
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, std::function<void(double, const char*)>&& cb)
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(double, const char*))
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         env_var_i->forEachValueDescription(
@@ -443,7 +443,7 @@ extern "C"
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return const_cast<dbcppp_Attribute*>(reinterpret_cast<const dbcppp_Attribute*>(env_var_i->getAttributeValueByName(attribute_name)));
     }
-    DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableFindAttributeValue(const dbcppp_EnvironmentVariable* env_var, std::function<bool(dbcppp_Attribute*)>&& pred)
+    DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableFindAttributeValue(const dbcppp_EnvironmentVariable* env_var, bool(*pred)(dbcppp_Attribute*))
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         auto result = env_var_i->findAttributeValue(
@@ -453,7 +453,7 @@ extern "C"
             });
         return reinterpret_cast<dbcppp_Attribute*>(const_cast<Attribute*>(result));
     }
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachAttributeValue(const dbcppp_EnvironmentVariable* env_var, std::function<void(dbcppp_Attribute*)>&& cb)
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachAttributeValue(const dbcppp_EnvironmentVariable* env_var, void(*cb)(dbcppp_Attribute*))
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         env_var_i->forEachAttributeValue(
