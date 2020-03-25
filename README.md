@@ -86,7 +86,6 @@ int main()
             const dbcppp_Message* msg = dbcppp_NetworkGetMessageById(net, frame.id);
             if (msg)
             {
-                std::cout << "Received message: " << msg->getName() << std::endl;
                 printf("Received message: %s\n", dbcppp_MessageGetName(msg));
                 void print_signal_data(const dbcppp_Signal* sig, void* data)
                 {
