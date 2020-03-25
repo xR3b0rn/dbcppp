@@ -135,11 +135,11 @@ decode_func_t make_decode(Alignment a, Signal::ByteOrder bo, Signal::ValueType v
 {
     constexpr auto si64b            = Alignment::size_inbetween_first_64_bit;
     constexpr auto se64bsbsfi64b    = Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit;
-    constexpr auto se64bsasdnfi64b    = Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit;
-    constexpr auto le                = Signal::ByteOrder::LittleEndian;
-    constexpr auto be                = Signal::ByteOrder::BigEndian;
-    constexpr auto sig                = Signal::ValueType::Signed;
-    constexpr auto usig                = Signal::ValueType::Unsigned;
+    constexpr auto se64bsasdnfi64b  = Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit;
+    constexpr auto le               = Signal::ByteOrder::LittleEndian;
+    constexpr auto be               = Signal::ByteOrder::BigEndian;
+    constexpr auto sig              = Signal::ValueType::Signed;
+    constexpr auto usig             = Signal::ValueType::Unsigned;
     constexpr auto i                = Signal::ExtendedValueType::Integer;
     constexpr auto f                = Signal::ExtendedValueType::Float;
     constexpr auto d                = Signal::ExtendedValueType::Double;
@@ -465,16 +465,6 @@ void SignalImpl::forEachReceiver(std::function<void(const std::string&)>&& cb) c
     {
         cb(n);
     }
-}
-const std::string* SignalImpl::getValueDescriptionById(double id) const
-{
-    const std::string* result = nullptr;
-    auto iter = _value_descriptions.find(id);
-    if (iter != _value_descriptions.end())
-    {
-        result = &iter->second;
-    }
-    return result;
 }
 void SignalImpl::forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const
 {

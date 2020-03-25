@@ -112,16 +112,6 @@ void EnvironmentVariableImpl::forEachAccessNode(std::function<void(const std::st
         cb(n);
     }
 }
-const std::string* EnvironmentVariableImpl::getValueDescriptionById(double id) const
-{
-    const std::string* result = nullptr;
-    auto iter = _value_descriptions.find(id);
-    if (iter != _value_descriptions.end())
-    {
-        result = &iter->second;
-    }
-    return result;
-}
 void EnvironmentVariableImpl::forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const
 {
     for (const auto& vd : _value_descriptions)

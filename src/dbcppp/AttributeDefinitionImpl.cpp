@@ -31,6 +31,25 @@ const AttributeDefinition::value_type_t& AttributeDefinitionImpl::getValueType()
 {
     return _value_type;
 }
+void AttributeDefinitionImpl::forEachValueTypeEnum(std::function<void(const std::string&)>&& cb) const
+{
+    for (const auto& v : boost::get<ValueTypeEnum>(getValueType()).values)
+    {
+        cb(v);
+    }
+}
+const std::string* AttributeDefinitionImpl::findValueTypeEnum(std::function<bool(const std::string&)>&& pred) const
+{
+    const std::string* result = nullptr;
+    auto begin = boost::get<ValueTypeEnum>(getValueType()).values.cbegin();
+    auto end = boost::get<ValueTypeEnum>(getValueType()).values.cend();
+    auto iter = std::find_if(begin, end, pred);
+    if (iter != end)
+    {
+        result = &*iter;
+    }
+    return result;
+}
 
 void AttributeDefinition::serializeToStream(std::ostream& os) const
 {

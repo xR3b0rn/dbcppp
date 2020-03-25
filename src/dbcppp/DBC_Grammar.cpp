@@ -266,6 +266,111 @@ public:
     NetworkGrammar(Iter begin)
         : NetworkGrammar::base_type(_network, "DBC_Network")
     {
+        _unsigned_integer.name("uint");
+        _signed_integer.name("int");
+        _double.name("double");
+        _char_string.name("QuotedString");
+        _C_identifier.name("Identifier");
+        _C_identifier_.name("Identifier");
+        _version.name("Version");
+        _new_symbol.name("NewSymbol");
+        _new_symbols.name("NS_");
+        _bit_timing.name("BitTiming");
+        _baudrate.name("Baudrate");
+        _BTR1.name("BTR1");
+        _BTR2.name("BTR2");
+        _nodes.name("Nodes");
+        _node_.name("Node");
+        _node_name.name("NodeName");
+        _node_name.name("NodeName");
+        _value_tables.name("ValueTables");
+        _value_table.name("ValueTable");
+        _value_table_name.name("ValueTableName");
+        _value_encoding_descriptions.name("VAlueEncodingDescriptions");
+        _value_encoding_description.name("VAlueEncodingDescription");
+        _messages.name("Messages");
+        _message.name("Message");
+        _message_id.name("MessageId");
+        _message_name.name("MessageName");
+        _message_size.name("MessageSize");
+        _transmitter.name("NodeName");
+        _transmitter_.name("NodeName");
+        _signals.name("Signals");
+        _signal.name("Signal");
+        _signal_name.name("SignalName");
+        _multiplexer_indicator.name("SignalMultiplexerIndicator");
+        _attribute_value_type_string.name("AttributeValueTypeString");
+        _start_bit.name("SignalStartBit");
+        _start_bit %= _unsigned_integer;
+        _signal_size.name("SignalSize");
+        _signal_size %= _unsigned_integer;
+        _byte_order.name("ByteOrder");
+        _byte_order = qi::lexeme[qi::char_('0') | qi::char_('1')];
+        _value_type.name("ValueType");
+        _value_type = qi::lexeme[qi::char_('-') | qi::char_('+')];
+        _factor.name("Factor");
+        _factor %= _double;
+        _offset.name("Offset");
+        _offset %= _double;
+        _minimum.name("Minimum");
+        _minimum %= _double;
+        _maximum.name("Maximum");
+        _unit.name("Unit");
+        _receivers.name("NodeNames");
+        _receiver_.name("NodeName");
+        _receivers_.name("NodeNames");
+        _message_transmitters.name("MessageTransmitters");
+        _message_transmitter.name("MessageTransmitter");
+        _transmitters.name("NodeNames");
+        _environment_variables.name("EnvironmentVariables");
+        _environment_variable.name("EnvironmentVariable");
+        _env_var_name.name("EnvVarName");
+        _env_var_type.name("EnvVarType");
+        _initial_value.name("InitialValue");
+        _ev_id.name("EvId");
+        _access_type.name("AccessType");
+        _access_nodes.name("NodeNames");
+        _environment_variable_datas.name("EnvironmentVariableDatas");
+        _environment_variable_data.name("EnvironmentVariableData");
+        _data_size.name("DataSize");
+        _signal_types.name("SignalTypes");
+        _signal_type.name("SignalType");
+        _signal_type_name.name("SignalTypeName");
+        _default_value.name("DefaultValue");
+        _comments.name("Comments");
+        _comment.name("Comment");
+        _comment_network.name("CommentNetwork");
+        _comment_node.name("CommentNode");
+        _comment_message.name("CommentMessage");
+        _comment_signal.name("CommentSignal");
+        _comment_env_var.name("CommentEnvVar");
+        _attribute_definitions.name("AttributeDefinitions");
+        _attribute_definition.name("AttributeDefinition");
+        _object_type.name("ObjectType");
+        _attribute_name.name("AttributeName");
+        _attribute_value_type.name("AttributeValueType");
+        _attribute_value_type_int.name("AttributeValueTypeInt");
+        _attribute_value_type_hex.name("AttributeValueTypeHex");
+        _attribute_value_type_float.name("AttributeValueTypeFloat");
+        _attribute_value_type_enum.name("AttributeValueTypeEnum");
+        _attribute_defaults.name("AttributeDefaults");
+        _attribute_default.name("AttributeDefault");
+        _attribute_value.name("AttributeValue");
+        _attribute_values.name("AttributeValues");
+        _attribute_value_ent.name("AttributeValueEnt");
+        _attribute_value_ent_network.name("AttributeValueEntNetwork");
+        _attribute_value_ent_node.name("AttributeValueEntNode");
+        _attribute_value_ent_message.name("AttributeValueEntMessage");
+        _attribute_value_ent_signal.name("AttributeValueEntSignal");
+        _attribute_value_ent_env_var.name("AttributeValueEntEnvVar");
+        _value_descriptions.name("ValueDescriptions");
+        _value_description_sig_env_var.name("ValueDescriptionsSigEnvVar");
+        _value_description_signal.name("ValueDescriptionsSignal");
+        _value_description_env_var.name("ValueDescriptionsEnvVar");
+        _signal_extended_value_types.name("SignalExtendedValueTypes");
+        _signal_extended_value_type.name("SignalExtendedValueType");
+
+
         using boost::spirit::repository::qi::iter_pos;
 
         _network.name("Network");
@@ -290,23 +395,15 @@ public:
             > _signal_extended_value_types
             ;
 
-        _unsigned_integer.name("uint");
         _unsigned_integer %= qi::uint_;
-        _signed_integer.name("int");
         _signed_integer %= qi::int_;
-        _double.name("double");
         _double %= qi::double_;
-        _char_string.name("QuotedString");
         _char_string %= qi::lexeme['"' >> *(('\\' >> qi::char_("\\\"")) | ~qi::char_('"')) >> '"'];
-        _C_identifier.name("Identifier");
         _C_identifier %= qi::lexeme[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")];
-        _C_identifier_.name("Identifier");
         _C_identifier_ %= qi::lexeme[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")];
 
-        _version.name("Version");
         _version %= iter_pos >> qi::lit("VERSION") > _char_string;
         
-        _new_symbol.name("NewSymbol");
         _new_symbol %=
             qi::lexeme[
                   qi::string("SIGTYPE_VALTYPE_")
@@ -340,218 +437,123 @@ public:
                 | qi::string("BA_")
                 | qi::string("CM_")
             ];
-
-        _new_symbols.name("NS_");
+        
         _new_symbols %= qi::lit("NS_") > ':' > *_new_symbol;
 
-        _bit_timing.name("BitTiming");
         _bit_timing %= qi::lit("BS_") > ':' >> -_bit_timing_inner;
         _bit_timing_inner %= iter_pos >> _baudrate >> ':' >> _BTR1 >> ',' >> _BTR2;
-        _baudrate.name("Baudrate");
         _baudrate %= _unsigned_integer;
-        _BTR1.name("BTR1");
         _BTR1 %= _unsigned_integer;
-        _BTR2.name("BTR2");
         _BTR2 %= _unsigned_integer;
         
-        _nodes.name("Nodes");
         _nodes %= qi::lit("BU_") > ':' > qi::skip(ascii::blank)[*_node_ > qi::eol];
-        _node_.name("Node");
         _node_ %= iter_pos >> _node_name_;
-        _node_name.name("NodeName");
         _node_name %= _C_identifier;
-        _node_name.name("NodeName");
         _node_name_ %= _C_identifier_;
 
-        _value_tables.name("ValueTables");
         _value_tables %= *_value_table;
-        _value_table.name("ValueTable");
         _value_table %= iter_pos >> qi::lit("VAL_TABLE_") > _value_table_name > _value_encoding_descriptions > ';';
-        _value_table_name.name("ValueTableName");
         _value_table_name %= _C_identifier;
-        _value_encoding_descriptions.name("VAlueEncodingDescriptions");
         _value_encoding_descriptions %= *_value_encoding_description;
-        _value_encoding_description.name("VAlueEncodingDescription");
 
         _value_encoding_description %= _double > _char_string;
 
-        _messages.name("Messages");
         _messages %= *_message;
-        _message.name("Message");
         _message %= iter_pos >> qi::lit("BO_ ") > _message_id > _message_name
             > ':' > _message_size > qi::skip(ascii::blank)[_transmitter_ > qi::eol] > _signals;
-        _message_id.name("MessageId");
         _message_id %= _unsigned_integer;
-        _message_name.name("MessageName");
         _message_name %= _C_identifier;
-        _message_size.name("MessageSize");
         _message_size %= _unsigned_integer;
-        _transmitter.name("NodeName");
         _transmitter %= _node_name;
-        _transmitter_.name("NodeName");
         _transmitter_ %= _node_name_;
 
-        _signals.name("Signals");
         _signals %= *_signal;
-        _signal.name("Signal");
         _signal %= iter_pos >> qi::lexeme[qi::lit("SG_") >> qi::omit[qi::space]] > _signal_name
             > _multiplexer_indicator > ':' > _start_bit > '|' > _signal_size > '@' > _byte_order > _value_type
             > '(' > _factor > ',' > _offset > ')' > '[' > _minimum > '|' > _maximum > ']' > _unit
             > qi::skip(ascii::blank)[_receivers_ > qi::eol];
-        _signal_name.name("SignalName");
         _signal_name %= _C_identifier;
-        _multiplexer_indicator.name("SignalMultiplexerIndicator");
         _multiplexer_indicator %= -_C_identifier;
-        _start_bit.name("SignalStartBit");
-        _start_bit %= _unsigned_integer;
-        _signal_size.name("SignalSize");
-        _signal_size %= _unsigned_integer;
-        _byte_order.name("ByteOrder");
-        _byte_order = qi::lexeme[qi::char_('0') | qi::char_('1')];
-        _value_type.name("ValueType");
-        _value_type = qi::lexeme[qi::char_('-') | qi::char_('+')];
-        _factor.name("Factor");
-        _factor %= _double;
-        _offset.name("Offset");
-        _offset %= _double;
-        _minimum.name("Minimum");
-        _minimum %= _double;
-        _maximum.name("Maximum");
         _maximum %= _double;
-        _unit.name("Unit");
         _unit %= _char_string;
-        _receivers.name("NodeNames");
         _receivers %= qi::skip(ascii::blank)[*_receiver_ > qi::eol];
-        _receiver_.name("NodeName");
         _receiver_ %= _node_name_;
-        _receivers_.name("NodeNames");
         _receivers_ %= _receiver_ % ',';
 
-        _message_transmitters.name("MessageTransmitters");
         _message_transmitters %= *_message_transmitter;
-        _message_transmitter.name("MessageTransmitter");
         _message_transmitter %= iter_pos >> qi::lexeme[qi::lit("BO_TX_BU_") >> qi::omit[qi::space]] > _message_id > ':' > _transmitters > ';';
-        _transmitters.name("NodeNames");
         _transmitters %= _transmitter % ',';
 
-        _environment_variables.name("EnvironmentVariables");
         _environment_variables %= *_environment_variable;
-        _environment_variable.name("EnvironmentVariable");
         _environment_variable %= iter_pos >> qi::lexeme[qi::lit("EV_") >> qi::omit[qi::space]] > _env_var_name > ':' > _env_var_type
             > '[' > _minimum > '|' > _maximum > ']' > _unit > _initial_value > _ev_id > _access_type > _access_nodes > ';';
-        _env_var_name.name("EnvVarName");
         _env_var_name %= _C_identifier;
-        _env_var_type.name("EnvVarType");
         _env_var_type %= _unsigned_integer;
-        _initial_value.name("InitialValue");
         _initial_value %= _double;
-        _ev_id.name("EvId");
         _ev_id %= _unsigned_integer;
-        _access_type.name("AccessType");
         _access_type %= _C_identifier;
-        _access_nodes.name("NodeNames");
         _access_nodes %= _node_name % ',';
 
-        _environment_variable_datas.name("EnvironmentVariableDatas");
         _environment_variable_datas %= *_environment_variable_data;
-        _environment_variable_data.name("EnvironmentVariableData");
         _environment_variable_data %= iter_pos >> qi::lexeme[qi::lit("ENVVAR_DATA_") >> qi::omit[qi::space]]
             > _env_var_name > ':' > _data_size > ';';
-        _data_size.name("DataSize");
         _data_size %= _unsigned_integer;
 
-        _signal_types.name("SignalTypes");
         _signal_types %= *_signal_type;
-        _signal_type.name("SignalType");
         _signal_type %= iter_pos >> qi::lexeme[qi::lit("SGTYPE_") >> qi::omit[qi::space]] > _signal_type_name > ':' > _signal_size > '@'
             > _byte_order > _value_type > '(' > _factor > ',' > _offset > ')' > '['
             > _minimum > '|' >> _maximum > ']' > _unit > _default_value > ',' > _value_table_name > ';';
-        _signal_type_name.name("SignalTypeName");
         _signal_type_name %= _C_identifier;
-        _default_value.name("DefaultValue");
         _default_value %= _double;
         
-        _comments.name("Comments");
         _comments %= *_comment;
-        _comment.name("Comment");
         _comment %= qi::lexeme[qi::lit("CM_") >> qi::omit[qi::space]]
             > (_comment_node | _comment_message | _comment_signal | _comment_env_var | _comment_network);
-        _comment_network.name("CommentNetwork");
         _comment_network %= iter_pos >> _char_string > ';';
-        _comment_node.name("CommentNode");
         _comment_node %= iter_pos >> qi::lit("BU_") > _node_name > _char_string > ';';
-        _comment_message.name("CommentMessage");
         _comment_message %= iter_pos >> qi::lit("BO_") > _message_id > _char_string > ';';
-        _comment_signal.name("CommentSignal");
         _comment_signal %= iter_pos >> qi::lit("SG_") > _message_id > _signal_name > _char_string > ';';
-        _comment_env_var.name("CommentEnvVar");
         _comment_env_var %= iter_pos >> qi::lit("EV_") > _env_var_name > _char_string > ';';
 
-        _attribute_definitions.name("AttributeDefinitions");
         _attribute_definitions %= *_attribute_definition;
-        _attribute_definition.name("AttributeDefinition");
         _attribute_definition %= iter_pos >> qi::lexeme[qi::lit("BA_DEF_") >> qi::omit[qi::space]] > _object_type > _attribute_name
             > _attribute_value_type > ';';
-        _object_type.name("ObjectType");
         _object_type %= -(qi::string("BU_") | qi::string("BO_") | qi::string("SG_") | qi::string("EV_"));
-        _attribute_name.name("AttributeName");
         _attribute_name %= _char_string;
-        _attribute_value_type.name("AttributeValueType");
         _attribute_value_type %= iter_pos >>
               (_attribute_value_type_int | _attribute_value_type_hex
             | _attribute_value_type_float | _attribute_value_type_string
             | _attribute_value_type_enum);
-        _attribute_value_type_int.name("AttributeValueTypeInt");
         _attribute_value_type_int %= iter_pos >> qi::lit("INT") > _signed_integer > _signed_integer;
-        _attribute_value_type_hex.name("AttributeValueTypeHex");
         _attribute_value_type_hex %= iter_pos >> qi::lit("HEX") > _signed_integer > _signed_integer;
-        _attribute_value_type_float.name("AttributeValueTypeFloat");
         _attribute_value_type_float %= iter_pos >> qi::lit("FLOAT") > _double > _double;
-        _attribute_value_type_string.name("AttributeValueTypeString");
         _attribute_value_type_string %= iter_pos >> qi::lit("STRING");
-        _attribute_value_type_enum.name("AttributeValueTypeEnum");
         _attribute_value_type_enum %= iter_pos >> qi::lit("ENUM") > (_char_string % ',');
         
-        _attribute_defaults.name("AttributeDefaults");
         _attribute_defaults %= *_attribute_default;
-        _attribute_default.name("AttributeDefault");
         _attribute_default %= iter_pos >> (qi::lexeme[(qi::lit("BA_DEF_DEF_REL_") | qi::lit("BA_DEF_DEF_"))  >> qi::omit[qi::space]])
             > _attribute_name > _attribute_value > ';';
-        _attribute_value.name("AttributeValue");
         _attribute_value %= _double | _signed_integer | _char_string;
 
-        _attribute_values.name("AttributeValues");
         _attribute_values %= *_attribute_value_ent;
-        _attribute_value_ent.name("AttributeValueEnt");
         _attribute_value_ent %= qi::lexeme[qi::lit("BA_") >> qi::omit[qi::space]]
             >> (_attribute_value_ent_network | _attribute_value_ent_node
               | _attribute_value_ent_message | _attribute_value_ent_signal
               | _attribute_value_ent_env_var) > ';';
-        _attribute_value_ent_network.name("AttributeValueEntNetwork");
         _attribute_value_ent_network %= iter_pos >> _attribute_name >> _attribute_value;
-        _attribute_value_ent_node.name("AttributeValueEntNode");
         _attribute_value_ent_node %= iter_pos >> _attribute_name >> qi::lit("BU_") >> _node_name >> _attribute_value;
-        _attribute_value_ent_message.name("AttributeValueEntMessage");
         _attribute_value_ent_message %= iter_pos >> _attribute_name >> qi::lit("BO_") >> _message_id >> _attribute_value;
-        _attribute_value_ent_signal.name("AttributeValueEntSignal");
         _attribute_value_ent_signal %= iter_pos >> _attribute_name >> qi::lit("SG_") >> _message_id >> _signal_name >> _attribute_value;
-        _attribute_value_ent_env_var.name("AttributeValueEntEnvVar");
         _attribute_value_ent_env_var %= iter_pos >> _attribute_name >> qi::lit("EV_") >> _env_var_name >> _attribute_value;
 
-        _value_descriptions.name("ValueDescriptions");
         _value_descriptions %= *_value_description_sig_env_var;
-        _value_description_sig_env_var.name("ValueDescriptionsSigEnvVar");
         _value_description_sig_env_var %= iter_pos >> (_value_description_signal | _value_description_env_var);
-        _value_description_signal.name("ValueDescriptionsSignal");
         _value_description_signal %= iter_pos >> qi::lexeme[qi::lit("VAL_") >> qi::omit[qi::space]] >> _message_id
             >> _signal_name >> _value_encoding_descriptions > ';';
-        _value_description_env_var.name("ValueDescriptionsEnvVar");
         _value_description_env_var %= iter_pos >> qi::lexeme[qi::lit("VAL_") >> qi::omit[qi::space]] >> _env_var_name
             >> _value_encoding_descriptions > ';';
 
-        _signal_extended_value_types.name("SignalExtendedValueTypes");
         _signal_extended_value_types %= *_signal_extended_value_type;
-        _signal_extended_value_type.name("SignalExtendedValueType");
         _signal_extended_value_type %= iter_pos >> qi::lexeme[qi::lit("SIG_VALTYPE_") >> qi::omit[qi::space]]
             > _message_id > _signal_name > ':' >  _unsigned_integer > ';';
         
@@ -733,6 +735,10 @@ extern "C"
                 auto[line, column] = getErrPos(str.begin(), begin);
                 std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
             }
+        }
+        else
+        {
+            std::cout << "Error! Couldn't find \"" << filename << "\"" << std::endl;
         }
         return reinterpret_cast<dbcppp_Network*>(result.release());
     }

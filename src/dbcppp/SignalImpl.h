@@ -50,7 +50,6 @@ namespace dbcppp
         virtual std::string getUnit() const override;
         virtual bool hasReceiver(const std::string& name) const override;
         virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const override;
-        virtual const std::string* getValueDescriptionById(double id) const override;
         virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const override;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;

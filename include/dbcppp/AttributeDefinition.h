@@ -55,6 +55,8 @@ namespace dbcppp
         virtual ObjectType getObjectType() const = 0;
         virtual const std::string& getName() const = 0;
         virtual const value_type_t& getValueType() const = 0;
+        virtual void forEachValueTypeEnum(std::function<void(const std::string&)>&& cb) const = 0;
+        virtual const std::string* findValueTypeEnum(std::function<bool(const std::string&)>&& pred) const = 0;
 
         void serializeToStream(std::ostream& os) const;
     };

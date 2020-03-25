@@ -38,7 +38,6 @@ namespace dbcppp
         virtual AccessType getAccessType() const override;
         virtual bool hasAccessNode(const std::string& name) const override;
         virtual void forEachAccessNode(std::function<void(const std::string&)>&& cb) const override;
-        virtual const std::string* getValueDescriptionById(double id) const override;
         virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const override;
         virtual uint64_t getDataSize() const override;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
@@ -46,6 +45,7 @@ namespace dbcppp
         virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
         virtual const std::string& getComment() const override;
 
+    private:
         std::string _name;
         VarType _var_type;
         double _minimum;

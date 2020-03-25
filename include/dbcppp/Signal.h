@@ -62,7 +62,7 @@ namespace dbcppp
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
             , std::map<double, std::string>&& value_descriptions
             , std::string&& comment
-            , Signal::ExtendedValueType extended_value_type);
+            , ExtendedValueType extended_value_type);
 
         virtual ~Signal() = default;
         virtual const std::string& getName() const = 0;
@@ -79,7 +79,6 @@ namespace dbcppp
         virtual std::string getUnit() const = 0;
         virtual bool hasReceiver(const std::string& name) const = 0;
         virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const = 0;
-        virtual const std::string* getValueDescriptionById(double id) const = 0;
         virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const = 0;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
