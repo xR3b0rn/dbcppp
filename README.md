@@ -89,7 +89,7 @@ int main()
                 printf("Received message: %s\n", dbcppp_MessageGetName(msg));
                 void print_signal_data(const dbcppp_Signal* sig, void* data)
                 {
-                    can_frame* frame = (can_frame*)data);
+                    can_frame* frame = (can_frame*)data;
                     double raw = dbcppp_SignalDecode(sig, frame->data);
                     double phys = dbcppp_SignalRawToPhys(sig, raw);
                     printf("\t%s=%f\n", dbcppp_SignalGetName(sig), phys);
