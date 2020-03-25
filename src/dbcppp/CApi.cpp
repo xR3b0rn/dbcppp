@@ -228,22 +228,22 @@ extern "C"
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
         return boost::get<AttributeDefinition::ValueTypeFloat>(ad->getValueType()).maximum;
     }
-    DBCPPP_API void dbcppp_AttributeDefinitionForEachValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, void(*cb)(const char*))
+    DBCPPP_API void dbcppp_AttributeDefinitionForEachValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, void(*cb)(const char*, void*), void* data)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
         ad->forEachValueTypeEnum(
             [&](const std::string& v)
             {
-                cb(v.c_str());
+                cb(v.c_str(), data);
             });
     }
-    DBCPPP_API void dbcppp_AttributeDefinitionFindValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, bool(*pred)(const char*))
+    DBCPPP_API void dbcppp_AttributeDefinitionFindValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, bool(*pred)(const char*, void*), void* data)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
         ad->findValueTypeEnum(
             [&](const std::string& v)
             {
-                return pred(v.c_str());
+                return pred(v.c_str(), data);
             });
     }
 
@@ -415,22 +415,22 @@ extern "C"
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->hasAccessNode(node_name);
     }
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachAccessNode(const dbcppp_EnvironmentVariable* env_var, void(*cb)(const char*))
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachAccessNode(const dbcppp_EnvironmentVariable* env_var, void(*cb)(const char*, void*), void* data)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         env_var_i->forEachAccessNode(
             [&](const std::string& name)
             {
-                cb(name.c_str());
+                cb(name.c_str(), data);
             });
     }
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(double, const char*))
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(double, const char*, void*), void* data)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         env_var_i->forEachValueDescription(
             [&](double value, const std::string& name)
             {
-                cb(value, name.c_str());
+                cb(value, name.c_str(), data);
             });
     }
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableGetDataSize(const dbcppp_EnvironmentVariable* env_var)
@@ -443,23 +443,23 @@ extern "C"
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return const_cast<dbcppp_Attribute*>(reinterpret_cast<const dbcppp_Attribute*>(env_var_i->getAttributeValueByName(attribute_name)));
     }
-    DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableFindAttributeValue(const dbcppp_EnvironmentVariable* env_var, bool(*pred)(dbcppp_Attribute*))
+    DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableFindAttributeValue(const dbcppp_EnvironmentVariable* env_var, bool(*pred)(dbcppp_Attribute*, void*), void* data)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         auto result = env_var_i->findAttributeValue(
             [&](const Attribute& attr)
             {
-                return pred(reinterpret_cast<dbcppp_Attribute*>(&const_cast<Attribute&>(attr)));
+                return pred(reinterpret_cast<dbcppp_Attribute*>(&const_cast<Attribute&>(attr)), data);
             });
         return reinterpret_cast<dbcppp_Attribute*>(const_cast<Attribute*>(result));
     }
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachAttributeValue(const dbcppp_EnvironmentVariable* env_var, void(*cb)(dbcppp_Attribute*))
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachAttributeValue(const dbcppp_EnvironmentVariable* env_var, void(*cb)(dbcppp_Attribute*, void*), void* data)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         env_var_i->forEachAttributeValue(
             [&](const Attribute& attr)
             {
-                cb(reinterpret_cast<dbcppp_Attribute*>(&const_cast<Attribute&>(attr)));
+                cb(reinterpret_cast<dbcppp_Attribute*>(&const_cast<Attribute&>(attr)), data);
             });
     }
     DBCPPP_API const char* dbcppp_EnvironmentVariableGetComment(const dbcppp_EnvironmentVariable* env_var)
@@ -538,13 +538,13 @@ extern "C"
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         return msgi->hasMessageTransmitter(name);
     }
-    DBCPPP_API void dbcppp_MessageForEachMessageTransmitter(const dbcppp_Message* msg, void(*cb)(const char*))
+    DBCPPP_API void dbcppp_MessageForEachMessageTransmitter(const dbcppp_Message* msg, void(*cb)(const char*, void*), void* data)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         msgi->forEachMessageTransmitter(
             [&](const std::string& trans)
             {
-                cb(trans.c_str());
+                cb(trans.c_str(), data);
             });
     }
     DBCPPP_API const dbcppp_Signal* dbcppp_MessageGetSignalByName(const dbcppp_Message* msg, const char* name)
@@ -553,23 +553,23 @@ extern "C"
         auto result = msgi->getSignalByName(name);
         return reinterpret_cast<const dbcppp_Signal*>(result);
     }
-    DBCPPP_API const dbcppp_Signal* dbcppp_MessageFindSignal(const dbcppp_Message* msg, bool(*pred)(const dbcppp_Signal*))
+    DBCPPP_API const dbcppp_Signal* dbcppp_MessageFindSignal(const dbcppp_Message* msg, bool(*pred)(const dbcppp_Signal*, void*), void* data)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         auto result = msgi->findSignal(
             [&](const Signal& sig)
             {
-                return pred(reinterpret_cast<const dbcppp_Signal*>(&sig));
+                return pred(reinterpret_cast<const dbcppp_Signal*>(&sig), data);
             });
         return reinterpret_cast<const dbcppp_Signal*>(result);
     }
-    DBCPPP_API void dbcppp_MessageForEachSignal(const dbcppp_Message* msg, void(*cb)(const dbcppp_Signal*))
+    DBCPPP_API void dbcppp_MessageForEachSignal(const dbcppp_Message* msg, void(*cb)(const dbcppp_Signal*, void*), void* data)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         msgi->forEachSignal(
             [&](const Signal& sig)
             {
-                cb(reinterpret_cast<const dbcppp_Signal*>(&sig));
+                cb(reinterpret_cast<const dbcppp_Signal*>(&sig), data);
             });
     }
     DBCPPP_API const dbcppp_Attribute* dbcppp_MessageGetAttributeValueByName(const dbcppp_Message* msg, const char* name)
@@ -578,23 +578,23 @@ extern "C"
         auto result = msgi->getAttributeValueByName(name);
         return reinterpret_cast<const dbcppp_Attribute*>(result);
     }
-    DBCPPP_API const dbcppp_Attribute* dbcppp_MessageFindAttributeValue(dbcppp_Message* msg, bool(*pred)(const dbcppp_Attribute*))
+    DBCPPP_API const dbcppp_Attribute* dbcppp_MessageFindAttributeValue(dbcppp_Message* msg, bool(*pred)(const dbcppp_Attribute*, void*), void* data)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         auto result = msgi->findAttributeValue(
             [&](const Attribute& sig)
             {
-                return pred(reinterpret_cast<const dbcppp_Attribute*>(&sig));
+                return pred(reinterpret_cast<const dbcppp_Attribute*>(&sig), data);
             });
        return reinterpret_cast<const dbcppp_Attribute*>(result);
     }
-    DBCPPP_API void dbcppp_MessageForEachAttributeValue(dbcppp_Message* msg, void(*cb)(const dbcppp_Attribute*))
+    DBCPPP_API void dbcppp_MessageForEachAttributeValue(dbcppp_Message* msg, void(*cb)(const dbcppp_Attribute*, void*), void* data)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         msgi->forEachAttributeValue(
             [&](const Attribute& sig)
             {
-                cb(reinterpret_cast<const dbcppp_Attribute*>(&sig));
+                cb(reinterpret_cast<const dbcppp_Attribute*>(&sig), data);
             });
     }
     DBCPPP_API const char* dbcppp_MessageGetComment(const dbcppp_Message* msg)
@@ -698,13 +698,13 @@ extern "C"
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         return neti->hasNewSymbol(new_symbol);
     }
-    DBCPPP_API void dbcppp_NetworkForEachNewSymbol(const dbcppp_Network* net, void(*cb)(const char*))
+    DBCPPP_API void dbcppp_NetworkForEachNewSymbol(const dbcppp_Network* net, void(*cb)(const char*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         neti->forEachNewSymbol(
             [&](const std::string& n)
             {
-                cb(n.c_str());
+                cb(n.c_str(), data);
             });
     }
     DBCPPP_API const dbcppp_BitTiming* dbcppp_NetworkGetBitTiming(const dbcppp_Network* net)
@@ -719,13 +719,13 @@ extern "C"
         const Node* node = neti->getNodeByName(name);
         return reinterpret_cast<const dbcppp_Node*>(node);
     }
-    DBCPPP_API void dbcppp_NetworkForEachNode(const dbcppp_Network* net, void(*cb)(const dbcppp_Node*))
+    DBCPPP_API void dbcppp_NetworkForEachNode(const dbcppp_Network* net, void(*cb)(const dbcppp_Node*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         neti->forEachNode(
             [&](const Node& node)
             {
-                cb(reinterpret_cast<const dbcppp_Node*>(&node));
+                cb(reinterpret_cast<const dbcppp_Node*>(&node), data);
             });
     }
     DBCPPP_API const dbcppp_ValueTable* dbcppp_NetworkGetValueTableByName(const dbcppp_Network* net, const char* name)
@@ -734,23 +734,23 @@ extern "C"
         const ValueTable* vt = neti->getValueTableByName(name);
         return reinterpret_cast<const dbcppp_ValueTable*>(vt);
     }
-    DBCPPP_API const dbcppp_ValueTable* dbcppp_NetworkFindValueTable(const dbcppp_Network* net, bool(*pred)(const dbcppp_ValueTable*))
+    DBCPPP_API const dbcppp_ValueTable* dbcppp_NetworkFindValueTable(const dbcppp_Network* net, bool(*pred)(const dbcppp_ValueTable*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         const ValueTable* vt = neti->findValueTable(
             [&](const ValueTable& vt)
             {
-                return pred(reinterpret_cast<const dbcppp_ValueTable*>(&vt));
+                return pred(reinterpret_cast<const dbcppp_ValueTable*>(&vt), data);
             });
         return reinterpret_cast<dbcppp_ValueTable*>(const_cast<ValueTable*>(vt));
     }
-    DBCPPP_API void dbcppp_NetworkForEachValueTable(const dbcppp_Network* net, void(*cb)(const dbcppp_ValueTable*))
+    DBCPPP_API void dbcppp_NetworkForEachValueTable(const dbcppp_Network* net, void(*cb)(const dbcppp_ValueTable*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         neti->forEachValueTable(
             [&](const ValueTable& vt)
             {
-                cb(reinterpret_cast<const dbcppp_ValueTable*>(&vt));
+                cb(reinterpret_cast<const dbcppp_ValueTable*>(&vt), data);
             });
     }
     DBCPPP_API const dbcppp_Message* dbcppp_NetworkGetMessageById(const dbcppp_Network* net, uint64_t id)
@@ -759,13 +759,13 @@ extern "C"
         const Message* m = neti->getMessageById(id);
         return reinterpret_cast<const dbcppp_Message*>(m);
     }
-    DBCPPP_API const dbcppp_Message* dbcppp_NetworkFindMessage(const dbcppp_Network* net, bool(*pred)(const dbcppp_Message*))
+    DBCPPP_API const dbcppp_Message* dbcppp_NetworkFindMessage(const dbcppp_Network* net, bool(*pred)(const dbcppp_Message*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         const Message* m = neti->findMessage(
             [&](const Message& m)
             {
-                return pred(reinterpret_cast<const dbcppp_Message*>(&m));
+                return pred(reinterpret_cast<const dbcppp_Message*>(&m), data);
             });
         return reinterpret_cast<const dbcppp_Message*>(m);
     }
@@ -784,23 +784,23 @@ extern "C"
         const EnvironmentVariable* ev = neti->getEnvironmentVariableByName(name);
         return reinterpret_cast<const dbcppp_EnvironmentVariable*>(ev);
     }
-    DBCPPP_API dbcppp_EnvironmentVariable* dbcppp_NetworkFindEnvironmentVariable(const dbcppp_Network* net, bool(*pred)(const dbcppp_EnvironmentVariable*))
+    DBCPPP_API dbcppp_EnvironmentVariable* dbcppp_NetworkFindEnvironmentVariable(const dbcppp_Network* net, bool(*pred)(const dbcppp_EnvironmentVariable*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         const EnvironmentVariable* ev = neti->findEnvironmentVariable(
             [&](const EnvironmentVariable& ev)
             {
-                return pred(reinterpret_cast<const dbcppp_EnvironmentVariable*>(&ev));
+                return pred(reinterpret_cast<const dbcppp_EnvironmentVariable*>(&ev), data);
             });
         return reinterpret_cast<dbcppp_EnvironmentVariable*>(const_cast<EnvironmentVariable*>(ev));
     }
-    DBCPPP_API void dbcppp_NetworkForEachEnvironmentVariable(const dbcppp_Network* net, void(*cb)(const dbcppp_EnvironmentVariable*))
+    DBCPPP_API void dbcppp_NetworkForEachEnvironmentVariable(const dbcppp_Network* net, void(*cb)(const dbcppp_EnvironmentVariable*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         neti->forEachEnvironmentVariable(
             [&](const EnvironmentVariable& ev)
             {
-                cb(reinterpret_cast<const dbcppp_EnvironmentVariable*>(&ev));
+                cb(reinterpret_cast<const dbcppp_EnvironmentVariable*>(&ev), data);
             });
     }
     DBCPPP_API const dbcppp_AttributeDefinition* dbcppp_NetworkGetAttributeDefinitionByName(const dbcppp_Network* net, const char* name)
@@ -809,23 +809,23 @@ extern "C"
         const AttributeDefinition* ad = neti->getAttributeDefinitionByName(name);
         return reinterpret_cast<const dbcppp_AttributeDefinition*>(ad);
     }
-    DBCPPP_API dbcppp_AttributeDefinition* dbcppp_NetworkFindAttributeDefinition(const dbcppp_Network* net, bool(*pred)(const dbcppp_AttributeDefinition*))
+    DBCPPP_API dbcppp_AttributeDefinition* dbcppp_NetworkFindAttributeDefinition(const dbcppp_Network* net, bool(*pred)(const dbcppp_AttributeDefinition*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         const AttributeDefinition* ad = neti->findAttributeDefinition(
             [&](const AttributeDefinition& ad)
             {
-                return pred(reinterpret_cast<const dbcppp_AttributeDefinition*>(&ad));
+                return pred(reinterpret_cast<const dbcppp_AttributeDefinition*>(&ad), data);
             });
         return reinterpret_cast<dbcppp_AttributeDefinition*>(const_cast<AttributeDefinition*>(ad));
     }
-    DBCPPP_API void dbcppp_NetworkForEachAttributeDefinition(const dbcppp_Network* net, void(*cb)(const dbcppp_AttributeDefinition*))
+    DBCPPP_API void dbcppp_NetworkForEachAttributeDefinition(const dbcppp_Network* net, void(*cb)(const dbcppp_AttributeDefinition*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         neti->forEachAttributeDefinition(
             [&](const AttributeDefinition& ad)
             {
-                cb(reinterpret_cast<const dbcppp_AttributeDefinition*>(&ad));
+                cb(reinterpret_cast<const dbcppp_AttributeDefinition*>(&ad), data);
             });
     }
     DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkGetAttributeDefaultByName(const dbcppp_Network* net, const char* name)
@@ -834,23 +834,23 @@ extern "C"
         const Attribute* ad = neti->getAttributeDefaultByName(name);
         return reinterpret_cast<const dbcppp_Attribute*>(ad);
     }
-    DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkFindAttributeDefault(const dbcppp_Network* net, bool(*pred)(const dbcppp_Attribute*))
+    DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkFindAttributeDefault(const dbcppp_Network* net, bool(*pred)(const dbcppp_Attribute*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         const Attribute* ad = neti->findAttributeDefault(
             [&](const Attribute& ad)
             {
-                return pred(reinterpret_cast<const dbcppp_Attribute*>(&ad));
+                return pred(reinterpret_cast<const dbcppp_Attribute*>(&ad), data);
             });
         return reinterpret_cast<const dbcppp_Attribute*>(ad);
     }
-    DBCPPP_API void dbcppp_NetworkForEachAttributeDefault(const dbcppp_Network* net, void(*cb)(const dbcppp_Attribute*))
+    DBCPPP_API void dbcppp_NetworkForEachAttributeDefault(const dbcppp_Network* net, void(*cb)(const dbcppp_Attribute*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         neti->forEachAttributeDefault(
             [&](const Attribute& ad)
             {
-                cb(reinterpret_cast<const dbcppp_Attribute*>(&ad));
+                cb(reinterpret_cast<const dbcppp_Attribute*>(&ad), data);
             });
     }
     DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkGetAttributeValueByName(const dbcppp_Network* net, const char* name)
@@ -859,23 +859,23 @@ extern "C"
         const Attribute* ad = neti->getAttributeValueByName(name);
         return reinterpret_cast<const dbcppp_Attribute*>(ad);
     }
-    DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkFindAttributeValue(const dbcppp_Network* net, bool(*pred)(const dbcppp_Attribute*))
+    DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkFindAttributeValue(const dbcppp_Network* net, bool(*pred)(const dbcppp_Attribute*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         const Attribute* ad = neti->findAttributeValue(
             [&](const Attribute& ad)
             {
-                return pred(reinterpret_cast<const dbcppp_Attribute*>(&ad));
+                return pred(reinterpret_cast<const dbcppp_Attribute*>(&ad), data);
             });
         return reinterpret_cast<const dbcppp_Attribute*>(ad);
     }
-    DBCPPP_API void dbcppp_NetworkForEachAttributeValue(const dbcppp_Network* net, void(*cb)(const dbcppp_Attribute*))
+    DBCPPP_API void dbcppp_NetworkForEachAttributeValue(const dbcppp_Network* net, void(*cb)(const dbcppp_Attribute*, void*), void* data)
     {
         auto neti = reinterpret_cast<const NetworkImpl*>(net);
         neti->forEachAttributeValue(
             [&](const Attribute& ad)
             {
-                cb(reinterpret_cast<const dbcppp_Attribute*>(&ad));
+                cb(reinterpret_cast<const dbcppp_Attribute*>(&ad), data);
             });
     }
     DBCPPP_API const char* dbcppp_NetworkGetComment(const dbcppp_Network* net)
@@ -910,23 +910,23 @@ extern "C"
         auto ni = reinterpret_cast<const NodeImpl*>(node);
         return reinterpret_cast<const dbcppp_Attribute*>(ni->getAttributeValueByName(attribute_name));
     }
-    DBCPPP_API const dbcppp_Attribute* dbcppp_NodeFindAttributeValue(const dbcppp_Node* node, bool(*pred)(const dbcppp_Attribute*))
+    DBCPPP_API const dbcppp_Attribute* dbcppp_NodeFindAttributeValue(const dbcppp_Node* node, bool(*pred)(const dbcppp_Attribute*, void*), void* data)
     {
         auto ni = reinterpret_cast<const NodeImpl*>(node);
         const Attribute* a = ni->findAttributeValue(
             [&](const Attribute& a)
             {
-                return pred(reinterpret_cast<const dbcppp_Attribute*>(&a));
+                return pred(reinterpret_cast<const dbcppp_Attribute*>(&a), data);
             });
         return reinterpret_cast<const dbcppp_Attribute*>(a);
     }
-    DBCPPP_API void dbcppp_NodeForEachAttributeValue(const dbcppp_Node* node, void(*cb)(const dbcppp_Attribute*))
+    DBCPPP_API void dbcppp_NodeForEachAttributeValue(const dbcppp_Node* node, void(*cb)(const dbcppp_Attribute*, void*), void* data)
     {
         auto ni = reinterpret_cast<const NodeImpl*>(node);
         ni->forEachAttributeValue(
             [&](const Attribute& a)
             {
-                cb(reinterpret_cast<const dbcppp_Attribute*>(&a));
+                cb(reinterpret_cast<const dbcppp_Attribute*>(&a), data);
             });
     }
     DBCPPP_API const char* dbcppp_NodeGetComment(const dbcppp_Node* node)
@@ -1099,22 +1099,22 @@ extern "C"
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->hasReceiver(name);
     }
-    DBCPPP_API void dbcppp_SignalForEachReceiver(const dbcppp_Signal* sig, void(*cb)(const char*))
+    DBCPPP_API void dbcppp_SignalForEachReceiver(const dbcppp_Signal* sig, void(*cb)(const char*, void*), void* data)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         sigi->forEachReceiver(
             [&](const std::string& recv)
             {
-                cb(recv.c_str());
+                cb(recv.c_str(), data);
             });
     }
-    DBCPPP_API void dbcppp_SignalForEachValueDescription(const dbcppp_Signal* sig, void(*cb)(double, const char*))
+    DBCPPP_API void dbcppp_SignalForEachValueDescription(const dbcppp_Signal* sig, void(*cb)(double, const char*, void*), void* data)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         sigi->forEachValueDescription(
             [&](double value, const std::string& desc)
             {
-                cb(value, desc.c_str());
+                cb(value, desc.c_str(), data);
             });
     }
     DBCPPP_API const dbcppp_Attribute* dbcppp_SignalGetAttributeValueByName(const dbcppp_Signal* sig, const char* name)
@@ -1123,23 +1123,23 @@ extern "C"
         auto result = sigi->getAttributeValueByName(name);
         return reinterpret_cast<const dbcppp_Attribute*>(result);
     }
-    DBCPPP_API const dbcppp_Attribute* dbcppp_SignalFindAttributeValue(const dbcppp_Signal* sig, bool(*pred)(const dbcppp_Attribute*))
+    DBCPPP_API const dbcppp_Attribute* dbcppp_SignalFindAttributeValue(const dbcppp_Signal* sig, bool(*pred)(const dbcppp_Attribute*, void*), void* data)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         auto result = sigi->findAttributeValue(
             [&](const Attribute& attr)
             {
-                return pred(reinterpret_cast<const dbcppp_Attribute*>(&attr));
+                return pred(reinterpret_cast<const dbcppp_Attribute*>(&attr), data);
             });
         return reinterpret_cast<const dbcppp_Attribute*>(result);
     }
-    DBCPPP_API void dbcppp_SignalForEachAttributeValue(const dbcppp_Signal* sig, void(*cb)(const dbcppp_Attribute*))
+    DBCPPP_API void dbcppp_SignalForEachAttributeValue(const dbcppp_Signal* sig, void(*cb)(const dbcppp_Attribute*, void*), void* data)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         sigi->forEachAttributeValue(
             [&](const Attribute& attr)
             {
-                cb(reinterpret_cast<const dbcppp_Attribute*>(&attr));
+                cb(reinterpret_cast<const dbcppp_Attribute*>(&attr), data);
             });
     }
     DBCPPP_API const char* dbcppp_SignalGetComment(const dbcppp_Signal* sig)
@@ -1295,13 +1295,13 @@ extern "C"
         }
         return result;
     }
-    DBCPPP_API void dbcppp_ValueTableForEachValueEncodingDescription(const dbcppp_ValueTable* value_table, void(*cb)(double, const char*))
+    DBCPPP_API void dbcppp_ValueTableForEachValueEncodingDescription(const dbcppp_ValueTable* value_table, void(*cb)(double, const char*, void*), void* data)
     {
         auto vti = reinterpret_cast<const ValueTableImpl*>(value_table);
         vti->forEachValueEncodingDescription(
             [&](double value, const std::string& desc)
             {
-                cb(value, desc.c_str());
+                cb(value, desc.c_str(), data);
             });
     }
 }

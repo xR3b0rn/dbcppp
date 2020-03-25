@@ -111,8 +111,8 @@ extern "C"
     DBCPPP_API uint64_t dbcppp_AttributeDefinitionGetValueTypeAsHex_Maximum(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API double dbcppp_AttributeDefinitionGetValueTypeAsFloat_Minimum(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API double dbcppp_AttributeDefinitionGetValueTypeAsFloat_Maximum(const dbcppp_AttributeDefinition* attribute_definition);
-    DBCPPP_API void dbcppp_AttributeDefinitionForEachValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, void(*cb)(const char*));
-    DBCPPP_API void dbcppp_AttributeDefinitionFindValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, bool(*pred)(const char*));
+    DBCPPP_API void dbcppp_AttributeDefinitionForEachValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, void(*cb)(const char*, void*), void* data);
+    DBCPPP_API void dbcppp_AttributeDefinitionFindValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, bool(*pred)(const char*, void*), void* data);
 
     DBCPPP_API const dbcppp_BitTiming* dbcppp_BitTimingCreate(uint64_t baudrate, uint64_t BTR1, uint64_t BTR2);
     DBCPPP_API void dbcppp_BitTimingFree(const dbcppp_BitTiming* bit_timing);
@@ -144,12 +144,12 @@ extern "C"
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableGetEvId(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API dbcppp_EnvironmentVariableAccessType dbcppp_EnvironmentVariableGetAccessType(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableHasNode(const dbcppp_EnvironmentVariable* env_var, const char* node_name);
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachAccessNode(const dbcppp_EnvironmentVariable* env_var, void(*cb)(const char*));
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(double, const char*));
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachAccessNode(const dbcppp_EnvironmentVariable* env_var, void(*cb)(const char*, void*), void* data);
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(double, const char*, void*), void* data);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableGetDataSize(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableGetAttributeValueByName(const dbcppp_EnvironmentVariable* env_var, const char* attribute_name);
-    DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableFindAttributeValue(const dbcppp_EnvironmentVariable* env_var, bool(*pred)(dbcppp_Attribute*));
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachAttributeValue(const dbcppp_EnvironmentVariable* env_var, void(*cb)(dbcppp_Attribute*));
+    DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableFindAttributeValue(const dbcppp_EnvironmentVariable* env_var, bool(*pred)(dbcppp_Attribute*, void*), void* data);
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachAttributeValue(const dbcppp_EnvironmentVariable* env_var, void(*cb)(dbcppp_Attribute*, void*), void* data);
     DBCPPP_API const char* dbcppp_EnvironmentVariableGetComment(const dbcppp_EnvironmentVariable* env_var);
 
     DBCPPP_API const dbcppp_Message* dbcppp_MessageCreate(
@@ -167,13 +167,13 @@ extern "C"
     DBCPPP_API uint64_t dbcppp_MessageGetMessageSize(const dbcppp_Message* msg);
     DBCPPP_API const char* dbcppp_MessageGetTransmitter(const dbcppp_Message* msg);
     DBCPPP_API bool dbcppp_MessageHasMessageTransmitter(const dbcppp_Message* msg, const char* name);
-    DBCPPP_API void dbcppp_MessageForEachMessageTransmitter(const dbcppp_Message* msg, void(*cb)(const char*));
+    DBCPPP_API void dbcppp_MessageForEachMessageTransmitter(const dbcppp_Message* msg, void(*cb)(const char*, void*), void* data);
     DBCPPP_API const dbcppp_Signal* dbcppp_MessageGetSignalByName(const dbcppp_Message* msg, const char* name);
-    DBCPPP_API const dbcppp_Signal* dbcppp_MessageFindSignal(const dbcppp_Message* msg, bool(*pred)(const dbcppp_Signal*));
-    DBCPPP_API void dbcppp_MessageForEachSignal(const dbcppp_Message* msg, void(*cb)(const dbcppp_Signal*));
+    DBCPPP_API const dbcppp_Signal* dbcppp_MessageFindSignal(const dbcppp_Message* msg, bool(*pred)(const dbcppp_Signal*, void*), void* data);
+    DBCPPP_API void dbcppp_MessageForEachSignal(const dbcppp_Message* msg, void(*cb)(const dbcppp_Signal*, void*), void* data);
     DBCPPP_API const dbcppp_Attribute* dbcppp_MessageGetAttributeValueByName(const dbcppp_Message* msg, const char* name);
-    DBCPPP_API const dbcppp_Attribute* dbcppp_MessageFindAttributeValue(dbcppp_Message* msg, bool(*pred)(const dbcppp_Attribute*));
-    DBCPPP_API void dbcppp_MessageForEachAttributeValue(dbcppp_Message* msg, void(*cb)(const dbcppp_Attribute*));
+    DBCPPP_API const dbcppp_Attribute* dbcppp_MessageFindAttributeValue(dbcppp_Message* msg, bool(*pred)(const dbcppp_Attribute*, void*), void* data);
+    DBCPPP_API void dbcppp_MessageForEachAttributeValue(dbcppp_Message* msg, void(*cb)(const dbcppp_Attribute*, void*), void* data);
     DBCPPP_API const char* dbcppp_MessageGetComment(const dbcppp_Message* msg);
 
     DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromFile(const char* filename);
@@ -192,36 +192,36 @@ extern "C"
     DBCPPP_API void dbcppp_NetworkFree(const dbcppp_Network* network);
     DBCPPP_API const char* dbcppp_NetworkGetVersion(const dbcppp_Network* net);
     DBCPPP_API bool dbcppp_NetworkHasNewSymbol(const dbcppp_Network* net, const char* new_symbol);
-    DBCPPP_API void dbcppp_NetworkForEachNewSymbol(const dbcppp_Network* net, void(*cb)(const char*));
+    DBCPPP_API void dbcppp_NetworkForEachNewSymbol(const dbcppp_Network* net, void(*cb)(const char*, void*), void* data);
     DBCPPP_API const dbcppp_BitTiming* dbcppp_NetworkGetBitTiming(const dbcppp_Network* net);
     DBCPPP_API const dbcppp_Node* dbcppp_NetworkGetNodeByName(const dbcppp_Network* net, const char* name);
-    DBCPPP_API void dbcppp_NetworkForEachNode(const dbcppp_Network* net, void(*cb)(const dbcppp_Node*));
+    DBCPPP_API void dbcppp_NetworkForEachNode(const dbcppp_Network* net, void(*cb)(const dbcppp_Node*, void*), void* data);
     DBCPPP_API const dbcppp_ValueTable* dbcppp_NetworkGetValueTableByName(const dbcppp_Network* net, const char* name);
-    DBCPPP_API const dbcppp_ValueTable* dbcppp_NetworkFindValueTable(const dbcppp_Network* net, bool(*pred)(const dbcppp_ValueTable*));
-    DBCPPP_API void dbcppp_NetworkForEachValueTable(const dbcppp_Network* net, void(*cb)(const dbcppp_ValueTable*));
+    DBCPPP_API const dbcppp_ValueTable* dbcppp_NetworkFindValueTable(const dbcppp_Network* net, bool(*pred)(const dbcppp_ValueTable*, void*), void* data);
+    DBCPPP_API void dbcppp_NetworkForEachValueTable(const dbcppp_Network* net, void(*cb)(const dbcppp_ValueTable*, void*), void* data);
     DBCPPP_API const dbcppp_Message* dbcppp_NetworkGetMessageById(const dbcppp_Network* net, uint64_t id);
-    DBCPPP_API const dbcppp_Message* dbcppp_NetworkFindMessage(const dbcppp_Network* net, bool(*pred)(const dbcppp_Message*));
+    DBCPPP_API const dbcppp_Message* dbcppp_NetworkFindMessage(const dbcppp_Network* net, bool(*pred)(const dbcppp_Message*, void*), void* data);
     DBCPPP_API void dbcppp_NetworkForEachMessage(const dbcppp_Network* net, void(*cb)(const dbcppp_Message*));
     DBCPPP_API const dbcppp_EnvironmentVariable* dbcppp_NetworkGetEnvironmentVariableByName(const dbcppp_Network* net, const char* name);
-    DBCPPP_API dbcppp_EnvironmentVariable* dbcppp_NetworkFindEnvironmentVariable(const dbcppp_Network* net, bool(*pred)(const dbcppp_EnvironmentVariable*));
-    DBCPPP_API void dbcppp_NetworkForEachEnvironmentVariable(const dbcppp_Network* net, void(*cb)(const dbcppp_EnvironmentVariable*));
+    DBCPPP_API dbcppp_EnvironmentVariable* dbcppp_NetworkFindEnvironmentVariable(const dbcppp_Network* net, bool(*pred)(const dbcppp_EnvironmentVariable*, void*), void* data);
+    DBCPPP_API void dbcppp_NetworkForEachEnvironmentVariable(const dbcppp_Network* net, void(*cb)(const dbcppp_EnvironmentVariable*, void*), void* data);
     DBCPPP_API const dbcppp_AttributeDefinition* dbcppp_NetworkGetAttributeDefinitionByName(const dbcppp_Network* net, const char* name);
-    DBCPPP_API dbcppp_AttributeDefinition* dbcppp_NetworkFindAttributeDefinition(const dbcppp_Network* net, bool(*pred)(const dbcppp_AttributeDefinition*));
-    DBCPPP_API void dbcppp_NetworkForEachAttributeDefinition(const dbcppp_Network* net, void(*cb)(const dbcppp_AttributeDefinition*));
+    DBCPPP_API dbcppp_AttributeDefinition* dbcppp_NetworkFindAttributeDefinition(const dbcppp_Network* net, bool(*pred)(const dbcppp_AttributeDefinition*, void*), void* data);
+    DBCPPP_API void dbcppp_NetworkForEachAttributeDefinition(const dbcppp_Network* net, void(*cb)(const dbcppp_AttributeDefinition*, void*), void* data);
     DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkGetAttributeDefaultByName(const dbcppp_Network* net, const char* name);
-    DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkFindAttributeDefault(const dbcppp_Network* net, bool(*pred)(const dbcppp_Attribute*));
-    DBCPPP_API void dbcppp_NetworkForEachAttributeDefault(const dbcppp_Network* net, void(*cb)(const dbcppp_Attribute*));
+    DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkFindAttributeDefault(const dbcppp_Network* net, bool(*pred)(const dbcppp_Attribute*, void*), void* data);
+    DBCPPP_API void dbcppp_NetworkForEachAttributeDefault(const dbcppp_Network* net, void(*cb)(const dbcppp_Attribute*, void*), void* data);
     DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkGetAttributeValueByName(const dbcppp_Network* net, const char* name);
-    DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkFindAttributeValue(const dbcppp_Network* net, bool(*pred)(const dbcppp_Attribute*));
-    DBCPPP_API void dbcppp_NetworkForEachAttributeValue(const dbcppp_Network* net, void(*cb)(const dbcppp_Attribute*));
+    DBCPPP_API const dbcppp_Attribute* dbcppp_NetworkFindAttributeValue(const dbcppp_Network* net, bool(*pred)(const dbcppp_Attribute*, void*), void* data);
+    DBCPPP_API void dbcppp_NetworkForEachAttributeValue(const dbcppp_Network* net, void(*cb)(const dbcppp_Attribute*, void*), void* data);
     DBCPPP_API const char* dbcppp_NetworkGetComment(const dbcppp_Network* net);
 
     DBCPPP_API const dbcppp_Node* dbcppp_NodeCreate(const char* name, const char* comment, dbcppp_Attribute** attributes);
     DBCPPP_API void dbcppp_NodeFree(const dbcppp_Node* node);
     DBCPPP_API const char* dbcppp_NodeGetName(const dbcppp_Node* node);
     DBCPPP_API const dbcppp_Attribute* dbcppp_NodeGetAttributeValueByName(const dbcppp_Node* node, const char* attribute_name);
-    DBCPPP_API const dbcppp_Attribute* dbcppp_NodeFindAttributeValue(const dbcppp_Node* node, bool(*pred)(const dbcppp_Attribute*));
-    DBCPPP_API void dbcppp_NodeForEachAttributeValue(const dbcppp_Node* node, void(*cb)(const dbcppp_Attribute*));
+    DBCPPP_API const dbcppp_Attribute* dbcppp_NodeFindAttributeValue(const dbcppp_Node* node, bool(*pred)(const dbcppp_Attribute*, void*), void* data);
+    DBCPPP_API void dbcppp_NodeForEachAttributeValue(const dbcppp_Node* node, void(*cb)(const dbcppp_Attribute*, void*), void* data);
     DBCPPP_API const char* dbcppp_NodeGetComment(const dbcppp_Node* node);
 
     DBCPPP_API const dbcppp_Signal* dbcppp_SignalCreate(
@@ -256,11 +256,11 @@ extern "C"
     DBCPPP_API double dbcppp_SignalGetMaximum(const dbcppp_Signal* sig);
     DBCPPP_API const char* dbcppp_SignalGetUnit(const dbcppp_Signal* sig);
     DBCPPP_API bool dbcppp_SignalHasReceiver(const dbcppp_Signal* sig, const char* name);
-    DBCPPP_API void dbcppp_SignalForEachReceiver(const dbcppp_Signal* sig, void(*cb)(const char*));
-    DBCPPP_API void dbcppp_SignalForEachValueDescription(const dbcppp_Signal* sig, void(*cb)(double, const char*));
+    DBCPPP_API void dbcppp_SignalForEachReceiver(const dbcppp_Signal* sig, void(*cb)(const char*, void*), void* data);
+    DBCPPP_API void dbcppp_SignalForEachValueDescription(const dbcppp_Signal* sig, void(*cb)(double, const char*, void*), void* data);
     DBCPPP_API const dbcppp_Attribute* dbcppp_SignalGetAttributeValueByName(const dbcppp_Signal* sig, const char* name);
-    DBCPPP_API const dbcppp_Attribute* dbcppp_SignalFindAttributeValue(const dbcppp_Signal* sig, bool(*pred)(const dbcppp_Attribute*));
-    DBCPPP_API void dbcppp_SignalForEachAttributeValue(const dbcppp_Signal* sig, void(*cb)(const dbcppp_Attribute*));
+    DBCPPP_API const dbcppp_Attribute* dbcppp_SignalFindAttributeValue(const dbcppp_Signal* sig, bool(*pred)(const dbcppp_Attribute*, void*), void* data);
+    DBCPPP_API void dbcppp_SignalForEachAttributeValue(const dbcppp_Signal* sig, void(*cb)(const dbcppp_Attribute*, void*), void* data);
     DBCPPP_API const char* dbcppp_SignalGetComment(const dbcppp_Signal* sig);
     DBCPPP_API dbcppp_SignalExtendedValueType dbcppp_SignalGetGetExtendedValueType(const dbcppp_Signal* sig);
 
@@ -291,7 +291,7 @@ extern "C"
     DBCPPP_API void dbcppp_ValueTableFree(const dbcppp_ValueTable* value_table);
     DBCPPP_API const char* dbcppp_ValueTableGetName(const dbcppp_ValueTable* value_table);
     DBCPPP_API const dbcppp_SignalType* dbcppp_ValueTableGetSignalType(const dbcppp_ValueTable* value_table);
-    DBCPPP_API void dbcppp_ValueTableForEachValueEncodingDescription(const dbcppp_ValueTable* value_table, void(*cb)(double, const char*));
+    DBCPPP_API void dbcppp_ValueTableForEachValueEncodingDescription(const dbcppp_ValueTable* value_table, void(*cb)(double, const char*, void*), void* data);
 
 #ifdef __cplusplus
 }
