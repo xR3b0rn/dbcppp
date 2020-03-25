@@ -28,6 +28,7 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/spirit/repository/include/qi_iter_pos.hpp>
 
+#include "../../include/dbcppp/CApi.h"
 #include "DBC_Grammar.h"
 #include "NetworkImpl.h"
 #include "ConvertGrammarStructureToCppStructure.h"
@@ -715,7 +716,7 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is, std::unique_ptr<Netw
 }
 extern "C"
 {
-    DBCPPP_API struct dbcppp_Network* dbcppp_LoadFromFile(const char* filename)
+    DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromFile(const char* filename)
     {
         std::unique_ptr<Network> result;
         std::ifstream is(filename);
@@ -740,10 +741,6 @@ extern "C"
         {
             std::cout << "Error! Couldn't find \"" << filename << "\"" << std::endl;
         }
-        return reinterpret_cast<dbcppp_Network*>(result.release());
-    }
-    DBCPPP_API void dbcppp_FreeNetwork(struct dbcppp_network* net)
-    {
-        delete reinterpret_cast<NetworkImpl*>(net);
+        return reinterpret_cast<const dbcppp_Network*>(result.release());
     }
 }

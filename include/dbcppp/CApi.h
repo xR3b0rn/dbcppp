@@ -176,6 +176,7 @@ extern "C"
     DBCPPP_API void dbcppp_MessageForEachAttributeValue(dbcppp_Message* msg, void(*cb)(const dbcppp_Attribute*));
     DBCPPP_API const char* dbcppp_MessageGetComment(const dbcppp_Message* msg);
 
+    DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromFile(const char* filename);
     DBCPPP_API const dbcppp_Network* dbcppp_NetworkCreate(
           const char* version
         , const char** new_symbols
