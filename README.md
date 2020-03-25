@@ -1,10 +1,10 @@
 [![Build Status](https://travis-ci.org/xR3b0rn/dbcppp.svg?branch=master)](https://travis-ci.org/xR3b0rn/dbcppp)
 # dbcppp (DBC C++ parser)
-A C++ DBC file parser based on `boost.spirit`. This library is designed for decoding performance.
+A C/C++ DBC file parser based on `boost.spirit`. This library is designed for decoding performance.
 # Features
 * very fast decoding
 * verbose parser output in error case
-* DBC is editable through C++ interface exported from the library
+* DBC is editable through C/C++ interface exported from the library
 * read DBC file
 * decode functionality for frames of arbitrarily byte length
 ## DBC data types
