@@ -22,85 +22,85 @@ double template_decode(const Signal* sig, const void* nbytes) noexcept
         int64_t i;
         float f;
         double d;
-    } data;
+    } hack;
     if constexpr (aAlignment == Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit)
     {
-        data.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
+        hack.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
         uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos + 8];
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
-            boost::endian::native_to_big_inplace(data.ui);
-            data.ui &= sigi->_mask;
-            data.ui <<= sigi->_fixed_start_bit_0;
+            boost::endian::native_to_big_inplace(hack.ui);
+            hack.ui &= sigi->_mask;
+            hack.ui <<= sigi->_fixed_start_bit_0;
             data1 >>= sigi->_fixed_start_bit_1;
-            data.ui |= data1;
+            hack.ui |= data1;
         }
         else
         {
-            boost::endian::native_to_little_inplace(data.ui);
-            data.ui >>= sigi->_fixed_start_bit_0;
+            boost::endian::native_to_little_inplace(hack.ui);
+            hack.ui >>= sigi->_fixed_start_bit_0;
             data1 &= sigi->_mask;
             data1 <<= sigi->_fixed_start_bit_1;
-            data.ui |= data1;
+            hack.ui |= data1;
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
         {
-            return data.d;
+            return hack.d;
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
         {
-            return data.f;
+            return hack.f;
         }
         if constexpr (aValueType == Signal::ValueType::Signed)
         {
-            if (data.ui & sigi->_mask_signed)
+            if (hack.ui & sigi->_mask_signed)
             {
-                data.ui |= sigi->_mask_signed;
+                hack.ui |= sigi->_mask_signed;
             }
-            return double(data.i);
+            return double(hack.i);
         }
-        return double(data.ui);
+        return double(hack.ui);
     }
     else
     {
         if constexpr (aAlignment == Alignment::size_inbetween_first_64_bit)
         {
-            data.ui = *reinterpret_cast<const uint64_t*>(nbytes);
+            hack.ui = *reinterpret_cast<const uint64_t*>(nbytes);
         }
         else
         {
-            data.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
+            hack.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos]);
         }
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
-            boost::endian::native_to_big_inplace(data.ui);
+            boost::endian::native_to_big_inplace(hack.ui);
         }
         else
         {
-            boost::endian::native_to_little_inplace(data.ui);
+            boost::endian::native_to_little_inplace(hack.ui);
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
         {
-            return data.d;
+            return hack.d;
         }
-        data.ui >>= sigi->_fixed_start_bit_0;
+        hack.ui >>= sigi->_fixed_start_bit_0;
     }
     if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
     {
-        return data.f;
+        return hack.f;
     }
-    data.ui &= sigi->_mask;
+    hack.ui &= sigi->_mask;
     if constexpr (aValueType == Signal::ValueType::Signed)
     {
         // bit extending
         // trust the compiler to optimize this
-        if (data.ui & sigi->_mask_signed)
+        if (hack.ui & sigi->_mask_signed)
         {
-            data.ui |= sigi->_mask_signed;
+            hack.ui |= sigi->_mask_signed;
         }
-        return double(data.i);
+        return double(hack.i);
     }
-    return double(data.ui);
+    return double(hack.ui);
 }
 
 constexpr uint64_t enum_mask(Alignment a, Signal::ByteOrder bo, Signal::ValueType vt, Signal::ExtendedValueType evt)
@@ -184,7 +184,59 @@ decode_func_t make_decode(Alignment a, Signal::ByteOrder bo, Signal::ValueType v
     }
     return nullptr;
 }
-
+void encode(const Signal* sig, double raw, void* buffer) noexcept
+{
+    union
+    {
+        double d;
+        uint64_t ui;
+    } hack{raw};
+    const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
+    char* b = reinterpret_cast<char*>(buffer);
+    if (sigi->getByteOrder() == Signal::ByteOrder::BigEndian)
+    {
+        uint64_t src = sigi->getStartBit();
+        uint64_t dst = sigi->getBitSize() - 1;
+        for (uint64_t i = 0; i < sigi->getBitSize(); i++)
+        {
+            if (hack.ui & (1ull << dst))
+            {
+                b[src / 8] |= 1ull << (src % 8);
+            }
+            else
+            {
+                b[src / 8] &= ~(1ull << (src % 8));
+            }
+            if ((src % 8) == 0)
+            {
+                src += 15;
+            }
+            else
+            {
+                src--;
+            }
+            dst--;
+        }
+    }
+    else
+    {
+        uint64_t src = sigi->getStartBit();
+        uint64_t dst = 0;
+        for (uint64_t i = 0; i < sigi->getBitSize(); i++)
+        {
+            if (hack.ui & (1ull << dst))
+            {
+                b[src / 8] |= 1ull << (src % 8);
+            }
+            else
+            {
+                b[src / 8] &= ~(1ull << (src % 8));
+            }
+            src++;
+            dst++;
+        }
+    }
+}
 double raw_to_phys(const Signal* sig, double raw) noexcept
 {
     const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
@@ -404,6 +456,7 @@ SignalImpl::SignalImpl(
 
     _decode = ::make_decode(alignment, _byte_order, _value_type, _extended_value_type);
 
+    _encode = ::encode;
     _raw_to_phys = ::raw_to_phys;
     _phys_to_raw = ::phys_to_raw;
 }

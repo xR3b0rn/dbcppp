@@ -1162,6 +1162,11 @@ extern "C"
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->decode(bytes);
     }
+    DBCPPP_API void dbcppp_SignalEncode(const dbcppp_Signal* sig, double raw, void* buffer)
+    {
+        auto sigi = reinterpret_cast<const SignalImpl*>(sig);
+        sigi->encode(raw, buffer);
+    }
     DBCPPP_API double dbcppp_SignalRawToPhys(const dbcppp_Signal* sig, double raw)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);

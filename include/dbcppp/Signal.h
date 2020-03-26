@@ -106,6 +106,7 @@ namespace dbcppp
         ///               bit_n-7 - bit_n: bytes[n / 8]
         ///               (like the Unix CAN frame does store the data)
         inline double decode(const void* bytes) const noexcept { return _decode(this, bytes); }
+        inline void encode(double raw, void* buffer) const noexcept { return _encode(this, raw, buffer); }
 
         inline double rawToPhys(double raw) const { return _raw_to_phys(this, raw); }
         inline double physToRaw(double phys) const { return _phys_to_raw(this, phys); }
@@ -113,6 +114,7 @@ namespace dbcppp
     protected:
         // instead of using virtuals dynamic dispatching use function pointers
         double (*_decode)(const Signal* sig, const void* bytes) noexcept {nullptr};
+        void (*_encode)(const Signal* sig, double raw, void* buffer) noexcept {nullptr};
         double (*_raw_to_phys)(const Signal* sig, double raw) noexcept {nullptr};
         double (*_phys_to_raw)(const Signal* sig, double phys) noexcept {nullptr};
     };
