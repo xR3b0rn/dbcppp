@@ -1,10 +1,10 @@
 [![Build Status](https://travis-ci.org/xR3b0rn/dbcppp.svg?branch=master)](https://travis-ci.org/xR3b0rn/dbcppp)
-# dbcppp (DBC C++ parser)
-A C++ DBC file parser based on `boost.spirit`. This library is designed for decoding performance.
+# dbcppp
+A C/C++ DBC file parser based on `boost.spirit`. This library is designed for decoding performance.
 # Features
 * very fast decoding
 * verbose parser output in error case
-* DBC is editable through C++ interface exported from the library
+* DBC is editable through C/C++ interface exported from the library
 * read DBC file
 * decode functionality for frames of arbitrarily byte length
 ## DBC data types
@@ -41,6 +41,7 @@ make install
 ## Dependencies
 * boost
 # Usage example
+* `C++`
 ```C++
 #include <fstream>
 #include <dbcppp/Network.h>
@@ -51,11 +52,9 @@ int main()
     if (net)
     {
         can_frame frame;
-        canfd_frame fd_frame;
         while (1)
         {
             receive_can_frame_from_somewhere(&frame);
-            receive_canfd_frame_from_somewhere(&fd_frame);
             const Message* msg = net->getMessageById(frame.id);
             if (msg)
             {
@@ -70,7 +69,36 @@ int main()
         }
     }
 }
-
+```
+* `C`
+```C
+#include <stdio.h>
+#include <dbcppp/CApi.h>
+int main()
+{
+    const dbcppp_Nework* net = dbcppp_NetworkLoadDBCFromFile("your_dbc.dbc");
+    if (net)
+    {
+        can_frame frame;
+        while (1)
+        {
+            receive_can_frame_from_somewhere(&frame);
+            const dbcppp_Message* msg = dbcppp_NetworkGetMessageById(net, frame.id);
+            if (msg)
+            {
+                printf("Received message: %s\n", dbcppp_MessageGetName(msg));
+                void print_signal_data(const dbcppp_Signal* sig, void* data)
+                {
+                    can_frame* frame = (can_frame*)data;
+                    double raw = dbcppp_SignalDecode(sig, frame->data);
+                    double phys = dbcppp_SignalRawToPhys(sig, raw);
+                    printf("\t%s=%f\n", dbcppp_SignalGetName(sig), phys);
+                }
+                dbcppp_MessageForEachSignal(msg, print_signal_data, &frame);
+            }
+        }
+    }
+}
 ```
 # Decode-function
 The signals decode function is using prestored masks and fixed offsets to speed up calculation, therefore the decoding-function should be almost as fast as a code generated decode function would be. The assembly of the `decode`-function on its critical path (signed and byte swap must happen) looks like this (VS19 10.0.18362.0 compiler):
