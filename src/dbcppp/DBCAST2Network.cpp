@@ -2,7 +2,6 @@
 #include <boost/log/trivial.hpp>
 #include <iterator>
 #include "../../include/dbcppp/Network.h"
-#include "DBCAST2Network.h"
 #include "DBC_Grammar.h"
 
 using namespace dbcppp;
@@ -545,7 +544,7 @@ static auto getComment(const G_Network& gnet)
     return result;
 }
 
-std::unique_ptr<Network> dbcppp::DBCAST2Network(const G_Network& gnet)
+std::unique_ptr<Network> DBCAST2Network(const G_Network& gnet)
 {
     return Network::create(
           getVersion(gnet)

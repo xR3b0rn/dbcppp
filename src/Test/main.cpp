@@ -30,12 +30,79 @@
 
 #include "Config.h"
 
+#include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
 
 #define BOOST_TEST_MODULE test
 #include <boost/test/included/unit_test.hpp>
 namespace utf = boost::unit_test;
 
+auto generate_random_signal(
+      std::size_t max_msg_byte_size
+    , std::default_random_engine& rng)
+{
+    using namespace dbcppp;
+
+    std::vector<std::size_t> indices;
+    for (std::size_t i = 0; i < max_msg_byte_size * 8; i++) indices.push_back(i);
+
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
+    std::unique_ptr<Signal> sig;
+    auto rnd_msg_byte_size = dist(rng) % max_msg_byte_size + 1;
+    auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
+    auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
+    auto rnd_bit_size = dist(rng) % (((rnd_msg_byte_size > 8) ? 8 : rnd_msg_byte_size) * 8) + 1;
+    Signal::ExtendedValueType rnd_extended_value_type = Signal::ExtendedValueType::Integer;
+    auto rnd_evt = dist(rng) % 3;
+    if (rnd_msg_byte_size >= 4)
+    {
+        if (std::numeric_limits<float>::is_iec559 && rnd_evt == 1)
+        {
+            rnd_extended_value_type = Signal::ExtendedValueType::Float;
+            rnd_bit_size = 32;
+        }
+        else if (std::numeric_limits<double>::is_iec559 && rnd_msg_byte_size >= 8 && rnd_evt == 2)
+        {
+            rnd_extended_value_type = Signal::ExtendedValueType::Double;
+            rnd_bit_size = 64;
+        }
+    }
+    if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
+    {
+        uint64_t rnd_start_bit = 0;
+        if ((rnd_msg_byte_size * 8 - rnd_bit_size) != 0)
+        {
+            rnd_start_bit = dist(rng) % (rnd_msg_byte_size * 8 - rnd_bit_size);
+        }
+        sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
+            rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
+    }
+    else
+    {
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(indices.begin(), indices.end(), g);
+        for (auto rnd_start_bit : indices)
+        {
+            sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
+                rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
+            if (sig)
+            {
+                break;
+            }
+        }
+    }
+    return std::move(sig);
+}
+auto generate_random_data(
+      std::size_t max_msg_byte_size
+    , std::default_random_engine& rng)
+{
+    std::vector<uint8_t> result;
+    std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
+    for (std::size_t j = 0; j < max_msg_byte_size; j++) result.push_back(uint8_t(dist(rng) & 0xFF));
+    return result;
+}
 
 double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 {
@@ -118,11 +185,11 @@ std::vector<std::string> dbc_to_vec(std::istream& is)
     return result;
 }
 
-BOOST_AUTO_TEST_CASE(DBCParsing)
+BOOST_AUTO_TEST_CASE(DBCParsingCppApi)
 {
     std::string dbc_file(TEST_DBC);
 
-    BOOST_TEST_MESSAGE("Testing DBC AST tree for correctness...");
+    BOOST_TEST_MESSAGE("Testing dbcppp C++ API for correctness...");
 
     if (dbc_file != "")
     {
@@ -161,6 +228,32 @@ BOOST_AUTO_TEST_CASE(DBCParsing)
     }
     BOOST_TEST_MESSAGE("Done!");
 }
+BOOST_AUTO_TEST_CASE(DBCParsingCApi)
+{
+    BOOST_TEST_MESSAGE("Testing dbcppp C API for correctness...");
+
+    std::ifstream dbc_file(TEST_DBC);
+    auto spec = dbcppp::Network::fromDBC(dbc_file);
+    const dbcppp_Network* impl = dbcppp_NetworkLoadDBCFromFile(TEST_DBC);
+    BOOST_REQUIRE(impl);
+    BOOST_REQUIRE_EQUAL(spec->getVersion(), dbcppp_NetworkGetVersion(impl));
+    BOOST_REQUIRE_EQUAL(spec->hasNewSymbol("SIGTYPE_VALTYPE_"), dbcppp_NetworkHasNewSymbol(impl, "SIGTYPE_VALTYPE_"));
+    BOOST_REQUIRE_EQUAL(!spec->hasNewSymbol("Not there"), !dbcppp_NetworkHasNewSymbol(impl, "Not there"));
+    spec->forEachNewSymbol(
+        [&](const std::string& ns)
+        {
+            BOOST_REQUIRE(dbcppp_NetworkHasNewSymbol(impl, ns.c_str()));
+        });
+    dbcppp_NetworkForEachNewSymbol(impl,
+        [](const char* ns, void* data)
+        {
+            dbcppp::Network* spec = (dbcppp::Network*)data;
+            BOOST_REQUIRE(spec->hasNewSymbol(ns));
+        }, const_cast<dbcppp::Network*>(spec.get()));
+    BOOST_REQUIRE_EQUAL(spec->getComment(), dbcppp_NetworkGetComment(impl));
+
+
+}
 constexpr bool IS_IEEE_754_FLOAT()
 {
     union
@@ -179,8 +272,10 @@ constexpr bool IS_IEEE_754_DOUBLE()
     } hack{3.20335023364400436880415660458E-144};
     return hack.out == 0b0010001000100100000000000000011100010010001100100001001000110100;
 }
-BOOST_AUTO_TEST_CASE(Test_decoding)
+BOOST_AUTO_TEST_CASE(Decoding)
 {
+    using namespace dbcppp;
+
     std::size_t n_tests = 1000000;
     std::size_t max_msg_byte_size = 64;
 
@@ -195,60 +290,10 @@ BOOST_AUTO_TEST_CASE(Test_decoding)
     std::default_random_engine rng(seed);
     std::uniform_int_distribution<std::mt19937::result_type> dist(0, -1);
 
-    using namespace dbcppp;
-
-    std::vector<uint8_t> data;
-    std::vector<std::size_t> indices;
-    for (std::size_t i = 0; i < max_msg_byte_size * 8; i++) indices.push_back(i);
     for (std::size_t i = 0; i < n_tests; i++)
     {
-        std::unique_ptr<Signal> sig;
-        auto rnd_msg_byte_size = dist(rng) % max_msg_byte_size + 1;
-        auto rnd_byte_order = dist(rng) % 2 == 0 ? Signal::ByteOrder::LittleEndian : Signal::ByteOrder::BigEndian;
-        auto rnd_value_type = dist(rng) % 2 == 0 ? Signal::ValueType::Unsigned : Signal::ValueType::Signed;
-        auto rnd_bit_size = dist(rng) % (((rnd_msg_byte_size > 8) ? 8 : rnd_msg_byte_size) * 8) + 1;
-        Signal::ExtendedValueType rnd_extended_value_type = Signal::ExtendedValueType::Integer;
-        auto rnd_evt = dist(rng) % 3;
-        if (rnd_msg_byte_size >= 4)
-        {
-            if (std::numeric_limits<float>::is_iec559 && rnd_evt == 1)
-            {
-                rnd_extended_value_type = Signal::ExtendedValueType::Float;
-                rnd_bit_size = 32;
-            }
-            else if (std::numeric_limits<double>::is_iec559 && rnd_msg_byte_size >= 8 && rnd_evt == 2)
-            {
-                rnd_extended_value_type = Signal::ExtendedValueType::Double;
-                rnd_bit_size = 64;
-            }
-        }
-        if (rnd_byte_order == Signal::ByteOrder::LittleEndian)
-        {
-            uint64_t rnd_start_bit = 0;
-            if ((rnd_msg_byte_size * 8 - rnd_bit_size) != 0)
-            {
-                rnd_start_bit = dist(rng) % (rnd_msg_byte_size * 8 - rnd_bit_size);
-            }
-            sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
-                rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
-        }
-        else
-        {
-            std::random_device rd;
-            std::mt19937 g(rd());
-            std::shuffle(indices.begin(), indices.end(), g);
-            for (auto rnd_start_bit : indices)
-            {
-                sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
-                    rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
-                if (sig)
-                {
-                    break;
-                }
-            }
-        }
-        data.clear();
-        for (std::size_t j = 0; j < max_msg_byte_size; j++) data.push_back(uint8_t(dist(rng) & 0xFF));
+        auto sig = generate_random_signal(max_msg_byte_size, rng);
+        auto data = generate_random_data(max_msg_byte_size, rng);
         auto dec_easy = easy_decode(*sig, data);
         auto dec_sig = sig->decode(&data[0]);
         

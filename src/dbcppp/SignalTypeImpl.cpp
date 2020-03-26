@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include "SignalTypeImpl.h"
 
 using namespace dbcppp;

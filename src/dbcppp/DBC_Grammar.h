@@ -36,7 +36,6 @@
 #include "../../include/dbcppp/CApi.h"
 #include "DBC_Grammar.h"
 #include "NetworkImpl.h"
-#include "DBCAST2Network.h"
 
 namespace dbcppp
 {
