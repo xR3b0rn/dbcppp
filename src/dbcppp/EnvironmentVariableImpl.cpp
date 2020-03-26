@@ -69,6 +69,10 @@ EnvironmentVariableImpl::EnvironmentVariableImpl(
     , _attribute_values(std::move(attribute_values))
     , _comment(std::move(comment))
 {}
+std::unique_ptr<EnvironmentVariable> EnvironmentVariableImpl::clone() const
+{
+    return std::make_unique<EnvironmentVariableImpl>(*this);
+}
 const std::string& EnvironmentVariableImpl::getName() const
 {
     return _name;

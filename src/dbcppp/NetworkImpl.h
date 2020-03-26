@@ -2,7 +2,6 @@
 #pragma once
 
 #include <robin-map/tsl/robin_map.h>
-#include <sstream>
 #include "../../include/dbcppp/Network.h"
 #include "BitTimingImpl.h"
 #include "ValueTableImpl.h"
@@ -86,7 +85,5 @@ namespace dbcppp
         std::map<std::string, AttributeImpl> _attribute_defaults;
         std::map<std::string, AttributeImpl> _attribute_values;
         std::string _comment;
-
-        std::stringstream _error_message;
     };
 }
