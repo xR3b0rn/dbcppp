@@ -21,6 +21,10 @@ AttributeImpl::AttributeImpl(std::string&& name, AttributeDefinition::ObjectType
     , _object_type(std::move(object_type))
     , _value(std::move(value))
 {}
+std::unique_ptr<Attribute> AttributeImpl::clone() const
+{
+    return std::make_unique<AttributeImpl>(*this);
+}
 const std::string& AttributeImpl::getName() const
 {
     return _name;

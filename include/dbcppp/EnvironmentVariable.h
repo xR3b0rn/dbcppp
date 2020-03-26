@@ -40,6 +40,8 @@ namespace dbcppp
             , uint64_t data_size
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
             , std::string&& comment);
+            
+        virtual std::unique_ptr<EnvironmentVariable> clone() const = 0;
 
         virtual ~EnvironmentVariable() = default;
         virtual const std::string& getName() const = 0;

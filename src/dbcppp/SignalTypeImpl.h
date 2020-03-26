@@ -23,8 +23,9 @@ namespace dbcppp
             , std::string&& unit
             , double default_value
             , std::string&& value_table);
-        SignalTypeImpl(SignalTypeImpl&&) = default;
-        SignalTypeImpl& operator=(SignalTypeImpl&&) = default;
+
+        virtual std::unique_ptr<SignalType> clone() const override;
+
         virtual const std::string& getName() const override;
         virtual uint64_t getSignalSize() const override;
         virtual Signal::ByteOrder getByteOrder() const override;

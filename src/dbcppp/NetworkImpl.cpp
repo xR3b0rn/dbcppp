@@ -23,7 +23,7 @@ std::unique_ptr<Network> Network::create(
     bit_timing.reset(nullptr);
     std::map<std::string, NodeImpl> ns;
     std::map<std::string, ValueTableImpl> vts;
-    std::unordered_map<uint64_t, MessageImpl> ms;
+    tsl::robin_map<uint64_t, MessageImpl> ms;
     std::map<std::string, EnvironmentVariableImpl> evs;
     std::map<std::string, AttributeDefinitionImpl> ads;
     std::map<std::string, AttributeImpl> avds;
@@ -83,7 +83,7 @@ NetworkImpl::NetworkImpl(
     , BitTimingImpl&& bit_timing
     , std::map<std::string, NodeImpl>&& nodes
     , std::map<std::string, ValueTableImpl>&& value_tables
-    , std::unordered_map<uint64_t, MessageImpl>&& messages
+    , tsl::robin_map<uint64_t, MessageImpl>&& messages
     , std::map<std::string, EnvironmentVariableImpl>&& environment_variables
     , std::map<std::string, AttributeDefinitionImpl>&& attribute_definitions
     , std::map<std::string, AttributeImpl>&& attribute_defaults
@@ -102,6 +102,10 @@ NetworkImpl::NetworkImpl(
     , _attribute_values(std::move(attribute_values))
     , _comment(std::move(comment))
 {}
+std::unique_ptr<Network> NetworkImpl::clone() const
+{
+    return std::make_unique<NetworkImpl>(*this);
+}
 const std::string& NetworkImpl::getVersion() const
 {
     return _version;
@@ -370,7 +374,7 @@ std::map<std::string, ValueTableImpl>& NetworkImpl::valueTables()
 {
     return _value_tables;
 }
-std::unordered_map<uint64_t, MessageImpl>& NetworkImpl::messages()
+tsl::robin_map<uint64_t, MessageImpl>& NetworkImpl::messages()
 {
     return _messages;
 }

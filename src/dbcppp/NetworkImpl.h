@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <robin-map/tsl/robin_map.h>
 #include <sstream>
 #include "../../include/dbcppp/Network.h"
 #include "BitTimingImpl.h"
@@ -23,14 +24,14 @@ namespace dbcppp
             , BitTimingImpl&& bit_timing
             , std::map<std::string, NodeImpl>&& nodes
             , std::map<std::string, ValueTableImpl>&& value_tables
-            , std::unordered_map<uint64_t, MessageImpl>&& messages
+            , tsl::robin_map<uint64_t, MessageImpl>&& messages
             , std::map<std::string, EnvironmentVariableImpl>&& environment_variables
             , std::map<std::string, AttributeDefinitionImpl>&& attribute_definitions
             , std::map<std::string, AttributeImpl>&& attribute_defaults
             , std::map<std::string, AttributeImpl>&& attribute_values
             , std::string&& comment);
-        NetworkImpl(NetworkImpl&&) = default;
-        NetworkImpl& operator=(NetworkImpl&&) = default;
+            
+        virtual std::unique_ptr<Network> clone() const override;
 
         virtual const std::string& getVersion() const override;
         virtual bool hasNewSymbol(const std::string& name) const override;
@@ -66,7 +67,7 @@ namespace dbcppp
         BitTimingImpl& bitTiming();
         std::map<std::string, NodeImpl>& nodes();
         std::map<std::string, ValueTableImpl>& valueTables();
-        std::unordered_map<uint64_t, MessageImpl>& messages();
+        tsl::robin_map<uint64_t, MessageImpl>& messages();
         std::map<std::string, EnvironmentVariableImpl>& environmentVariables();
         std::map<std::string, AttributeDefinitionImpl>& attributeDefinitions();
         std::map<std::string, AttributeImpl>& attributeDefaults();
@@ -79,7 +80,7 @@ namespace dbcppp
         BitTimingImpl _bit_timing;
         std::map<std::string, NodeImpl> _nodes;
         std::map<std::string, ValueTableImpl> _value_tables;
-        std::unordered_map<uint64_t, MessageImpl> _messages;
+        tsl::robin_map<uint64_t, MessageImpl> _messages;
         std::map<std::string, EnvironmentVariableImpl> _environment_variables;
         std::map<std::string, AttributeDefinitionImpl> _attribute_definitions;
         std::map<std::string, AttributeImpl> _attribute_defaults;

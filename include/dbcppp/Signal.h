@@ -63,6 +63,8 @@ namespace dbcppp
             , std::map<double, std::string>&& value_descriptions
             , std::string&& comment
             , ExtendedValueType extended_value_type);
+            
+        virtual std::unique_ptr<Signal> clone() const = 0;
 
         virtual ~Signal() = default;
         virtual const std::string& getName() const = 0;

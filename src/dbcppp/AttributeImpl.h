@@ -11,8 +11,9 @@ namespace dbcppp
     {
     public:
         AttributeImpl(std::string&& name, AttributeDefinition::ObjectType object_type, Attribute::value_t value);
-        AttributeImpl(AttributeImpl&&) = default;
-        AttributeImpl& operator=(AttributeImpl&&) = default;
+
+        virtual std::unique_ptr<Attribute> clone() const override;
+
         virtual const std::string& getName() const override;
         virtual AttributeDefinition::ObjectType getObjectType() const override;
         virtual const value_t& getValue() const override;

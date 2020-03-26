@@ -21,6 +21,10 @@ NodeImpl::NodeImpl(std::string&& name, std::string&& comment, std::map<std::stri
     , _comment(std::move(comment))
     , _attribute_values(std::move(attribute_values))
 {}
+std::unique_ptr<Node> NodeImpl::clone() const
+{
+    return std::make_unique<NodeImpl>(*this);
+}
 const std::string& NodeImpl::getName() const
 {
     return _name;

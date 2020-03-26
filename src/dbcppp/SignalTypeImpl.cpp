@@ -55,6 +55,10 @@ SignalTypeImpl::SignalTypeImpl(
     , _default_value(std::move(default_value))
     , _value_table(std::move(value_table))
 {}
+std::unique_ptr<SignalType> SignalTypeImpl::clone() const
+{
+    return std::make_unique<SignalTypeImpl>(*this);
+}
 const std::string& SignalTypeImpl::getName() const
 {
     return _name;

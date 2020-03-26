@@ -33,8 +33,8 @@ namespace dbcppp
             , std::map<double, std::string>&& value_descriptions
             , std::string&& comment
             , Signal::ExtendedValueType extended_value_type);
-        SignalImpl(SignalImpl&&) = default;
-        SignalImpl& operator=(SignalImpl&&) = default;
+            
+        virtual std::unique_ptr<Signal> clone() const override;
 
         virtual const std::string& getName() const override;
         virtual Multiplexer getMultiplexerIndicator() const override;

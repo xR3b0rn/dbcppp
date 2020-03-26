@@ -407,6 +407,10 @@ SignalImpl::SignalImpl(
     _raw_to_phys = ::raw_to_phys;
     _phys_to_raw = ::phys_to_raw;
 }
+std::unique_ptr<Signal> SignalImpl::clone() const
+{
+    return std::make_unique<SignalImpl>(*this);
+}
 const std::string& SignalImpl::getName() const
 {
     return _name;

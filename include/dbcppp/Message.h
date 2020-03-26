@@ -25,6 +25,8 @@ namespace dbcppp
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
             , std::string&& comment);
 
+        virtual std::unique_ptr<Message> clone() const = 0;
+
         virtual ~Message() = default;
         virtual uint64_t getId() const = 0;
         virtual const std::string& getName() const = 0;

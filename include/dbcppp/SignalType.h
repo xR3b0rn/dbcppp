@@ -25,6 +25,8 @@ namespace dbcppp
             , std::string&& unit
             , double default_value
             , std::string&& value_table);
+            
+        virtual std::unique_ptr<SignalType> clone() const = 0;
 
         virtual ~SignalType() = default;
         virtual const std::string& getName() const = 0;

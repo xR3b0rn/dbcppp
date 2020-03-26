@@ -17,6 +17,8 @@ namespace dbcppp
               std::string&& name
             , boost::optional<std::unique_ptr<SignalType>>&& signal_type
             , std::map<double, std::string>&& value_encoding_descriptions);
+            
+        virtual std::unique_ptr<ValueTable> clone() const = 0;
 
         virtual ~ValueTable() = default;
         virtual const std::string& getName() const = 0;

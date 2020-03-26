@@ -13,6 +13,8 @@ namespace dbcppp
     {
     public:
         static std::unique_ptr<BitTiming> create(uint64_t baudrate, uint64_t BTR1, uint64_t BTR2);
+        
+        virtual std::unique_ptr<BitTiming> clone() const = 0;
 
         virtual ~BitTiming() = default;
         virtual uint64_t getBaudrate() const = 0;

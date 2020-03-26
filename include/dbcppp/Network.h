@@ -39,6 +39,8 @@ namespace dbcppp
             , std::string&& comment);
         static std::unique_ptr<Network> fromDBC(std::istream& is);
         static std::unique_ptr<Network> fromDBC(std::istream& is, std::unique_ptr<Network> network);
+        
+        virtual std::unique_ptr<Network> clone() const = 0;
 
         virtual ~Network() = default;
         virtual const std::string& getVersion() const = 0;

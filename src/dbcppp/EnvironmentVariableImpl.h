@@ -25,8 +25,8 @@ namespace dbcppp
             , uint64_t data_size
             , std::map<std::string, AttributeImpl>&& attribute_values
             , std::string&& comment);
-        EnvironmentVariableImpl(EnvironmentVariableImpl&&) = default;
-        EnvironmentVariableImpl& operator=(EnvironmentVariableImpl&&);
+            
+        virtual std::unique_ptr<EnvironmentVariable> clone() const override;
 
         virtual const std::string& getName() const override;
         virtual VarType getVarType() const override;

@@ -50,6 +50,8 @@ namespace dbcppp
               std::string&& name
             , ObjectType object_type
             , value_type_t&& value_type);
+            
+        virtual std::unique_ptr<AttributeDefinition> clone() const = 0;
 
         virtual ~AttributeDefinition() = default;
         virtual ObjectType getObjectType() const = 0;

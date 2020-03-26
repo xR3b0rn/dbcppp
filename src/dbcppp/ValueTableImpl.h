@@ -16,7 +16,8 @@ namespace dbcppp
               std::string&& name
             , boost::optional<SignalTypeImpl>&& signal_type
             , std::map<double, std::string>&& value_encoding_descriptions);
-        ValueTableImpl(ValueTableImpl&&) = default;
+
+        virtual std::unique_ptr<ValueTable> clone() const override;
 
         virtual const std::string& getName() const override;
         virtual boost::optional<const SignalType&> getSignalType() const override;

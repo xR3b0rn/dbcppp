@@ -19,6 +19,10 @@ AttributeDefinitionImpl::AttributeDefinitionImpl(std::string&& name, ObjectType 
     , _object_type(std::move(object_type))
     , _value_type(std::move(value_type))
 {}
+std::unique_ptr<AttributeDefinition> AttributeDefinitionImpl::clone() const
+{
+    return std::make_unique<AttributeDefinitionImpl>(*this);
+}
 AttributeDefinition::ObjectType AttributeDefinitionImpl::getObjectType() const
 {
     return _object_type;

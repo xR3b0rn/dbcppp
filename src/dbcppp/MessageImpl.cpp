@@ -56,6 +56,10 @@ MessageImpl::MessageImpl(
     , _attribute_values(std::move(attribute_values))
     , _comment(std::move(comment))
 {}
+std::unique_ptr<Message> MessageImpl::clone() const
+{
+    return std::make_unique<MessageImpl>(*this);
+}
 uint64_t MessageImpl::getId() const
 {
     return _id;

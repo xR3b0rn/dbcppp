@@ -5,6 +5,8 @@ project("dbcppp")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+include_directories("third_party")
+
 if (!${Boost_USE_STATIC_LIBS})
 	add_definitions(-DBOOST_LOG_DYN_LINK)
 endif()
@@ -25,4 +27,5 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 add_subdirectory(src/)
+
 

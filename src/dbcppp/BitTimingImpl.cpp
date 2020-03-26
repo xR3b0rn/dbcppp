@@ -18,6 +18,10 @@ BitTimingImpl::BitTimingImpl(uint64_t baudrate, uint64_t BTR1, uint64_t BTR2)
     , _BTR1(std::move(BTR1))
     , _BTR2(std::move(BTR2))
 {}
+std::unique_ptr<BitTiming> BitTimingImpl::clone() const
+{
+    return std::make_unique<BitTimingImpl>(*this);
+}
 uint64_t BitTimingImpl::getBaudrate() const
 {
     return _baudrate;

@@ -21,6 +21,8 @@ namespace dbcppp
               std::string&& name
             , AttributeDefinition::ObjectType object_type
             , value_t value);
+            
+        virtual std::unique_ptr<Attribute> clone() const = 0;
 
         virtual ~Attribute() = default;
         virtual const std::string& getName() const = 0;

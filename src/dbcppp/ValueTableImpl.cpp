@@ -26,6 +26,10 @@ ValueTableImpl::ValueTableImpl(
     , _signal_type(std::move(signal_type))
     , _value_encoding_descriptions(std::move(value_encoding_descriptions))
 {}
+std::unique_ptr<ValueTable> ValueTableImpl::clone() const
+{
+    return std::make_unique<ValueTableImpl>(*this);
+}
 const std::string& ValueTableImpl::getName() const
 {
     return _name;

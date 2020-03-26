@@ -17,6 +17,8 @@ namespace dbcppp
             std::string&& name,
             std::string&& comment,
             std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values);
+            
+        virtual std::unique_ptr<Node> clone() const = 0;
 
         virtual ~Node() = default;
         virtual const std::string& getName() const = 0;
