@@ -16,10 +16,17 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF) 
 
 find_package(Boost REQUIRED)
+find_package(XercesC REQUIRED)
+
+message(STATUS )
 
 if (Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
 	link_directories(${Boost_LIBRARY_DIRS})
+endif()
+
+if (XercesC_FOUND)
+	include_directories(${XercesC_INCLUDE_DIRS})
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")

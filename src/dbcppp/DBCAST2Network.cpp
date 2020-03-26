@@ -2,7 +2,8 @@
 #include <boost/log/trivial.hpp>
 #include <iterator>
 #include "../../include/dbcppp/Network.h"
-#include "ConvertGrammarStructureToCppStructure.h"
+#include "DBCAST2Network.h"
+#include "DBC_Grammar.h"
 
 using namespace dbcppp;
 
@@ -544,7 +545,7 @@ static auto getComment(const G_Network& gnet)
     return result;
 }
 
-std::unique_ptr<Network> dbcppp::ConvertGrammarStructureToCppStructure(const G_Network& gnet)
+std::unique_ptr<Network> dbcppp::DBCAST2Network(const G_Network& gnet)
 {
     return Network::create(
           getVersion(gnet)
@@ -558,4 +559,60 @@ std::unique_ptr<Network> dbcppp::ConvertGrammarStructureToCppStructure(const G_N
         , getAttributeDefaults(gnet)
         , getAttributeValues(gnet)
         , getComment(gnet));
+}
+
+std::unique_ptr<Network> Network::fromDBC(std::istream& is)
+{
+    std::unique_ptr<Network> result;
+    std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
+    auto begin{str.begin()}, end{str.end()};
+    NetworkGrammar<std::string::iterator> g(begin);
+    G_Network gnet;
+    bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
+    if (succeeded && (begin == end))
+    {
+        result = DBCAST2Network(gnet);
+    }
+    else
+    {
+        auto[line, column] = getErrPos(str.begin(), begin);
+        std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
+    }
+    return result;
+}
+std::unique_ptr<Network> Network::fromDBC(std::istream& is, std::unique_ptr<Network> network)
+{
+    auto other = fromDBC(is);
+    network->merge(std::move(other));
+    return std::move(network);
+}
+extern "C"
+{
+    DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromFile(const char* filename)
+    {
+        std::unique_ptr<Network> result;
+        std::ifstream is(filename);
+        if (is.is_open())
+        {
+            std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
+            auto begin{str.begin()}, end{str.end()};
+            NetworkGrammar<std::string::iterator> g(begin);
+            G_Network gnet;
+            bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
+            if (succeeded && (begin == end))
+            {
+                result = DBCAST2Network(gnet);
+            }
+            else
+            {
+                auto[line, column] = getErrPos(str.begin(), begin);
+                std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
+            }
+        }
+        else
+        {
+            std::cout << "Error! Couldn't find \"" << filename << "\"" << std::endl;
+        }
+        return reinterpret_cast<const dbcppp_Network*>(result.release());
+    }
 }

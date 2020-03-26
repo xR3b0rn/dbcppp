@@ -4,7 +4,7 @@ include(GNUInstallDirs)
 add_library(${PROJECT_NAME} SHARED "")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${XercesC_LIBRARIES})
 
 add_compile_definitions(DBCPPP_EXPORT)
 
@@ -22,7 +22,6 @@ file(GLOB header_interface
 file(GLOB src
     "*.cpp"
 )
-message(STATUS ${header_interface})
 
 target_sources(${PROJECT_NAME}
     PRIVATE ${header}

@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include "AttributeDefinitionImpl.h"
 
 using namespace dbcppp;

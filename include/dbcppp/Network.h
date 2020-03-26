@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <memory>
+#include <iostream>
 #include <string>
 #include <vector>
 #include <istream>
@@ -39,6 +40,7 @@ namespace dbcppp
             , std::string&& comment);
         static std::unique_ptr<Network> fromDBC(std::istream& is);
         static std::unique_ptr<Network> fromDBC(std::istream& is, std::unique_ptr<Network> network);
+        static std::unique_ptr<Network> fromKCD(const std::string& filename);
         
         virtual std::unique_ptr<Network> clone() const = 0;
 
