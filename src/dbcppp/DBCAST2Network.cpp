@@ -401,7 +401,7 @@ static auto getEnvironmentVariables(const G_Network& gnet)
         {
             access_type = EnvironmentVariable::AccessType::Write;
         }
-        else if (ev.access_type == "DUMMY_NODE_VECTOR3")
+        else
         {
             access_type = EnvironmentVariable::AccessType::ReadWrite;
         }
@@ -492,7 +492,7 @@ static auto getAttributeDefinitions(const G_Network& gnet)
         {
             object_type = AttributeDefinition::ObjectType::Signal;
         }
-        else if (*ad.object_type == "EV_")
+        else
         {
             object_type = AttributeDefinition::ObjectType::EnvironmentVariable;
         }
