@@ -76,6 +76,51 @@ MessageImpl::MessageImpl(
         _error = ErrorCode::MuxValeWithoutMuxSignal;
     }
 }
+MessageImpl::MessageImpl(const MessageImpl& other)
+{
+    _id = other._id;
+    _name = other._name;
+    _message_size = other._message_size;
+    _transmitter = other._transmitter;
+    _message_transmitters = other._message_transmitters;
+    _signals = other._signals;
+    _attribute_values = other._attribute_values;
+    _comment = other._comment;
+    _mux_signal = nullptr;
+    for (const auto& sig : _signals)
+    {
+        switch (sig.second.getMultiplexerIndicator())
+        {
+        case Signal::Multiplexer::MuxSwitch:
+            _mux_signal = &sig.second;
+            break;
+        }
+    }
+    _error = other._error;
+}
+MessageImpl& MessageImpl::operator=(const MessageImpl& other)
+{
+    _id = other._id;
+    _name = other._name;
+    _message_size = other._message_size;
+    _transmitter = other._transmitter;
+    _message_transmitters = other._message_transmitters;
+    _signals = other._signals;
+    _attribute_values = other._attribute_values;
+    _comment = other._comment;
+    _mux_signal = nullptr;
+    for (const auto& sig : _signals)
+    {
+        switch (sig.second.getMultiplexerIndicator())
+        {
+        case Signal::Multiplexer::MuxSwitch:
+            _mux_signal = &sig.second;
+            break;
+        }
+    }
+    _error = other._error;
+    return *this;
+}
 std::unique_ptr<Message> MessageImpl::clone() const
 {
     return std::make_unique<MessageImpl>(*this);

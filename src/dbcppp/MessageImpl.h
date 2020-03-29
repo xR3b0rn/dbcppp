@@ -21,6 +21,10 @@ namespace dbcppp
             , std::map<std::string, SignalImpl>&& signals
             , std::map<std::string, AttributeImpl>&& attribute_values
             , std::string&& comment);
+        MessageImpl(const MessageImpl& other);
+        MessageImpl(MessageImpl&& other) = default;
+        MessageImpl& operator=(const MessageImpl& other);
+        MessageImpl& operator=(MessageImpl&&) = default;
             
         virtual std::unique_ptr<Message> clone() const override;
 
