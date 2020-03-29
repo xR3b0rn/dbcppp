@@ -45,7 +45,7 @@ void receive_frame_data(can_frame* frame)
     // set mux_switch_value to 3 (m3)
     frame->data[0] |= 3;
     // set value for signal s3_1 to 13
-    // expected output after decoding and rawToPhys is: s3_1 = 15 * 0.5 + 1 = 8.5
+    // expected output after decoding and rawToPhys: s3_1 = 15 * 0.5 + 1 = 8.5
     frame->data[2] |= 15;
 }
 
