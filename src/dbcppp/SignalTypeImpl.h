@@ -38,6 +38,7 @@ namespace dbcppp
         virtual double getDefaultValue() const override;
         virtual const std::string& getValueTable() const override;
 
+    private:
         std::string _name;
         uint64_t _signal_size;
         Signal::ByteOrder _byte_order;

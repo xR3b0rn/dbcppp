@@ -24,7 +24,5 @@ namespace dbcppp
         virtual const std::string& getName() const = 0;
         virtual boost::optional<const SignalType&> getSignalType() const = 0;
         virtual void forEachValueEncodingDescription(std::function<void(double, const std::string&)>&& cb) const = 0;
-        
-        void serializeToStream(std::ostream& os) const;
     };
 }

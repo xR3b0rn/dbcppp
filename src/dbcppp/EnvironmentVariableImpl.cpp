@@ -161,39 +161,3 @@ const std::string& EnvironmentVariableImpl::getComment() const
 {
     return _comment;
 }
-
-void EnvironmentVariable::serializeToStream(std::ostream& os) const
-{
-    os << "EV_ " << getName() << ": ";
-    switch (getVarType())
-    {
-    case EnvironmentVariable::VarType::Integer: os << "0"; break;
-    case EnvironmentVariable::VarType::Float: os << "1"; break;
-    case EnvironmentVariable::VarType::String: os << "2"; break;
-    case EnvironmentVariable::VarType::Data: os << "0"; break;
-    }
-    os << " [" << getMinimum() << "|" << getMaximum() << "]" << " \"" << getUnit() << "\" "
-        << getInitialValue() << " " << getEvId() << " ";
-    switch (getAccessType())
-    {
-    case EnvironmentVariable::AccessType::Unrestricted: os << "DUMMY_NODE_VECTOR0"; break;
-    case EnvironmentVariable::AccessType::Read: os << "DUMMY_NODE_VECTOR1"; break;
-    case EnvironmentVariable::AccessType::Write: os << "DUMMY_NODE_VECTOR2"; break;
-    case EnvironmentVariable::AccessType::ReadWrite: os << "DUMMY_NODE_VECTOR3"; break;
-    }
-    bool first = true;
-    forEachAccessNode(
-        [&](const std::string& n)
-        {
-            if (first)
-            {
-                os << " " << n;
-                first = false;
-            }
-            else
-            {
-                os << ", " << n;
-            }
-        });
-    os << ";";
-}

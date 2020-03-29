@@ -8,7 +8,9 @@
 #include <chrono>
 #include <random>
 #include <string>
+#include <iomanip>
 
+#include "../../include/dbcppp/Network2DBC.h"
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
 #include "Config.h"
@@ -50,7 +52,11 @@ BOOST_AUTO_TEST_CASE(ParsingCppApi)
         BOOST_REQUIRE_MESSAGE(net, "DBC parsing failed!");
 
         std::stringstream ss;
-        net->serializeToStream(ss);
+        ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+        {
+            using namespace dbcppp::Network2DBC;
+            ss << *net;
+        }
         auto imp = dbc_to_vec(ss);
 
         for (const auto& line : imp)

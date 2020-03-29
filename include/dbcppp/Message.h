@@ -51,7 +51,5 @@ namespace dbcppp
         virtual const Signal* getMuxSignal() const = 0;
 
         virtual ErrorCode getError() const = 0;
-        
-        void serializeToStream(std::ostream& os) const;
     };
 }

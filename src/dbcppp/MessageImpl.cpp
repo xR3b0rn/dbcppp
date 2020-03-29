@@ -229,14 +229,3 @@ const std::map<std::string, SignalImpl>& MessageImpl::signals() const
 {
     return _signals;
 }
-
-void Message::serializeToStream(std::ostream& os) const
-{
-    os << "BO_ " << getId() << " " << getName() << ": " << getMessageSize() << " " << getTransmitter();
-    forEachSignal(
-        [&](const Signal& s)
-        {
-            os << "\n ";
-            s.serializeToStream(os);
-        });
-}

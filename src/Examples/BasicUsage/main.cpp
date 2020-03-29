@@ -4,6 +4,8 @@
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
 #include "../../Test/Config.h"
+#define DBCPPP_BYTE_ORDER_LITTLE_ENDIAN 1
+#include "test.h"
 
 // from uapi/linux/can.h
 using canid_t = uint32_t;
@@ -48,13 +50,17 @@ void receive_frame_data(can_frame* frame)
     // expected output after decoding and rawToPhys: s3_1 = 15 * 0.5 + 1 = 8.5
     frame->data[2] |= 15;
 }
-
+#include "../../dbcppp/Network2C.h"
 int main()
 {
     std::unique_ptr<dbcppp::Network> net;
     {
         std::ifstream idbc(TEST_DBC);
         net = dbcppp::Network::fromDBC(idbc);
+    }
+    {
+        using namespace dbcppp::Network2C;
+        std::cout << *net;
     }
     can_frame frame;
     receive_frame_data(&frame);

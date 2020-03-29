@@ -49,22 +49,3 @@ void ValueTableImpl::forEachValueEncodingDescription(std::function<void(double, 
         cb(ved.first, ved.second);
     }
 }
-
-void ValueTable::serializeToStream(std::ostream& os) const
-{
-    bool first = true;
-    forEachValueEncodingDescription(
-        [&](double value, const std::string& desc)
-        {
-            if (first)
-            {
-                first = false;
-                os << "VAL_TABLE_ " << getName();
-            }
-            os << " " << value << " \"" << desc << "\"";
-        });
-    if (!first)
-    {
-        os << ";";
-    }
-}

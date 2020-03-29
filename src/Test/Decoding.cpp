@@ -8,7 +8,9 @@
 #include <chrono>
 #include <random>
 #include <string>
+#include <iomanip>
 
+#include "../../include/dbcppp/Network2DBC.h"
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
 
@@ -152,8 +154,7 @@ BOOST_AUTO_TEST_CASE(Decoding)
 {
     using namespace dbcppp;
 
-    //std::size_t n_tests = 1000000;
-    std::size_t n_tests = 1000;
+    std::size_t n_tests = 1000000;
     std::size_t max_msg_byte_size = 64;
 
     BOOST_TEST_MESSAGE("Testing decode-function with " << n_tests << " randomly generated tests...");
@@ -173,7 +174,11 @@ BOOST_AUTO_TEST_CASE(Decoding)
         auto dec_sig = sig->decode(&data[0]);
         
         std::stringstream ss;
-        sig->serializeToStream(ss);
+        ss << std::setprecision(std::numeric_limits<long double>::digits10 + 1);
+        {
+            using namespace dbcppp::Network2DBC;
+            ss << *sig;
+        }
         std::string evt = "";
         switch (sig->getExtendedValueType())
         {

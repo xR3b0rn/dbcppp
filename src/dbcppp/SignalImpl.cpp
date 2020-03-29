@@ -622,32 +622,3 @@ Signal::ErrorCode SignalImpl::getError() const
 {
     return _error;
 }
-
-void Signal::serializeToStream(std::ostream& os) const
-{
-    os << "SG_ " << getName() << " ";
-    switch (getMultiplexerIndicator())
-    {
-    case Signal::Multiplexer::MuxSwitch: os << "M "; break;
-    case Signal::Multiplexer::MuxValue: os << "m" << getMultiplexerSwitchValue() << " "; break;
-    }
-    os << ": " << getStartBit() << "|" << getBitSize() << "@";
-    switch (getByteOrder())
-    {
-    case Signal::ByteOrder::BigEndian: os << "0"; break;
-    case Signal::ByteOrder::LittleEndian: os << "1"; break;
-    }
-    switch (getValueType())
-    {
-    case Signal::ValueType::Unsigned: os << "+ "; break;
-    case Signal::ValueType::Signed: os << "- "; break;
-    }
-    os << "(" << getFactor() << "," << getOffset() << ") ";
-    os << "[" << getMinimum() << "|" << getMaximum() << "] ";
-    os << "\"" << getUnit() << "\"";
-    forEachReceiver(
-        [&](const std::string& n)
-        {
-            os << " " << n;
-        });
-}
