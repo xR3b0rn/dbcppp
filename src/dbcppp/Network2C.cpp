@@ -186,6 +186,14 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                         }
                     }
                     os << boost::format("}\n");
+                    os << boost::format(
+                        "double dbcppp_rawToPhys_%1%(double value)\n"
+                        "{\n"
+                        "    return value * %2% + %3%;\n"
+                        "}\n")
+                        % (msg.getName() + "_" + std::to_string(msg.getId()) + "_" + sig.getName())
+                        % sig.getFactor()
+                        % sig.getOffset();
                 });
 
         });
