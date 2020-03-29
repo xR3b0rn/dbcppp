@@ -39,4 +39,5 @@ BOOST_AUTO_TEST_CASE(DBCParsingCApi)
             BOOST_REQUIRE(spec->hasNewSymbol(ns));
         }, const_cast<dbcppp::Network*>(spec.get()));
     BOOST_REQUIRE_EQUAL(spec->getComment(), dbcppp_NetworkGetComment(impl));
+    dbcppp_NetworkFree(impl);
 }

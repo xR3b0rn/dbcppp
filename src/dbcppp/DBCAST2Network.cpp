@@ -229,21 +229,25 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
             , extended_value_type);
         switch (ns->getError())
         {
-        case SignalImpl::ErrorCode::SignalExceedsMessageSize:
+        case Signal::ErrorCode::SignalExceedsMessageSize:
             std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"
                 << " start_bit + bit_size exceeds the byte size of the message! Ignoring this error will lead to garbage data when using the decode function of this signal." << std::endl;
             break;
-        case SignalImpl::ErrorCode::WrongBitSizeForExtendedDataType:
+        case Signal::ErrorCode::WrongBitSizeForExtendedDataType:
             std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"
                 << " bit_size does not fit the bit size of the specified ExtendedValueType." << std::endl;
             break;
-        case SignalImpl::ErrorCode::MaschinesFloatEncodingNotSupported:
+        case Signal::ErrorCode::MaschinesFloatEncodingNotSupported:
             std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
                 << " This warning appears when a signal uses type float but the system this programm is running on does not uses IEEE 754 encoding for floats." << std::endl;
             break;
-        case SignalImpl::ErrorCode::MaschinesDoubleEncodingNotSupported:
+        case Signal::ErrorCode::MaschinesDoubleEncodingNotSupported:
             std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
                 << " This warning appears when a signal uses type double but the system this programm is running on does not uses IEEE 754 encoding for doubles." << std::endl;
+            break;
+        case Signal::ErrorCode::MuxIndicatorButNoDiscreteDecode:
+            std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
+                << " Is a mux indicator but does have no steady decode functionallity (extended value type for this type is float or double but must be integer)." << std::endl;
             break;
         }
         result.insert(std::make_pair(s.name, std::move(ns)));
@@ -317,6 +321,10 @@ static auto getMessages(const G_Network& gnet)
             , std::move(signals)
             , std::move(attribute_values)
             , std::move(comment));
+        if (msg->getError() == Message::ErrorCode::MuxValeWithoutMuxSignal)
+        {
+            std::cout << "Warning: Message " << msg->getName() << " does have mux value but no mux signal!" << std::endl;
+        }
         result.insert(std::make_pair(m.id, std::move(msg)));
     }
     return result;

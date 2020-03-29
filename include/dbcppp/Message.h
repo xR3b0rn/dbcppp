@@ -15,6 +15,13 @@ namespace dbcppp
     class DBCPPP_API Message
     {
     public:
+        enum class ErrorCode
+            : uint64_t
+        {
+            NoError,
+            MuxValeWithoutMuxSignal
+        };
+
         static std::unique_ptr<Message> create(
               uint64_t id
             , std::string&& name
@@ -41,6 +48,9 @@ namespace dbcppp
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
         virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
         virtual const std::string& getComment() const = 0;
+        virtual const Signal* getMuxSignal() const = 0;
+
+        virtual ErrorCode getError() const = 0;
         
         void serializeToStream(std::ostream& os) const;
     };

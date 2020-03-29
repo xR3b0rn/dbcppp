@@ -55,7 +55,27 @@ MessageImpl::MessageImpl(
     , _signals(std::move(signals))
     , _attribute_values(std::move(attribute_values))
     , _comment(std::move(comment))
-{}
+    , _mux_signal(nullptr)
+    , _error(ErrorCode::NoError)
+{
+    bool have_mux_value = false;
+    for (const auto& sig : _signals)
+    {
+        switch (sig.second.getMultiplexerIndicator())
+        {
+        case Signal::Multiplexer::MuxValue:
+            have_mux_value = true;
+            break;
+        case Signal::Multiplexer::MuxSwitch:
+            _mux_signal = &sig.second;
+            break;
+        }
+    }
+    if (have_mux_value && _mux_signal == nullptr)
+    {
+        _error = ErrorCode::MuxValeWithoutMuxSignal;
+    }
+}
 std::unique_ptr<Message> MessageImpl::clone() const
 {
     return std::make_unique<MessageImpl>(*this);
@@ -151,6 +171,15 @@ const std::string& MessageImpl::getComment() const
 {
     return _comment;
 }
+const Signal* MessageImpl::getMuxSignal() const 
+{
+    return _mux_signal;
+}
+MessageImpl::ErrorCode MessageImpl::getError() const
+{
+    return _error;
+}
+
 const std::map<std::string, SignalImpl>& MessageImpl::signals() const
 {
     return _signals;

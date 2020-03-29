@@ -58,10 +58,10 @@ std::unique_ptr<Network> Network::create(
         avds.insert(std::make_pair(ad.first, std::move(static_cast<AttributeImpl&>(*ad.second))));
         ad.second.reset(nullptr);
     }
-    for (auto& ad : attribute_values)
+    for (auto& av : attribute_values)
     {
-        avs.insert(std::make_pair(ad.first, std::move(static_cast<AttributeImpl&>(*ad.second))));
-        ad.second.reset(nullptr);
+        avs.insert(std::make_pair(av.first, std::move(static_cast<AttributeImpl&>(*av.second))));
+        av.second.reset(nullptr);
     }
     return std::make_unique<NetworkImpl>(
           std::move(version)

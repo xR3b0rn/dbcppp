@@ -74,7 +74,7 @@ BO_ 1 test_msg_mux0: 8 VehicleBus
  SG_ s2_8 m2 : 43|10@1+ (5,0) [0|0] "deg" Receiver
  SG_ s2_9 m2 : 53|6@1+ (1,0) [0|0] "A" Receiver
  SG_ s3_0 m3 : 8|8@1+ (1,-40) [0|0] "C" Receiver
- SG_ s3_1 m3 : 16|11@1+ (1,-40) [0|0] "C" Receiver
+ SG_ s3_1 m3 : 16|11@1+ (0.5,1) [0|0] "C" Receiver
  SG_ s3_2 m3 : 27|10@1+ (1,-20) [0|0] "C" Receiver
  SG_ s3_3 m3 : 37|10@1+ (1,0) [0|0] "C" Receiver
  SG_ s3_4 m3 : 47|1@1+ (1,0) [0|0] "" Receiver

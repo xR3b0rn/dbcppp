@@ -12,8 +12,8 @@ enum class Alignment
     signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit
 };
 
-template <Alignment aAlignment, Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
-double template_decode(const Signal* sig, const void* nbytes) noexcept
+template <class Ret, Alignment aAlignment, Signal::ByteOrder aByteOrder, Signal::ValueType aValueType, Signal::ExtendedValueType aExtendedValueType>
+Ret template_decode(const Signal* sig, const void* nbytes) noexcept
 {
     const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
     union
@@ -45,11 +45,11 @@ double template_decode(const Signal* sig, const void* nbytes) noexcept
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
         {
-            return hack.d;
+            return Ret(hack.d);
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
         {
-            return hack.f;
+            return Ret(hack.f);
         }
         if constexpr (aValueType == Signal::ValueType::Signed)
         {
@@ -57,9 +57,9 @@ double template_decode(const Signal* sig, const void* nbytes) noexcept
             {
                 hack.ui |= sigi->_mask_signed;
             }
-            return double(hack.i);
+            return Ret(hack.i);
         }
-        return double(hack.ui);
+        return Ret(hack.ui);
     }
     else
     {
@@ -81,13 +81,13 @@ double template_decode(const Signal* sig, const void* nbytes) noexcept
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
         {
-            return hack.d;
+            return Ret(hack.d);
         }
         hack.ui >>= sigi->_fixed_start_bit_0;
     }
     if constexpr (aExtendedValueType == Signal::ExtendedValueType::Float)
     {
-        return hack.f;
+        return Ret(hack.f);
     }
     hack.ui &= sigi->_mask;
     if constexpr (aValueType == Signal::ValueType::Signed)
@@ -98,9 +98,9 @@ double template_decode(const Signal* sig, const void* nbytes) noexcept
         {
             hack.ui |= sigi->_mask_signed;
         }
-        return double(hack.i);
+        return Ret(hack.i);
     }
-    return double(hack.ui);
+    return Ret(hack.ui);
 }
 
 constexpr uint64_t enum_mask(Alignment a, Signal::ByteOrder bo, Signal::ValueType vt, Signal::ExtendedValueType evt)
@@ -130,8 +130,10 @@ constexpr uint64_t enum_mask(Alignment a, Signal::ByteOrder bo, Signal::ValueTyp
     }
     return result;
 }
-using decode_func_t = double (*)(const Signal*, const void*) noexcept;
-decode_func_t make_decode(Alignment a, Signal::ByteOrder bo, Signal::ValueType vt, Signal::ExtendedValueType evt)
+template <class Ret>
+using decode_func_t = Ret (*)(const Signal*, const void*) noexcept;
+template <class Ret>
+decode_func_t<Ret> make_decode(Alignment a, Signal::ByteOrder bo, Signal::ValueType vt, Signal::ExtendedValueType evt)
 {
     constexpr auto si64b            = Alignment::size_inbetween_first_64_bit;
     constexpr auto se64bsbsfi64b    = Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit;
@@ -145,52 +147,93 @@ decode_func_t make_decode(Alignment a, Signal::ByteOrder bo, Signal::ValueType v
     constexpr auto d                = Signal::ExtendedValueType::Double;
     switch (enum_mask(a, bo, vt, evt))
     {
-    case enum_mask(si64b, le, sig, i):            return template_decode<si64b, le, sig, i>;
-    case enum_mask(si64b, le, sig, f):            return template_decode<si64b, le, sig, f>;
-    case enum_mask(si64b, le, sig, d):            return template_decode<si64b, le, sig, d>;
-    case enum_mask(si64b, le, usig, i):           return template_decode<si64b, le, usig, i>;
-    case enum_mask(si64b, le, usig, f):           return template_decode<si64b, le, usig, f>;
-    case enum_mask(si64b, le, usig, d):           return template_decode<si64b, le, usig, d>;
-    case enum_mask(si64b, be, sig, i):            return template_decode<si64b, be, sig, i>;
-    case enum_mask(si64b, be, sig, f):            return template_decode<si64b, be, sig, f>;
-    case enum_mask(si64b, be, sig, d):            return template_decode<si64b, be, sig, d>;
-    case enum_mask(si64b, be, usig, i):           return template_decode<si64b, be, usig, i>;
-    case enum_mask(si64b, be, usig, f):           return template_decode<si64b, be, usig, f>;
-    case enum_mask(si64b, be, usig, d):           return template_decode<si64b, be, usig, d>;
-    case enum_mask(se64bsbsfi64b, le, sig, i):    return template_decode<se64bsbsfi64b, le, sig, i>;
-    case enum_mask(se64bsbsfi64b, le, sig, f):    return template_decode<se64bsbsfi64b, le, sig, f>;
-    case enum_mask(se64bsbsfi64b, le, sig, d):    return template_decode<se64bsbsfi64b, le, sig, d>;
-    case enum_mask(se64bsbsfi64b, le, usig, i):   return template_decode<se64bsbsfi64b, le, usig, i>;
-    case enum_mask(se64bsbsfi64b, le, usig, f):   return template_decode<se64bsbsfi64b, le, usig, f>;
-    case enum_mask(se64bsbsfi64b, le, usig, d):   return template_decode<se64bsbsfi64b, le, usig, d>;
-    case enum_mask(se64bsbsfi64b, be, sig, i):    return template_decode<se64bsbsfi64b, be, sig, i>;
-    case enum_mask(se64bsbsfi64b, be, sig, f):    return template_decode<se64bsbsfi64b, be, sig, f>;
-    case enum_mask(se64bsbsfi64b, be, sig, d):    return template_decode<se64bsbsfi64b, be, sig, d>;
-    case enum_mask(se64bsbsfi64b, be, usig, i):   return template_decode<se64bsbsfi64b, be, usig, i>;
-    case enum_mask(se64bsbsfi64b, be, usig, f):   return template_decode<se64bsbsfi64b, be, usig, f>;
-    case enum_mask(se64bsbsfi64b, be, usig, d):   return template_decode<se64bsbsfi64b, be, usig, d>;
-    case enum_mask(se64bsasdnfi64b, le, sig, i):  return template_decode<se64bsasdnfi64b, le, sig, i>;
-    case enum_mask(se64bsasdnfi64b, le, sig, f):  return template_decode<se64bsasdnfi64b, le, sig, f>;
-    case enum_mask(se64bsasdnfi64b, le, sig, d):  return template_decode<se64bsasdnfi64b, le, sig, d>;
-    case enum_mask(se64bsasdnfi64b, le, usig, i): return template_decode<se64bsasdnfi64b, le, usig, i>;
-    case enum_mask(se64bsasdnfi64b, le, usig, f): return template_decode<se64bsasdnfi64b, le, usig, f>;
-    case enum_mask(se64bsasdnfi64b, le, usig, d): return template_decode<se64bsasdnfi64b, le, usig, d>;
-    case enum_mask(se64bsasdnfi64b, be, sig, i):  return template_decode<se64bsasdnfi64b, be, sig, i>;
-    case enum_mask(se64bsasdnfi64b, be, sig, f):  return template_decode<se64bsasdnfi64b, be, sig, f>;
-    case enum_mask(se64bsasdnfi64b, be, sig, d):  return template_decode<se64bsasdnfi64b, be, sig, d>;
-    case enum_mask(se64bsasdnfi64b, be, usig, i): return template_decode<se64bsasdnfi64b, be, usig, i>;
-    case enum_mask(se64bsasdnfi64b, be, usig, f): return template_decode<se64bsasdnfi64b, be, usig, f>;
-    case enum_mask(se64bsasdnfi64b, be, usig, d): return template_decode<se64bsasdnfi64b, be, usig, d>;
+    case enum_mask(si64b, le, sig, i):            return template_decode<Ret, si64b, le, sig, i>;
+    case enum_mask(si64b, le, sig, f):            return template_decode<Ret, si64b, le, sig, f>;
+    case enum_mask(si64b, le, sig, d):            return template_decode<Ret, si64b, le, sig, d>;
+    case enum_mask(si64b, le, usig, i):           return template_decode<Ret, si64b, le, usig, i>;
+    case enum_mask(si64b, le, usig, f):           return template_decode<Ret, si64b, le, usig, f>;
+    case enum_mask(si64b, le, usig, d):           return template_decode<Ret, si64b, le, usig, d>;
+    case enum_mask(si64b, be, sig, i):            return template_decode<Ret, si64b, be, sig, i>;
+    case enum_mask(si64b, be, sig, f):            return template_decode<Ret, si64b, be, sig, f>;
+    case enum_mask(si64b, be, sig, d):            return template_decode<Ret, si64b, be, sig, d>;
+    case enum_mask(si64b, be, usig, i):           return template_decode<Ret, si64b, be, usig, i>;
+    case enum_mask(si64b, be, usig, f):           return template_decode<Ret, si64b, be, usig, f>;
+    case enum_mask(si64b, be, usig, d):           return template_decode<Ret, si64b, be, usig, d>;
+    case enum_mask(se64bsbsfi64b, le, sig, i):    return template_decode<Ret, se64bsbsfi64b, le, sig, i>;
+    case enum_mask(se64bsbsfi64b, le, sig, f):    return template_decode<Ret, se64bsbsfi64b, le, sig, f>;
+    case enum_mask(se64bsbsfi64b, le, sig, d):    return template_decode<Ret, se64bsbsfi64b, le, sig, d>;
+    case enum_mask(se64bsbsfi64b, le, usig, i):   return template_decode<Ret, se64bsbsfi64b, le, usig, i>;
+    case enum_mask(se64bsbsfi64b, le, usig, f):   return template_decode<Ret, se64bsbsfi64b, le, usig, f>;
+    case enum_mask(se64bsbsfi64b, le, usig, d):   return template_decode<Ret, se64bsbsfi64b, le, usig, d>;
+    case enum_mask(se64bsbsfi64b, be, sig, i):    return template_decode<Ret, se64bsbsfi64b, be, sig, i>;
+    case enum_mask(se64bsbsfi64b, be, sig, f):    return template_decode<Ret, se64bsbsfi64b, be, sig, f>;
+    case enum_mask(se64bsbsfi64b, be, sig, d):    return template_decode<Ret, se64bsbsfi64b, be, sig, d>;
+    case enum_mask(se64bsbsfi64b, be, usig, i):   return template_decode<Ret, se64bsbsfi64b, be, usig, i>;
+    case enum_mask(se64bsbsfi64b, be, usig, f):   return template_decode<Ret, se64bsbsfi64b, be, usig, f>;
+    case enum_mask(se64bsbsfi64b, be, usig, d):   return template_decode<Ret, se64bsbsfi64b, be, usig, d>;
+    case enum_mask(se64bsasdnfi64b, le, sig, i):  return template_decode<Ret, se64bsasdnfi64b, le, sig, i>;
+    case enum_mask(se64bsasdnfi64b, le, sig, f):  return template_decode<Ret, se64bsasdnfi64b, le, sig, f>;
+    case enum_mask(se64bsasdnfi64b, le, sig, d):  return template_decode<Ret, se64bsasdnfi64b, le, sig, d>;
+    case enum_mask(se64bsasdnfi64b, le, usig, i): return template_decode<Ret, se64bsasdnfi64b, le, usig, i>;
+    case enum_mask(se64bsasdnfi64b, le, usig, f): return template_decode<Ret, se64bsasdnfi64b, le, usig, f>;
+    case enum_mask(se64bsasdnfi64b, le, usig, d): return template_decode<Ret, se64bsasdnfi64b, le, usig, d>;
+    case enum_mask(se64bsasdnfi64b, be, sig, i):  return template_decode<Ret, se64bsasdnfi64b, be, sig, i>;
+    case enum_mask(se64bsasdnfi64b, be, sig, f):  return template_decode<Ret, se64bsasdnfi64b, be, sig, f>;
+    case enum_mask(se64bsasdnfi64b, be, sig, d):  return template_decode<Ret, se64bsasdnfi64b, be, sig, d>;
+    case enum_mask(se64bsasdnfi64b, be, usig, i): return template_decode<Ret, se64bsasdnfi64b, be, usig, i>;
+    case enum_mask(se64bsasdnfi64b, be, usig, f): return template_decode<Ret, se64bsasdnfi64b, be, usig, f>;
+    case enum_mask(se64bsasdnfi64b, be, usig, d): return template_decode<Ret, se64bsasdnfi64b, be, usig, d>;
     }
     return nullptr;
 }
-void encode(const Signal* sig, double raw, void* buffer) noexcept
+template <class Ret>
+decode_func_t<Ret> make_decodeMuxSignal(Alignment a, Signal::ByteOrder bo, Signal::ValueType vt, Signal::ExtendedValueType evt)
+{
+    constexpr auto si64b            = Alignment::size_inbetween_first_64_bit;
+    constexpr auto se64bsbsfi64b    = Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit;
+    constexpr auto se64bsasdnfi64b  = Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit;
+    constexpr auto le               = Signal::ByteOrder::LittleEndian;
+    constexpr auto be               = Signal::ByteOrder::BigEndian;
+    constexpr auto sig              = Signal::ValueType::Signed;
+    constexpr auto usig             = Signal::ValueType::Unsigned;
+    constexpr auto i                = Signal::ExtendedValueType::Integer;
+    constexpr auto f                = Signal::ExtendedValueType::Float;
+    constexpr auto d                = Signal::ExtendedValueType::Double;
+    switch (enum_mask(a, bo, vt, evt))
+    {
+    case enum_mask(si64b, le, sig, i):            return template_decode<Ret, si64b, le, sig, i>;
+    case enum_mask(si64b, le, sig, f):            return template_decode<Ret, si64b, le, sig, f>;
+    case enum_mask(si64b, le, sig, d):            return template_decode<Ret, si64b, le, sig, d>;
+    case enum_mask(si64b, le, usig, i):           return template_decode<Ret, si64b, le, usig, i>;
+    case enum_mask(si64b, be, sig, i):            return template_decode<Ret, si64b, be, sig, i>;
+    case enum_mask(si64b, be, usig, i):           return template_decode<Ret, si64b, be, usig, i>;
+    case enum_mask(se64bsbsfi64b, le, sig, i):    return template_decode<Ret, se64bsbsfi64b, le, sig, i>;
+    case enum_mask(se64bsbsfi64b, le, usig, i):   return template_decode<Ret, se64bsbsfi64b, le, usig, i>;
+    case enum_mask(se64bsbsfi64b, be, sig, i):    return template_decode<Ret, se64bsbsfi64b, be, sig, i>;
+    case enum_mask(se64bsbsfi64b, be, usig, i):   return template_decode<Ret, se64bsbsfi64b, be, usig, i>;
+    case enum_mask(se64bsasdnfi64b, le, sig, i):  return template_decode<Ret, se64bsasdnfi64b, le, sig, i>;
+    case enum_mask(se64bsasdnfi64b, le, usig, i): return template_decode<Ret, se64bsasdnfi64b, le, usig, i>;
+    case enum_mask(se64bsasdnfi64b, be, sig, i):  return template_decode<Ret, se64bsasdnfi64b, be, sig, i>;
+    case enum_mask(se64bsasdnfi64b, be, usig, i): return template_decode<Ret, se64bsasdnfi64b, be, usig, i>;
+    }
+    return nullptr;
+}
+template <class T>
+void encode(const Signal* sig, T raw, void* buffer) noexcept
 {
     union
     {
         double d;
         uint64_t ui;
-    } hack{raw};
+    } hack;
+    if constexpr (std::is_same_v<T, double>)
+    {
+        hack.d = raw;
+    }
+    else
+    {
+        hack.ui = raw;
+    }
     const SignalImpl* sigi = static_cast<const SignalImpl*>(sig);
     char* b = reinterpret_cast<char*>(buffer);
     if (sigi->getByteOrder() == Signal::ByteOrder::BigEndian)
@@ -454,11 +497,18 @@ SignalImpl::SignalImpl(
         }
     }
 
-    _decode = ::make_decode(alignment, _byte_order, _value_type, _extended_value_type);
+    _decode_steady = ::make_decode<double>(alignment, _byte_order, _value_type, _extended_value_type);
+    _decode_discrete = ::make_decode<uint64_t>(alignment, _byte_order, _value_type, _extended_value_type);
 
-    _encode = ::encode;
+    _encode_steady = ::encode<double>;
+    _encode_discrete = ::encode<uint64_t>;
     _raw_to_phys = ::raw_to_phys;
     _phys_to_raw = ::phys_to_raw;
+
+    if (getMultiplexerIndicator() == Multiplexer::MuxSwitch && _decode_discrete == nullptr)
+    {
+        _error = ErrorCode::MuxIndicatorButNoDiscreteDecode;
+    }
 }
 std::unique_ptr<Signal> SignalImpl::clone() const
 {

@@ -25,7 +25,8 @@ namespace dbcppp
             MaschinesFloatEncodingNotSupported,
             MaschinesDoubleEncodingNotSupported,
             SignalExceedsMessageSize,
-            WrongBitSizeForExtendedDataType
+            WrongBitSizeForExtendedDataType,
+            MuxIndicatorButNoDiscreteDecode
         };
         enum class Multiplexer
         {
@@ -105,16 +106,20 @@ namespace dbcppp
         ///               ...
         ///               bit_n-7 - bit_n: bytes[n / 8]
         ///               (like the Unix CAN frame does store the data)
-        inline double decode(const void* bytes) const noexcept { return _decode(this, bytes); }
-        inline void encode(double raw, void* buffer) const noexcept { return _encode(this, raw, buffer); }
+        inline double decode(const void* bytes) const noexcept { return _decode_steady(this, bytes); }
+        inline void encode(double raw, void* buffer) const noexcept { return _encode_steady(this, raw, buffer); }
+        inline uint64_t decodeDiscrete(const void* bytes) const noexcept { return _decode_discrete(this, bytes); }
+        inline void encodeDiscrete(uint64_t raw, void* buffer) const noexcept { return _encode_discrete(this, raw, buffer); }
 
         inline double rawToPhys(double raw) const { return _raw_to_phys(this, raw); }
         inline double physToRaw(double phys) const { return _phys_to_raw(this, phys); }
 
     protected:
         // instead of using virtuals dynamic dispatching use function pointers
-        double (*_decode)(const Signal* sig, const void* bytes) noexcept {nullptr};
-        void (*_encode)(const Signal* sig, double raw, void* buffer) noexcept {nullptr};
+        double (*_decode_steady)(const Signal* sig, const void* bytes) noexcept {nullptr};
+        void (*_encode_steady)(const Signal* sig, double raw, void* buffer) noexcept {nullptr};
+        uint64_t (*_decode_discrete)(const Signal* sig, const void* bytes) noexcept {nullptr};
+        void (*_encode_discrete)(const Signal* sig, uint64_t raw, void* buffer) noexcept {nullptr};
         double (*_raw_to_phys)(const Signal* sig, double raw) noexcept {nullptr};
         double (*_phys_to_raw)(const Signal* sig, double phys) noexcept {nullptr};
     };

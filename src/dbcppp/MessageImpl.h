@@ -37,6 +37,9 @@ namespace dbcppp
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
         virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
         virtual const std::string& getComment() const override;
+        virtual const Signal* getMuxSignal() const override;
+        
+        virtual ErrorCode getError() const override;
         
         const std::map<std::string, SignalImpl>& signals() const;
         
@@ -49,5 +52,9 @@ namespace dbcppp
         std::map<std::string, SignalImpl> _signals;
         std::map<std::string, AttributeImpl> _attribute_values;
         std::string _comment;
+
+        const Signal* _mux_signal;
+
+        ErrorCode _error;
     };
 }
