@@ -61,9 +61,9 @@ matrix:
         apt:
           update: true
           sources:
+            - sourceline: 'ppa:boost-latest/ppa'
             - sourceline: 'ppa:mhier/libboost-latest'
             - ubuntu-toolchain-r-test
-            - ppa:boost-latest/ppa
           packages:
             - g++-9
             - libpq-dev
