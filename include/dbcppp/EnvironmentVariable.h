@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 #include <cstddef>
-#include <functional>
-
 #include "Export.h"
 #include "Node.h"
 #include "Attribute.h"
