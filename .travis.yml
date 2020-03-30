@@ -71,8 +71,8 @@ matrix:
         - CXX=g++-9 BUILD=Release
 before_install:
   - CXX=g++-9 BUILD=Release
-  - rm /usr/bin/g++
-  - ln -s /usr/bin/g++-9 /usr/bin/g++
+  - sudo rm /usr/bin/g++
+  - sudo ln -s /usr/bin/g++-9 /usr/bin/g++
   - wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz -P $HOME
   - cd $HOME
   - tar -xzvf boost_1_70_0.tar.gz >/dev/null
