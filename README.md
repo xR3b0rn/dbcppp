@@ -29,7 +29,10 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 * sigtype_attr_list
 * signal_type_refs
 * signal_groups
-# Build and install
+# Get started
+## Dependencies
+* boost
+## Build & Install
 ```
 mkdir build
 cd build
@@ -38,8 +41,6 @@ make -j6
 make RunTests
 make install
 ```
-## Dependencies
-* boost
 # Usage example
 * [Examples](https://github.com/xR3b0rn/dbcppp/tree/master/src/Examples)
 * `C++`
