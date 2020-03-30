@@ -83,6 +83,7 @@ namespace dbcppp
         virtual bool hasReceiver(const std::string& name) const = 0;
         virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const = 0;
         virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const = 0;
+        virtual const std::string* getValueDescription(double value) const = 0;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
         virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
