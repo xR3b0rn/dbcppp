@@ -580,6 +580,16 @@ void SignalImpl::forEachValueDescription(std::function<void(double, const std::s
         cb(av.first, av.second);
     }
 }
+const std::string* SignalImpl::getValueDescription(double value) const
+{
+    const std::string* result = nullptr;
+    auto iter = _value_descriptions.find(value);
+    if (iter != _value_descriptions.end())
+    {
+        result = &iter->second;
+    }
+    return result;
+}
 const Attribute* SignalImpl::getAttributeValueByName(const std::string& name) const
 {
     const Attribute* result = nullptr;
