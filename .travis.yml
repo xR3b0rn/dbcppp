@@ -70,7 +70,16 @@ matrix:
             - libboost-all-dev
       env:
         - CXX=g++-9 BUILD=Release
-  
+before_install:
+  - wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz -P $HOME
+  - cd $HOME
+  - tar -xzvf boost_1_70_0.tar.gz >/dev/null
+  - cd boost_1_70_0
+  - sudo ./bootstrap.sh --prefix=/usr/local --with-libraries=all
+  - sudo ./b2 install
+  - sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/boost.conf'
+  - sudo ldconfig
+  - cd ../../
 script:
     ############################################################################
     # Build main and tests
