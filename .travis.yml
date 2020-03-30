@@ -76,7 +76,7 @@ script:
     ############################################################################
      - mkdir -p build
      - cd build
-     - cmake -DBoost_USE_STATIC_LIBS:BOOL=OFF .. 
+     - cmake .. 
      - make
      - make RunTests
      
