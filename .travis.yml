@@ -73,15 +73,14 @@ before_install:
   - CXX=g++-9 BUILD=Release
   - sudo rm /usr/bin/g++
   - sudo ln -s /usr/bin/g++-9 /usr/bin/g++
-  - wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz -P $HOME
-  - cd $HOME
+  - wget https://sourceforge.net/projects/boost/files/boost/1.70.0/boost_1_70_0.tar.gz
   - tar -xzvf boost_1_70_0.tar.gz >/dev/null
   - cd boost_1_70_0
   - sudo ./bootstrap.sh --prefix=/usr/local --with-libraries=all
   - sudo ./b2 -j16 install
   - sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/boost.conf'
   - sudo ldconfig
-  - cd ../../
+  - cd ..
 script:
     ############################################################################
     # Build main and tests
