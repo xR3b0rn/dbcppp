@@ -67,7 +67,6 @@ matrix:
           packages:
             - g++-9
             - libpq-dev
-            - libboost-all-dev
       env:
         - CXX=g++-9 BUILD=Release
 before_install:
