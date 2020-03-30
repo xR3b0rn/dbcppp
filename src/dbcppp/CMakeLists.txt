@@ -22,7 +22,6 @@ file(GLOB header_interface
 file(GLOB src
     "*.cpp"
 )
-message(STATUS ${header_interface})
 
 target_sources(${PROJECT_NAME}
     PRIVATE ${header}
