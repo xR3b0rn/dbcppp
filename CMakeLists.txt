@@ -1,7 +1,7 @@
 ﻿
 cmake_minimum_required (VERSION 3.8)
 
-project("dbcppp")
+project("libdbcppp")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
@@ -27,5 +27,3 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 add_subdirectory(src/)
-
-

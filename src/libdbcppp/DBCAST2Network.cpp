@@ -245,10 +245,6 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
             std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
                 << " This warning appears when a signal uses type double but the system this programm is running on does not uses IEEE 754 encoding for doubles." << std::endl;
             break;
-        case Signal::ErrorCode::MuxIndicatorButNoDiscreteDecode:
-            std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
-                << " Is a mux indicator but does have no steady decode functionallity (extended value type for this type is float or double but must be integer)." << std::endl;
-            break;
         }
         result.insert(std::make_pair(s.name, std::move(ns)));
     }

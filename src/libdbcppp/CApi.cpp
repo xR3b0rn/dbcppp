@@ -1157,32 +1157,22 @@ extern "C"
         default: return dbcppp_SignalExtendedValueType::dbcppp_SignalExtendedValueTypeDouble;
         }
     }
-    DBCPPP_API double dbcppp_SignalDecode(const dbcppp_Signal* sig, const void* bytes)
+    DBCPPP_API uint64_t dbcppp_SignalDecode(const dbcppp_Signal* sig, const void* bytes)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->decode(bytes);
     }
-    DBCPPP_API void dbcppp_SignalEncode(const dbcppp_Signal* sig, double raw, void* buffer)
+    DBCPPP_API void dbcppp_SignalEncode(const dbcppp_Signal* sig, uint64_t raw, void* buffer)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         sigi->encode(raw, buffer);
     }
-    DBCPPP_API uint64_t dbcppp_SignalDecodeDiscrete(const dbcppp_Signal* sig, const void* bytes)
-    {
-        auto sigi = reinterpret_cast<const SignalImpl*>(sig);
-        return sigi->decodeDiscrete(bytes);
-    }
-    DBCPPP_API void dbcppp_SignalEncodeDiscrete(const dbcppp_Signal* sig, uint64_t raw, void* buffer)
-    {
-        auto sigi = reinterpret_cast<const SignalImpl*>(sig);
-        sigi->encodeDiscrete(raw, buffer);
-    }
-    DBCPPP_API double dbcppp_SignalRawToPhys(const dbcppp_Signal* sig, double raw)
+    DBCPPP_API double dbcppp_SignalRawToPhys(const dbcppp_Signal* sig, uint64_t raw)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->rawToPhys(raw);
     }
-    DBCPPP_API double dbcppp_SignalPhysToRaw(const dbcppp_Signal* sig, double phys)
+    DBCPPP_API uint64_t dbcppp_SignalPhysToRaw(const dbcppp_Signal* sig, double phys)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->physToRaw(phys);

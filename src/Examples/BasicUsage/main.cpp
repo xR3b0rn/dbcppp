@@ -66,7 +66,7 @@ int main()
         {
             const dbcppp::Signal* mux_sig = msg->getMuxSignal();
             if (sig.getMultiplexerIndicator() != dbcppp::Signal::Multiplexer::MuxValue ||
-                (mux_sig && mux_sig->decodeDiscrete(frame.data) == sig.getMultiplexerSwitchValue()))
+                (mux_sig && mux_sig->decode(frame.data) == sig.getMultiplexerSwitchValue()))
             {
                 std::cout << "\t" << sig.getName() << "=" << sig.rawToPhys(sig.decode(frame.data)) << sig.getUnit() << "\n";
             }

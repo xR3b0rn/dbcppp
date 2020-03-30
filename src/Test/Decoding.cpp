@@ -84,19 +84,13 @@ auto generate_random_data(
     return result;
 }
 
-double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
+uint64_t easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
 {
     if (sig.getBitSize() == 0)
     {
         return 0;
     }
-    union
-    {
-        uint64_t ui;
-        int64_t i;
-        float f;
-        double d;
-    } retVal{0};
+    uint64_t result = 0;
     if (sig.getByteOrder() == dbcppp::Signal::ByteOrder::BigEndian)
     {
         auto srcBit = sig.getStartBit();
@@ -105,7 +99,7 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
         {
             if (data[srcBit / 8] & (1ull << (srcBit % 8)))
             {
-                retVal.ui |= (1ULL << dstBit);
+                result |= (1ULL << dstBit);
             }
             if ((srcBit % 8) == 0)
             {
@@ -126,7 +120,7 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
         {
             if (data[srcBit / 8] & (1 << (srcBit % 8)))
             {
-                retVal.ui |= (1ULL << dstBit);
+                result |= (1ULL << dstBit);
             }
             ++srcBit;
             ++dstBit;
@@ -134,21 +128,21 @@ double easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
     }
     switch (sig.getExtendedValueType())
     {
-    case dbcppp::Signal::ExtendedValueType::Float: return retVal.f;
-    case dbcppp::Signal::ExtendedValueType::Double: return retVal.d;
+    case dbcppp::Signal::ExtendedValueType::Float: return result;
+    case dbcppp::Signal::ExtendedValueType::Double: return result;
     }
     if (sig.getValueType() == dbcppp::Signal::ValueType::Signed)
     {
-        if (retVal.ui & (1ull << (sig.getBitSize() - 1)))
+        if (result & (1ull << (sig.getBitSize() - 1)))
         {
             for (auto i = sig.getBitSize(); i < 64; ++i)
             {
-                retVal.ui |= (1ULL << i);
+                result |= (1ULL << i);
             }
         }
-        return double(retVal.i);
+        return result;
     }
-    return double(retVal.ui);
+    return result;
 }
 BOOST_AUTO_TEST_CASE(Decoding)
 {
