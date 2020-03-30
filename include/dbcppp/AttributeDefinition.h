@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <boost/variant.hpp>
-
+#include <functional>
 #include "Export.h"
 
 namespace dbcppp
