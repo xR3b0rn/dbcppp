@@ -467,7 +467,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                 {
                     bool first = true;
                     s.forEachValueDescription(
-                        [&](double value, const std::string& desc)
+                        [&](int64_t value, const std::string& desc)
                         {
                             if (first)
                             {
@@ -488,7 +488,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         {
             bool first = true;
             ev.forEachValueDescription(
-                [&](double value, const std::string& desc)
+                [&](int64_t value, const std::string& desc)
                 {
                     if (first)
                     {
@@ -582,7 +582,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
 {
     bool first = true;
     vt.forEachValueEncodingDescription(
-        [&](double value, const std::string& desc)
+        [&](int64_t value, const std::string& desc)
         {
             if (first)
             {

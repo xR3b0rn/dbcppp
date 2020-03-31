@@ -282,7 +282,7 @@ std::unique_ptr<Signal> Signal::create(
     , std::string&& unit
     , std::set<std::string>&& receivers
     , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
-    , std::map<double, std::string>&& value_descriptions
+    , std::map<int64_t, std::string>&& value_descriptions
     , std::string&& comment
     , Signal::ExtendedValueType extended_value_type)
 {
@@ -334,7 +334,7 @@ SignalImpl::SignalImpl(
     , std::string&& unit
     , std::set<std::string>&& receivers
     , std::map<std::string, AttributeImpl>&& attribute_values
-    , std::map<double, std::string>&& value_descriptions
+    , std::map<int64_t, std::string>&& value_descriptions
     , std::string&& comment
     , ExtendedValueType extended_value_type)
     
@@ -563,7 +563,17 @@ void SignalImpl::forEachReceiver(std::function<void(const std::string&)>&& cb) c
         cb(n);
     }
 }
-void SignalImpl::forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const
+const std::string* SignalImpl::getValueDescriptionByValue(int64_t value) const
+{
+    const std::string* result = nullptr;
+    auto iter = _value_descriptions.find(value);
+    if (iter != _value_descriptions.end())
+    {
+        result = &iter->second;
+    }
+    return result;
+}
+void SignalImpl::forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const
 {
     for (auto& av : _value_descriptions)
     {

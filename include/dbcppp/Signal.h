@@ -60,7 +60,7 @@ namespace dbcppp
             , std::string&& unit
             , std::set<std::string>&& receivers
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
-            , std::map<double, std::string>&& value_descriptions
+            , std::map<int64_t, std::string>&& value_descriptions
             , std::string&& comment
             , ExtendedValueType extended_value_type);
             
@@ -81,7 +81,8 @@ namespace dbcppp
         virtual std::string getUnit() const = 0;
         virtual bool hasReceiver(const std::string& name) const = 0;
         virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const = 0;
-        virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const = 0;
+        virtual const std::string* getValueDescriptionByValue(int64_t value) const = 0;
+        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const = 0;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
         virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;

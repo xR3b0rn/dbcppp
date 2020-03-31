@@ -30,7 +30,7 @@ namespace dbcppp
             , std::string&& unit
             , std::set<std::string>&& receivers
             , std::map<std::string, AttributeImpl>&& attribute_values
-            , std::map<double, std::string>&& value_descriptions
+            , std::map<int64_t, std::string>&& value_descriptions
             , std::string&& comment
             , Signal::ExtendedValueType extended_value_type);
             
@@ -50,7 +50,8 @@ namespace dbcppp
         virtual std::string getUnit() const override;
         virtual bool hasReceiver(const std::string& name) const override;
         virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const override;
-        virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const override;
+        virtual const std::string* getValueDescriptionByValue(int64_t value) const override;
+        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const override;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
         virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
@@ -73,7 +74,7 @@ namespace dbcppp
         std::string _unit;
         std::set<std::string> _receivers;
         std::map<std::string, AttributeImpl> _attribute_values;
-        std::map<double, std::string> _value_descriptions;
+        std::map<int64_t, std::string> _value_descriptions;
         std::string _comment;
         ExtendedValueType _extended_value_type;
 

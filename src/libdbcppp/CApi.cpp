@@ -290,7 +290,7 @@ extern "C"
         EnvironmentVariable::VarType vt;
         EnvironmentVariable::AccessType at;
         std::set<std::string> ans;
-        std::map<double, std::string> vds;
+        std::map<int64_t, std::string> vds;
         std::map<std::string, std::unique_ptr<Attribute>> avs;
         switch (var_type)
         {
@@ -424,11 +424,22 @@ extern "C"
                 cb(name.c_str(), data);
             });
     }
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(double, const char*, void*), void* data)
+    DBCPPP_API const char* dbcppp_EnvironmentVariableGetValueDescriptionByValue(const dbcppp_EnvironmentVariable* env_var, int64_t value)
+    {
+        auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
+        const char* result = nullptr;
+        auto vd = env_var_i->getValueDescriptionByValue(value);
+        if (vd != nullptr)
+        {
+            result = vd->c_str();
+        }
+        return result;
+    }
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(int64_t, const char*, void*), void* data)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         env_var_i->forEachValueDescription(
-            [&](double value, const std::string& name)
+            [&](int64_t value, const std::string& name)
             {
                 cb(value, name.c_str(), data);
             });
@@ -960,7 +971,7 @@ extern "C"
         Signal::ValueType vt;
         std::set<std::string> rs;
         std::map<std::string, std::unique_ptr<Attribute>> avs;
-        std::map<double, std::string> vds;
+        std::map<int64_t, std::string> vds;
         Signal::ExtendedValueType evt;
         switch (multiplexer_indicator)
         {
@@ -1108,11 +1119,22 @@ extern "C"
                 cb(recv.c_str(), data);
             });
     }
-    DBCPPP_API void dbcppp_SignalForEachValueDescription(const dbcppp_Signal* sig, void(*cb)(double, const char*, void*), void* data)
+    DBCPPP_API const char* dbcppp_SignalGetValueDescriptionByValue(const dbcppp_Signal* signal, int64_t value)
+    {
+        auto sigi = reinterpret_cast<const SignalImpl*>(signal);
+        const char* result = nullptr;
+        auto vd = sigi->getValueDescriptionByValue(value);
+        if (vd != nullptr)
+        {
+            result = vd->c_str();
+        }
+        return result;
+    }
+    DBCPPP_API void dbcppp_SignalForEachValueDescription(const dbcppp_Signal* sig, void(*cb)(int64_t, const char*, void*), void* data)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         sigi->forEachValueDescription(
-            [&](double value, const std::string& desc)
+            [&](int64_t value, const std::string& desc)
             {
                 cb(value, desc.c_str(), data);
             });
@@ -1283,7 +1305,7 @@ extern "C"
 
     DBCPPP_API const dbcppp_ValueTable* dbcppp_ValueTableCreate(const char* name, dbcppp_SignalType* signal_type, dbcppp_ValueDescriptionPair** pairs)
     {
-        std::map<double, std::string> descs;
+        std::map<int64_t, std::string> descs;
         for (; *pairs; pairs++)
         {
             descs.insert(std::make_pair((*pairs)->value, (*pairs)->description));
@@ -1315,11 +1337,11 @@ extern "C"
         }
         return result;
     }
-    DBCPPP_API void dbcppp_ValueTableForEachValueEncodingDescription(const dbcppp_ValueTable* value_table, void(*cb)(double, const char*, void*), void* data)
+    DBCPPP_API void dbcppp_ValueTableForEachValueEncodingDescription(const dbcppp_ValueTable* value_table, void(*cb)(int64_t, const char*, void*), void* data)
     {
         auto vti = reinterpret_cast<const ValueTableImpl*>(value_table);
         vti->forEachValueEncodingDescription(
-            [&](double value, const std::string& desc)
+            [&](int64_t value, const std::string& desc)
             {
                 cb(value, desc.c_str(), data);
             });

@@ -67,7 +67,7 @@ namespace dbcppp
     {
         std::string::iterator position;
         std::string name;
-        std::map<double, std::string> value_encoding_descriptions;
+        std::map<int64_t, std::string> value_encoding_descriptions;
     };
     struct G_Signal
     {
@@ -261,13 +261,13 @@ namespace dbcppp
         std::string::iterator position;
         uint64_t message_id;
         std::string signal_name;
-        std::map<double, std::string> value_descriptions;
+        std::map<int64_t, std::string> value_descriptions;
     };
     struct G_ValueDescriptionEnvVar
     {
         std::string::iterator position;
         std::string env_var_name;
-        std::map<double, std::string> value_descriptions;
+        std::map<int64_t, std::string> value_descriptions;
     };
     struct G_ValueDescription
     {
@@ -727,7 +727,7 @@ namespace dbcppp
             _value_table_name %= _C_identifier;
             _value_encoding_descriptions %= *_value_encoding_description;
 
-            _value_encoding_description %= _double > _char_string;
+            _value_encoding_description %= _signed_integer > _char_string;
 
             _messages %= *_message;
             _message %= iter_pos >> qi::lit("BO_ ") > _message_id > _message_name
@@ -869,8 +869,8 @@ namespace dbcppp
         boost::spirit::qi::rule<Iter, std::vector<G_ValueTable>(), Skipper> _value_tables;
         boost::spirit::qi::rule<Iter, G_ValueTable(), Skipper> _value_table;
         boost::spirit::qi::rule<Iter, std::string(), Skipper> _value_table_name;
-        boost::spirit::qi::rule<Iter, std::map<double, std::string>(), Skipper> _value_encoding_descriptions;
-        boost::spirit::qi::rule<Iter, std::pair<double, std::string>(), Skipper> _value_encoding_description;
+        boost::spirit::qi::rule<Iter, std::map<int64_t, std::string>(), Skipper> _value_encoding_descriptions;
+        boost::spirit::qi::rule<Iter, std::pair<int64_t, std::string>(), Skipper> _value_encoding_description;
 
         boost::spirit::qi::rule<Iter, std::vector<G_Message>(), Skipper> _messages;
         boost::spirit::qi::rule<Iter, G_Message(), Skipper> _message;

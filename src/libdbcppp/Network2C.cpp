@@ -35,14 +35,7 @@ static const char* header =
     "#else\n"
     "    return bswap_64(v);\n"
     "#endif\n"
-    "}\n"
-    "typedef union\n"
-    "{\n"
-    "    uint64_t ui;\n"
-    "    int64_t i;\n"
-    "    float f;\n"
-    "    double d;\n"
-    "} dbcppp_UnionHack;\n";
+    "}\n";
         
 DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const Network& net)
 {
@@ -55,10 +48,9 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                 {
                     const SignalImpl& sigi = static_cast<const SignalImpl&>(sig);
                     os << boost::format(
-                        "%1% dbcppp_decode_%2%(const void* nbytes)\n"
+                        "uint64_t dbcppp_decode_%2%(const void* nbytes)\n"
                         "{\n"
-                        "    dbcppp_UnionHack hack;\n")
-                        % "double"
+                        "    uint64_t data;\n")
                         % (msg.getName() + "_" + std::to_string(msg.getId()) + "_" + sig.getName());
                             
                     uint64_t nbytes;
@@ -76,53 +68,45 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                         // Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit;
                         if (sigi._byte_pos + nbytes <= 8)
                         {
-                            os << boost::format("    hack.ui = *reinterpret_cast<const uint64_t*>(nbytes);\n");
+                            os << boost::format("    data = *reinterpret_cast<const uint64_t*>(nbytes);\n");
                         }
                         else
                         {
                             os << boost::format(
-                                "hack.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[%1%]);\n")
+                                "data = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[%1%]);\n")
                                 % sigi._byte_pos;
                         }
                         if (sig.getByteOrder() == Signal::ByteOrder::BigEndian)
                         {
-                            os << boost::format("    hack.ui = dbcppp_native_to_big(hack.ui);\n");
+                            os << boost::format("    data = dbcppp_native_to_big(data);\n");
                         }
                         else
                         {
-                            os << boost::format("    hack.ui = dbcppp_native_to_little(hack.ui);\n");
+                            os << boost::format("    data = dbcppp_native_to_little(data);\n");
                         }
                         if (sig.getExtendedValueType() == Signal::ExtendedValueType::Double)
                         {
-                            os << boost::format("    return hack.d;\n");
+                            os << boost::format("    return data;\n");
                         }
                         else
                         {
-                            os << boost::format("    hack.ui >>= %1%ull;\n")
+                            os << boost::format("    data >>= %1%ull;\n")
                                 % sigi._fixed_start_bit_0;
-                            if (sig.getExtendedValueType() == Signal::ExtendedValueType::Float)
+                            if (sig.getExtendedValueType() != Signal::ExtendedValueType::Float)
                             {
-                                os << boost::format("    return hack.d;\n");
-                            }
-                            else
-                            {
-                                os << boost::format("    hack.ui &= %1%ull;\n") % sigi._mask;
+                                os << boost::format("    data &= %1%ull;\n") % sigi._mask;
                                 if (sig.getValueType() == Signal::ValueType::Signed)
                                 {
                                     os << boost::format(
-                                        "    if (hack.ui & %1%)\n"
+                                        "    if (data & %1%ull)\n"
                                         "    {\n"
-                                        "        hack.ui |= %1%ull;\n"
+                                        "        data |= %1%ull;\n"
                                         "    }\n"
-                                        "    return double(hack.i);\n")
+                                        "    return data;\n")
                                         % sigi._mask_signed;
-                                    os << boost::format("    return double(hack.i);\n");
-                                }
-                                else
-                                {
-                                    os << boost::format("    return double(hack.ui);\n");
                                 }
                             }
+                            os << boost::format("    return data;\n");
                         }
                     }
                     else
@@ -137,11 +121,11 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                         if (sig.getByteOrder() == Signal::ByteOrder::BigEndian)
                         {
                             os << boost::format(
-                                "    hack.ui = dbcppp_native_to_big(hack.ui);\n"
-                                "    hack.ui &= %1%ull;\n"
-                                "    hack.ui <<= %2%ull;\n"
+                                "    data = dbcppp_native_to_big(data);\n"
+                                "    data &= %1%ull;\n"
+                                "    data <<= %2%ull;\n"
                                 "    data1 >>= %3%ull;\n"
-                                "    hack.ui |= data1;\n")
+                                "    data |= data1;\n")
                                 % sigi._mask
                                 % sigi._fixed_start_bit_0
                                 % sigi._fixed_start_bit_1;
@@ -149,11 +133,11 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                         else
                         {
                             os << boost::format(
-                                "    hack.ui = dbcppp_native_to_little(hack.ui);\n"
-                                "    hack.ui >>= %1%ull;\n"
+                                "    data = dbcppp_native_to_little(data);\n"
+                                "    data >>= %1%ull;\n"
                                 "    data1 &= %2%ull;\n"
                                 "    data1 <<= %3%ull;\n"
-                                "    hack.ui |= data1;)\n")
+                                "    data |= data1;)\n")
                                 % sigi._fixed_start_bit_0
                                 % sigi._mask
                                 % sigi._fixed_start_bit_1;
@@ -164,30 +148,30 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                             if (sig.getValueType() == Signal::ValueType::Signed)
                             {
                                 os << boost::format(
-                                    "    if (hack.ui & %1%ull)\n"
+                                    "    if (data & %1%ull)\n"
                                     "    {\n"
-                                    "        hack.ui |= %1%ull;\n"
+                                    "        data |= %1%ull;\n"
                                     "    }\n"
-                                    "    return double(hack.i);\n")
+                                    "    return data;\n")
                                     % sigi._mask_signed;
-                                os << boost::format("    return double(hack.i);\n");
+                                os << boost::format("    return data;\n");
                             }
                             else
                             {
-                                os << boost::format("    return double(hack.ui);\n");
+                                os << boost::format("    return data;\n");
                             }
                             break;
                         case Signal::ExtendedValueType::Float:
-                            os << boost::format("    return hack.f;\n");
+                            os << boost::format("    return data;\n");
                             break;
                         case Signal::ExtendedValueType::Double:
-                            os << boost::format("    return hack.d;\n");
+                            os << boost::format("    return data;\n");
                             break;
                         }
                     }
                     os << boost::format("}\n");
                     os << boost::format(
-                        "double dbcppp_rawToPhys_%1%(double value)\n"
+                        "double dbcppp_rawToPhys_%1%(uint64_t value)\n"
                         "{\n"
                         "    return value * %2% + %3%;\n"
                         "}\n")

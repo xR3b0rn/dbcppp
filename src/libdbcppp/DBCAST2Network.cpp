@@ -133,7 +133,7 @@ static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const 
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
-    std::map<double, std::string> result;
+    std::map<int64_t, std::string> result;
     for (const auto& vds : gnet.value_descriptions)
     {
         if (vds.description.type() == typeid(G_ValueDescriptionSignal) &&
@@ -327,7 +327,7 @@ static auto getMessages(const G_Network& gnet)
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVariable& ev)
 {
-    std::map<double, std::string> result;
+    std::map<int64_t, std::string> result;
     for (const auto& vds : gnet.value_descriptions)
     {
         if (vds.description.type() == typeid(G_ValueDescriptionEnvVar) &&

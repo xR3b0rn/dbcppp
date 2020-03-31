@@ -13,7 +13,7 @@ std::unique_ptr<EnvironmentVariable> EnvironmentVariable::create(
     , uint64_t ev_id
     , AccessType access_type
     , std::set<std::string>&& access_nodes
-    , std::map<double, std::string>&& value_descriptions
+    , std::map<int64_t, std::string>&& value_descriptions
     , uint64_t data_size
     , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
     , std::string&& comment)
@@ -50,7 +50,7 @@ EnvironmentVariableImpl::EnvironmentVariableImpl(
     , uint64_t ev_id
     , AccessType access_type
     , std::set<std::string>&& access_nodes
-    , std::map<double, std::string>&& value_descriptions
+    , std::map<int64_t, std::string>&& value_descriptions
     , uint64_t data_size
     , std::map<std::string, AttributeImpl>&& attribute_values
     , std::string&& comment)
@@ -116,7 +116,17 @@ void EnvironmentVariableImpl::forEachAccessNode(std::function<void(const std::st
         cb(n);
     }
 }
-void EnvironmentVariableImpl::forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const
+const std::string* EnvironmentVariableImpl::getValueDescriptionByValue(int64_t value) const
+{
+    const std::string* result = nullptr;
+    auto iter = _value_descriptions.find(value);
+    if (iter != _value_descriptions.end())
+    {
+        result = &iter->second;
+    }
+    return result;
+}
+void EnvironmentVariableImpl::forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const
 {
     for (const auto& vd : _value_descriptions)
     {
