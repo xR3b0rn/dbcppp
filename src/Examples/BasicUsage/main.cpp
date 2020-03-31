@@ -4,8 +4,6 @@
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
 #include "../../Test/Config.h"
-#define DBCPPP_BYTE_ORDER_LITTLE_ENDIAN 1
-#include "test.h"
 
 // from uapi/linux/can.h
 using canid_t = uint32_t;
