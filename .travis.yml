@@ -7,53 +7,6 @@ branches:
 
 matrix:
   include:
-    #- os: linux
-    #  arch: s390x
-    #  compiler: g++
-    #  sudo: true
-    #  addons:
-    #    apt:
-    #      update: true
-    #      sources:
-    #        - sourceline: 'ppa:mhier/libboost-latest'
-    #        - ubuntu-toolchain-r-test
-    #      packages:
-    #        - g++-9
-    #        - libpq-dev
-    #  env:
-    #    - CXX=g++-9 BUILD=Release
-    #  install:
-    #    # Download and install recent boost
-    #    - |
-    #      if [[ ${TRAVIS_OS_NAME} == "linux" ]]; then
-    #        if [ ! -d "cmake-3.16.5/" ]; then
-    #          echo "Systems Byte Order:"
-    #          lscpu | grep "Byte Order"
-    #          BOOST_URL="https://dl.bintray.com/boostorg/release/1.72.0/source/boost_1_72_0.tar.gz"
-    #          wget ${BOOST_URL}
-    #          tar -xzf boost_1_72_0.tar.gz
-    #          cd boost_1_72_0
-    #          sudo cp -r boost /usr/local/include/
-    #          cd ..
-    #          wget https://github.com/Kitware/CMake/releases/download/v3.16.5/cmake-3.16.5.tar.gz
-    #          tar -xzf cmake-3.16.5.tar.gz
-    #          cd cmake-3.16.5
-    #          ./bootstrap
-    #          sudo make -j16 install
-    #          cd ..
-    #        else
-    #          cd boost_1_72_0
-    #          sudo cp -r boost /usr/local/include/
-    #          cd ..
-    #          cd cmake-3.16.5
-    #          sudo make install
-    #          cd ..
-    #        fi
-    #      fi
-    #  cache:
-    #    directories:
-    #      - cmake-3.16.5/
-    #      - boost_1_72_0/
     - os: linux
       arch: amd64
       compiler: g++
@@ -62,8 +15,6 @@ matrix:
           update: true
           sources:
             - sourceline: 'ppa:boost-latest/ppa'
-            - sourceline: 'ppa:mhier/libboost-latest'
-            - ubuntu-toolchain-r-test
           packages:
             - g++-9
             - libpq-dev
