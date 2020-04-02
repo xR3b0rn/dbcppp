@@ -64,7 +64,7 @@ int main()
                 msg->forEachSignal(
                     [&](const Signal& signal)
                     {
-                        double raw = signal.decode(frame.data);
+                        uint64_t raw = signal.decode(frame.data);
                         std::cout << "\t" << signal.getName() << "=" << signal.rawToPhys(raw) << std::endl;
                     });
             }
@@ -92,7 +92,7 @@ int main()
                 void print_signal_data(const dbcppp_Signal* sig, void* data)
                 {
                     can_frame* frame = (can_frame*)data;
-                    double raw = dbcppp_SignalDecode(sig, frame->data);
+                    uint64_t raw = dbcppp_SignalDecode(sig, frame->data);
                     double phys = dbcppp_SignalRawToPhys(sig, raw);
                     printf("\t%s=%f\n", dbcppp_SignalGetName(sig), phys);
                 }

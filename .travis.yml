@@ -81,6 +81,7 @@ before_install:
   - sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/boost.conf'
   - sudo ldconfig
   - cd ..
+cache: boost_1_70_0
 script:
     ############################################################################
     # Build main and tests
