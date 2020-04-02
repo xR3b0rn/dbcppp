@@ -144,7 +144,7 @@ int main(int argc, char** args)
                 std::array<uint8_t, 8> data;
                 for (std::size_t i = 0; i < msg_size; i++)
                 {
-                    data[i] = std::strtol(std::string(a + i * 3, 2).c_str(), nullptr, 16);
+                    data[i] = uint8_t(std::strtol(std::string(a + i * 3, 2).c_str(), nullptr, 16));
                 }
                 const dbcppp::Message* msg = bus->second.net->getMessageById(msg_id);
                 if (msg)
