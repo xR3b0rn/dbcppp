@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <robin-map/tsl/robin_map.h>
 #include "../../include/dbcppp/EnvironmentVariable.h"
 #include "NodeImpl.h"
 #include "AttributeImpl.h"
@@ -21,7 +22,7 @@ namespace dbcppp
             , uint64_t ev_id
             , AccessType access_type
             , std::set<std::string>&& access_nodes
-            , std::map<int64_t, std::string>&& value_descriptions
+            , tsl::robin_map<int64_t, std::string>&& value_descriptions
             , uint64_t data_size
             , std::map<std::string, AttributeImpl>&& attribute_values
             , std::string&& comment);
@@ -56,7 +57,7 @@ namespace dbcppp
         uint64_t _ev_id;
         AccessType _access_type;
         std::set<std::string> _access_nodes;
-        std::map<int64_t, std::string> _value_descriptions;
+        tsl::robin_map<int64_t, std::string> _value_descriptions;
         uint64_t _data_size;
         std::map<std::string, AttributeImpl> _attribute_values;
         std::string _comment;

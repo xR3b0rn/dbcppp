@@ -36,7 +36,7 @@ namespace dbcppp
             , uint64_t ev_id
             , AccessType access_type
             , std::set<std::string>&& access_nodes
-            , std::map<int64_t, std::string>&& value_descriptions
+            , tsl::robin_map<int64_t, std::string>&& value_descriptions
             , uint64_t data_size
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
             , std::string&& comment);

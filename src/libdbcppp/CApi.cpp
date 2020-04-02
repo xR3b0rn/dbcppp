@@ -290,7 +290,7 @@ extern "C"
         EnvironmentVariable::VarType vt;
         EnvironmentVariable::AccessType at;
         std::set<std::string> ans;
-        std::map<int64_t, std::string> vds;
+        tsl::robin_map<int64_t, std::string> vds;
         std::map<std::string, std::unique_ptr<Attribute>> avs;
         switch (var_type)
         {
@@ -971,7 +971,7 @@ extern "C"
         Signal::ValueType vt;
         std::set<std::string> rs;
         std::map<std::string, std::unique_ptr<Attribute>> avs;
-        std::map<int64_t, std::string> vds;
+        tsl::robin_map<int64_t, std::string> vds;
         Signal::ExtendedValueType evt;
         switch (multiplexer_indicator)
         {
@@ -1305,7 +1305,7 @@ extern "C"
 
     DBCPPP_API const dbcppp_ValueTable* dbcppp_ValueTableCreate(const char* name, dbcppp_SignalType* signal_type, dbcppp_ValueDescriptionPair** pairs)
     {
-        std::map<int64_t, std::string> descs;
+        tsl::robin_map<int64_t, std::string> descs;
         for (; *pairs; pairs++)
         {
             descs.insert(std::make_pair((*pairs)->value, (*pairs)->description));

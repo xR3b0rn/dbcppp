@@ -7,10 +7,11 @@
 #include <iostream>
 #include <filesystem>
 #include <boost/program_options.hpp>
+
+#include <robin-map/tsl/robin_map.h>
 #include "../../include/dbcppp/Network.h"
 #include "../../include/dbcppp/Network2C.h"
 #include "../../include/dbcppp/Network2DBC.h"
-#include <robin-map/tsl/robin_map.h>
 
 int main(int argc, char** args)
 {
@@ -33,8 +34,8 @@ int main(int argc, char** args)
         desc.add_options()
             ("help", "produce help message")
             ("format,f", po::value<std::string>()->required(), "output format (C, DBC)")
-            ("dbc", po::value<std::vector<std::filesystem::path>>()->multitoken()->required(), "list of DBC files")
-            ("out,o", po::value<std::filesystem::path>()->default_value("a.out"), "output filename")
+            ("dbc", po::value<std::vector<std::string>>()->multitoken()->required(), "list of DBC files")
+            ("out,o", po::value<std::string>()->default_value("a.out"), "output filename")
             ("subprogram", po::value<std::string>()->required(), "sub program");
 
         po::variables_map vm;
@@ -48,8 +49,8 @@ int main(int argc, char** args)
             return 1;
         }
         const auto& format = vm["format"].as<std::string>();
-        const auto& out = vm["out"].as<std::filesystem::path>();
-        auto dbcs = vm["dbc"].as<std::vector<std::filesystem::path>>();
+        const auto& out = vm["out"].as<std::string>();
+        auto dbcs = vm["dbc"].as<std::vector<std::string>>();
         std::ifstream fdbc(dbcs[0]);
         dbcs.erase(dbcs.begin());
         auto net = dbcppp::Network::fromDBC(fdbc);
@@ -148,16 +149,28 @@ int main(int argc, char** args)
                 const dbcppp::Message* msg = bus->second.net->getMessageById(msg_id);
                 if (msg)
                 {
-                    std::cout << line << " :: ";
-                    std::cout << msg->getName() << "(";
+                    std::cout << line << " :: " << msg->getName() << "(";
                     bool first = true;
+                    const auto* mux_sig = msg->getMuxSignal();
                     msg->forEachSignal(
                         [&](const dbcppp::Signal& sig)
                         {
-                            auto val = sig.rawToPhys(sig.decode(&data[0]));
-                            if (first) first = false;
-                            else std::cout << ", ";
-                            std::cout << sig.getName() << ": " << val << " " << sig.getUnit();
+                            if (sig.getMultiplexerIndicator() == dbcppp::Signal::Multiplexer::MuxValue &&
+                                mux_sig && sig.getMultiplexerSwitchValue() == mux_sig->decode(&data[0]))
+                            {
+                                if (first) first = false; else std::cout << ", ";
+                                auto raw = sig.decode(&data[0]);
+                                auto desc = sig.getValueDescriptionByValue(raw);
+                                if (desc != nullptr)
+                                {
+                                    std::cout << sig.getName() << ": " << desc << " " << sig.getUnit();
+                                }
+                                else
+                                {
+                                    auto val = sig.rawToPhys(raw);
+                                    std::cout << sig.getName() << ": " << val << " " << sig.getUnit();
+                                }
+                            }
                         });
                     std::cout << ")\n";
                 }
