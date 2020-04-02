@@ -34,7 +34,7 @@ BS_: 1 : 2, 2
 
 BU_: Bus0 Bus1 Bus2 Receiver
 
-VAL_TABLE_ ValueTable0 1 "second" 0 "first" 2 "third";
+VAL_TABLE_ ValueTable0 0 "first" 1 "second" 2 "third";
 
 BO_ 0 test_msg0: 8 Vector__XXX
  SG_ s0 : 0|16@1- (1,0) [-3276|3276] "RPM" Vector__XXX
