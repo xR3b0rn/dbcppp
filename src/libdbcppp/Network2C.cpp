@@ -1,6 +1,4 @@
 
-#pragma once
-
 #include "NetworkImpl.h"
 #include "../../include/dbcppp/Network2C.h"
 
