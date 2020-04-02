@@ -134,7 +134,7 @@ int main(int argc, char** args)
                 while (*b == ' ') b++;
                 a = b;
                 while (*b != ' ') b++;
-                uint64_t msg_id = std::atoi(std::string(a, std::distance(a, b)).c_str());
+                uint64_t msg_id = std::strtol(std::string(a, std::distance(a, b)).c_str(), nullptr, 16);
                 while (*b == ' ') b++;
                 a = b + 1;
                 b += 3;
@@ -144,7 +144,7 @@ int main(int argc, char** args)
                 std::array<uint8_t, 8> data;
                 for (std::size_t i = 0; i < msg_size; i++)
                 {
-                    data[i] = std::atoi(std::string(a + i * 3, 2).c_str());
+                    data[i] = std::strtol(std::string(a + i * 3, 2).c_str(), nullptr, 16);
                 }
                 const dbcppp::Message* msg = bus->second.net->getMessageById(msg_id);
                 if (msg)
