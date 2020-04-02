@@ -14,7 +14,7 @@ matrix:
         apt:
           update: true
           sources:
-            - sourceline: 'ppa:boost-latest/ppa'
+            - ubuntu-toolchain-r-test
           packages:
             - g++-9
             - libpq-dev
