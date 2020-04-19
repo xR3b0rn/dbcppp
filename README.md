@@ -50,6 +50,7 @@ dbcppp dbc2 --dbc=file.dbc --format=C --out=file.h
 # beauty or merge DBC
 dbcppp dbc2 --dbc=file1.dbc --dbc=file2.dbc --format=DBC --out=merged.dbc
 ```
+This feature isn't well tested. Especially the C generator does have a high chance of generating erroneous code.
 ### decode
 [cantools](https://github.com/eerimoq/cantools) like decoding:
 ```
