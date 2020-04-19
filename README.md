@@ -51,6 +51,7 @@ dbcppp dbc2 --dbc=file.dbc --format=C --out=file.h
 dbcppp dbc2 --dbc=file1.dbc --dbc=file2.dbc --format=DBC --out=merged.dbc
 ```
 ### decode
+[cantools](https://github.com/eerimoq/cantools) like decoding.
 ```
 candump any | dbcppp decode --bus=vcan0,file1.dbc --bus=vcan1,file2.dbc
 ```
