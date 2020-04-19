@@ -47,7 +47,7 @@ make install
 ```
 # generate C source from DBC
 dbcppp dbc2 --dbc=file.dbc --format=C --out=file.h
-# beuty or merge DBC
+# beauty or merge DBC
 dbcppp dbc2 --dbc=file1.dbc --dbc=file2.dbc --format=DBC --out=merged.dbc
 ```
 ### decode
