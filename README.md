@@ -43,7 +43,18 @@ make install
 ```
 # Usage example
 ## Command line tool
-## As library
+### dbc2
+```
+# generate C source from DBC
+dbcppp dbc2 --dbc=file.dbc --format=C --out=file.h
+# beuty or merge DBC
+dbcppp dbc2 --dbc=file1.dbc --dbc=file2.dbc --format=DBC --out=merged.dbc
+```
+### decode
+```
+candump any | dbcppp decode --bus=vcan0,file1.dbc --bus=vcan1,file2.dbc
+```
+## Library
 * [Examples](https://github.com/xR3b0rn/dbcppp/tree/master/src/Examples)
 * `C++`
 ```C++
