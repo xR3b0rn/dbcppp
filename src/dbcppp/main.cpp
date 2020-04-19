@@ -1,4 +1,5 @@
 
+#include <regex>
 #include <array>
 #include <string>
 #include <vector>
@@ -16,15 +17,11 @@
 int main(int argc, char** args)
 {
     namespace po = boost::program_options;
-    if (argc < 2)
-    {
-        // print help
-        return 1;
-    }
-    if (std::string("help") == args[1])
+    if (argc < 2 || std::string("help") == args[1])
     {
         std::cout << "For more help type:\ndbcppp <subprogram> --help\n"
             << "Sub programs are: dbc2, decode\n";
+        return 0;
     }
     po::positional_options_description p;
     p.add("subprogram", -1);
@@ -40,7 +37,6 @@ int main(int argc, char** args)
 
         po::variables_map vm;
         po::store(po::command_line_parser(argc, args).options(desc).positional(p).run(), vm);
-        po::notify(vm);    
 
         if (vm.count("help"))
         {
@@ -48,6 +44,8 @@ int main(int argc, char** args)
             std::cout << desc << "\n";
             return 1;
         }
+        po::notify(vm);    
+
         const auto& format = vm["format"].as<std::string>();
         const auto& out = vm["out"].as<std::string>();
         auto dbcs = vm["dbc"].as<std::vector<std::string>>();
@@ -77,12 +75,11 @@ int main(int argc, char** args)
         po::options_description desc("Options");
         desc.add_options()
             ("help", "produce help message")
-            ("bus", po::value<std::vector<std::string>>()->required(), "list of DBC files in format (<bus name, DBC filename>)")
+            ("bus", po::value<std::vector<std::string>>()->required(), "list of buses in format (<bus name, DBC filename>)")
             ("subprogram", po::value<std::string>()->required(), "sub program");
 
         po::variables_map vm;
         po::store(po::command_line_parser(argc, args).options(desc).positional(p).run(), vm);
-        po::notify(vm);    
 
         if (vm.count("help"))
         {
@@ -90,6 +87,7 @@ int main(int argc, char** args)
             std::cout << desc << "\n";
             return 1;
         }
+        po::notify(vm);    
         const auto& opt_buses = vm["bus"].as<std::vector<std::string>>();
         struct Bus
         {
@@ -121,30 +119,40 @@ int main(int argc, char** args)
             }
             buses.insert(std::make_pair(b.name, std::move(b)));
         }
+        // example line: vcan0  123   [3]  11 22 33
+        std::regex regex_candump_line(
+            // vcan0
+            "^\\s*(\\S+)"
+            // 123
+            "\\s*([0-9A-F]{3})"
+            // 3
+            "\\s*\\[(\\d+)\\]"
+            // 11
+            "\\s*([0-9A-F]{2})?"
+            // 22
+            "\\s*([0-9A-F]{2})?"
+            // 33
+            "\\s*([0-9A-F]{2})?"
+            // ...
+            "\\s*([0-9A-F]{2})?"
+            "\\s*([0-9A-F]{2})?"
+            "\\s*([0-9A-F]{2})?"
+            "\\s*([0-9A-F]{2})?"
+            "\\s*([0-9A-F]{2})?");
         std::string line;
         while (std::getline(std::cin, line))
         {
-            //vcan0  123   [8]  11 22 33 44 55 66 77 88
-            const char* a = line.c_str();
-            const char* b = a;
-            while (*b != ' ') b++;
-            const auto& bus = buses.find(std::string(a, std::distance(a, b)));
+            std::cmatch cm;
+            std::regex_match(line.c_str(), cm, regex_candump_line);
+            const auto& bus = buses.find(cm[1].str());
             if (bus != buses.end())
             {
-                while (*b == ' ') b++;
-                a = b;
-                while (*b != ' ') b++;
-                uint64_t msg_id = std::strtol(std::string(a, std::distance(a, b)).c_str(), nullptr, 16);
-                while (*b == ' ') b++;
-                a = b + 1;
-                b += 3;
-                while (*b == ' ') b++;
-                uint64_t msg_size = std::atoi(std::string(a, 1).c_str());
-                a = b;
+                uint64_t msg_id = std::strtol(cm[2].str().c_str(), nullptr, 16);
+                uint64_t msg_size = std::atoi(cm[3].str().c_str());
                 std::array<uint8_t, 8> data;
                 for (std::size_t i = 0; i < msg_size; i++)
                 {
-                    data[i] = uint8_t(std::strtol(std::string(a + i * 3, 2).c_str(), nullptr, 16));
+                    data[i] = uint8_t(std::strtol(cm[4 + i].str().c_str(), nullptr, 16));
                 }
                 const dbcppp::Message* msg = bus->second.net->getMessageById(msg_id);
                 if (msg)
@@ -155,7 +163,7 @@ int main(int argc, char** args)
                     msg->forEachSignal(
                         [&](const dbcppp::Signal& sig)
                         {
-                            if (sig.getMultiplexerIndicator() == dbcppp::Signal::Multiplexer::MuxValue &&
+                            if (sig.getMultiplexerIndicator() != dbcppp::Signal::Multiplexer::MuxValue ||
                                 mux_sig && sig.getMultiplexerSwitchValue() == mux_sig->decode(&data[0]))
                             {
                                 if (first) first = false; else std::cout << ", ";
