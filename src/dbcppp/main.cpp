@@ -14,38 +14,60 @@
 #include "../../include/dbcppp/Network2C.h"
 #include "../../include/dbcppp/Network2DBC.h"
 
+void print_help()
+{
+    std::cout << "dbcppp v1.0.0\nFor help type: dbcppp <subprogram> --help\n"
+        << "Sub programs: dbc2, decode\n";
+}
+
 int main(int argc, char** args)
 {
     namespace po = boost::program_options;
     if (argc < 2 || std::string("help") == args[1])
     {
-        std::cout << "For more help type:\ndbcppp <subprogram> --help\n"
-            << "Sub programs are: dbc2, decode\n";
-        return 0;
+        print_help();
+        return 1;
     }
     po::positional_options_description p;
     p.add("subprogram", -1);
+    po::options_description desc_subprogram("Options");
+    desc_subprogram.add_options()
+        ("subprogram", po::value<std::string>()->required(), "sub program");
+
+    po::options_description desc_dbc2("Options");
+    desc_dbc2.add_options()
+        ("help", "produce help message")
+        ("format,f", po::value<std::string>()->required(), "output format (C, DBC)")
+        ("dbc", po::value<std::vector<std::string>>()->multitoken()->required(), "list of DBC files")
+        ("out,o", po::value<std::string>()->default_value("a.out"), "output filename");
+    
+    po::options_description desc_decode("Options");
+    desc_decode.add_options()
+        ("help", "produce help message")
+        ("bus", po::value<std::vector<std::string>>()->required(), "list of buses in format (<bus name, DBC filename>)");
+
     if (std::string("dbc2") == args[1])
     {
-        po::options_description desc("Options");
-        desc.add_options()
-            ("help", "produce help message")
-            ("format,f", po::value<std::string>()->required(), "output format (C, DBC)")
-            ("dbc", po::value<std::vector<std::string>>()->multitoken()->required(), "list of DBC files")
-            ("out,o", po::value<std::string>()->default_value("a.out"), "output filename")
-            ("subprogram", po::value<std::string>()->required(), "sub program");
+        po::options_description desc("Allowed options");
+        desc.add(desc_subprogram).add(desc_dbc2);
 
         po::variables_map vm;
         po::store(po::command_line_parser(argc, args).options(desc).positional(p).run(), vm);
-
         if (vm.count("help"))
         {
-            std::cout << "Usage:\ndbcppp dbc2c --format=<format>... --dbc=<dbc filename>... [--out=<output filename>]\n";
-            std::cout << desc << "\n";
+            std::cout << "Usage:\ndbcppp dbc2c [--help] --format=<format>... --dbc=<dbc filename>... [--out=<output filename>]\n";
+            std::cout << desc_dbc2;
             return 1;
         }
-        po::notify(vm);    
-
+        try
+        {
+            po::notify(vm);
+        }
+        catch (const boost::wrapexcept<boost::program_options::required_option>& e)
+        {
+            std::cout << e.what() << std::endl;
+            return 1;
+        }
         const auto& format = vm["format"].as<std::string>();
         const auto& out = vm["out"].as<std::string>();
         auto dbcs = vm["dbc"].as<std::vector<std::string>>();
@@ -72,22 +94,26 @@ int main(int argc, char** args)
     }
     else if (std::string("decode") == args[1])
     {
-        po::options_description desc("Options");
-        desc.add_options()
-            ("help", "produce help message")
-            ("bus", po::value<std::vector<std::string>>()->required(), "list of buses in format (<bus name, DBC filename>)")
-            ("subprogram", po::value<std::string>()->required(), "sub program");
+        po::options_description desc("Allowed options");
+        desc.add(desc_subprogram).add(desc_decode);
 
         po::variables_map vm;
         po::store(po::command_line_parser(argc, args).options(desc).positional(p).run(), vm);
-
         if (vm.count("help"))
         {
-            std::cout << "Usage:\ndbcppp decode --dbc=<bus name,DBC filename>...\n";
-            std::cout << desc << "\n";
+            std::cout << "Usage:\ndbcppp decode [--help] --dbc=<bus name,DBC filename>...\n";
+            std::cout << desc_decode;
             return 1;
         }
-        po::notify(vm);    
+        try
+        {
+            po::notify(vm);
+        }
+        catch (const boost::wrapexcept<boost::program_options::required_option>& e)
+        {
+            std::cout << e.what() << std::endl;
+            return 1;
+        }
         const auto& opt_buses = vm["bus"].as<std::vector<std::string>>();
         struct Bus
         {
@@ -184,5 +210,10 @@ int main(int argc, char** args)
                 }
             }
         }
+    }
+    else
+    {
+        print_help();
+        return 1;
     }
 }
