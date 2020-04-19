@@ -17,6 +17,6 @@ add_dependencies(dbcppp ${PROJECT_NAME})
 target_link_libraries(dbcppp ${PROJECT_NAME} ${Boost_LIBRARIES})
 
 install(
-    TARGETS ${PROJECT_NAME}
+    TARGETS dbcppp
     DESTINATION ${CMAKE_INSTALL_BINDIR})
     
