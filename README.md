@@ -34,6 +34,8 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 * boost
 ## Build & Install
 ```
+git clone https://github.com/xR3b0rn/dbcppp.git
+cd dbcppp
 mkdir build
 cd build
 cmake ..
