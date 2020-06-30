@@ -5,8 +5,9 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 * very fast decoding
 * verbose parser output in error case
 * DBC is editable through C/C++ interface exported from the library
-* read DBC file
+* read/write DBC file
 * decode functionality for frames of arbitrarily byte length
+* cantools like decoding
 ## DBC data types
 ### Supported
 * version
@@ -34,6 +35,8 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 * boost
 ## Build & Install
 ```
+git clone https://github.com/xR3b0rn/dbcppp.git
+cd dbcppp
 mkdir build
 cd build
 cmake ..
@@ -43,7 +46,20 @@ make install
 ```
 # Usage example
 ## Command line tool
-## As library
+### dbc2
+```
+# generate C source from DBC
+dbcppp dbc2 --dbc=file.dbc --format=C --out=file.h
+# beauty or merge DBC
+dbcppp dbc2 --dbc=file1.dbc --dbc=file2.dbc --format=DBC --out=merged.dbc
+```
+This feature isn't well tested. Especially the C generator does have a high chance of generating erroneous code.
+### decode
+[cantools](https://github.com/eerimoq/cantools) like decoding:
+```
+candump any | dbcppp decode --bus=vcan0,file1.dbc --bus=vcan1,file2.dbc
+```
+## Library
 * [Examples](https://github.com/xR3b0rn/dbcppp/tree/master/src/Examples)
 * `C++`
 ```C++

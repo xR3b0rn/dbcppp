@@ -6,6 +6,7 @@
 #include <vector>
 #include <functional>
 #include <boost/variant.hpp>
+#include <memory>
 
 #include "Export.h"
 
