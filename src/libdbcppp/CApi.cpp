@@ -537,7 +537,7 @@ extern "C"
     DBCPPP_API uint64_t dbcppp_MessageGetMessageSize(const dbcppp_Message* msg)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
-        return msgi->getId();
+        return msgi->getMessageSize();
     }
     DBCPPP_API const char* dbcppp_MessageGetTransmitter(const dbcppp_Message* msg)
     {
