@@ -324,7 +324,15 @@ namespace xml
             throw EmptyDocument();
         }
     }
-
+    void handleValidationError(void* ctx, const char* format, ...)
+    {
+        std::string error_msg("\n");
+        va_list args;
+        va_start(args, format);
+        const char* msg = va_arg(args, const char*);
+        va_end(args);
+        throw ValidationError(msg);
+    }
     void Document::validate(const char* mem_kcd, int len) const
     {
         int result = 42;
@@ -344,16 +352,7 @@ namespace xml
         {
             throw ValidationError("could not create XSD schema validation context");
         }
-        auto handleValidationError =
-            [](void* ctx, const char* format, ...)
-            {
-                std::string error_msg("\n");
-                va_list args;
-                va_start(args, format);
-                const char* msg = va_arg(args, const char*);
-                va_end(args);
-                throw ValidationError(msg);
-            };
+
         xmlSetStructuredErrorFunc(NULL, NULL);
         xmlSetGenericErrorFunc(NULL, handleValidationError);
         xmlThrDefSetStructuredErrorFunc(NULL, NULL);
