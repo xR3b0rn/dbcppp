@@ -46,7 +46,7 @@ set(CMAKE_SHARED_LIBRARY_PREFIX "")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 
-add_library("libxmlmm" STATIC "")
+add_library("libxmlmm" SHARED "")
 
 target_link_libraries("libxmlmm" ${LIBXML2_LIBRARIES})
 
