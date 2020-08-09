@@ -18,6 +18,7 @@ matrix:
           packages:
             - g++-9
             - libpq-dev
+            - libxml2-dev
       env:
         - CXX=g++-9 BUILD=Release
 before_install:
