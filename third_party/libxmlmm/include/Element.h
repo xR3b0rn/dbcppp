@@ -96,7 +96,7 @@ namespace xml
          * @throws no_such_attribute if the attibute does not exist on
          * this element.
          **/
-        std::string get_attribute<std::string>(const std::string& key) const;
+        std::string get_attribute(const std::string& key) const;
         
         /**
          * Set an attribute.
