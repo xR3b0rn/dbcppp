@@ -57,6 +57,10 @@ file(GLOB src
     "third_party/libxmlmm/src/*.cpp"
 )
 
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+	add_compile_options("-fPIC")
+endif()
+
 target_sources("libxmlmm"
     PRIVATE ${header}
     PUBLIC ${header_interface}
