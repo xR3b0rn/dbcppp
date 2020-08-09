@@ -8,6 +8,7 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 * read/write DBC file
 * decode functionality for frames of arbitrarily byte length
 * cantools like decoding
+* support for KCD
 ## DBC data types
 ### Supported
 * version
