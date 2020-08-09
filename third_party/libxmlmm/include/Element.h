@@ -70,7 +70,7 @@ namespace xml
          *
          * @todo add check if conversion to value worked
          **/
-        template <typename T = std::string>
+        template <typename T>
         T get_attribute(const std::string& id) const
         {
             std::stringstream conv(get_attribute(id));
@@ -96,7 +96,6 @@ namespace xml
          * @throws no_such_attribute if the attibute does not exist on
          * this element.
          **/
-        template <>
         std::string get_attribute<std::string>(const std::string& key) const;
         
         /**
