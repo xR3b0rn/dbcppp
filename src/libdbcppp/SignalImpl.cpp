@@ -618,7 +618,7 @@ Signal::ExtendedValueType SignalImpl::getExtendedValueType() const
 {
     return _extended_value_type;
 }
-Signal::ErrorCode SignalImpl::getError() const
+bool SignalImpl::getError(ErrorCode code) const
 {
-    return _error;
+    return code == _error || (uint64_t(_error) & uint64_t(code));
 }

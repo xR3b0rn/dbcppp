@@ -23,10 +23,10 @@ namespace dbcppp
             : uint64_t
         {
             NoError,
-            MaschinesFloatEncodingNotSupported,
-            MaschinesDoubleEncodingNotSupported,
-            SignalExceedsMessageSize,
-            WrongBitSizeForExtendedDataType
+            MaschinesFloatEncodingNotSupported = 1,
+            MaschinesDoubleEncodingNotSupported = 2,
+            SignalExceedsMessageSize = 4,
+            WrongBitSizeForExtendedDataType = 8
         };
         enum class Multiplexer
         {
@@ -89,7 +89,7 @@ namespace dbcppp
         virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
         virtual const std::string& getComment() const = 0;
         virtual ExtendedValueType getExtendedValueType() const = 0;
-        virtual ErrorCode getError() const = 0;
+        virtual bool getError(ErrorCode code) const = 0;
         
         /// \brief Extracts the raw value from a given n byte array
         ///
