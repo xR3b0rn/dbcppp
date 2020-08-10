@@ -11,8 +11,7 @@
 
 #include <robin-map/tsl/robin_map.h>
 #include "../../include/dbcppp/Network.h"
-#include "../../include/dbcppp/Network2C.h"
-#include "../../include/dbcppp/Network2DBC.h"
+#include "../../include/dbcppp/Network2Functions.h"
 
 void print_help()
 {
