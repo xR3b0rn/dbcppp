@@ -587,7 +587,7 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
     }
     return result;
 }
-std::unique_ptr<Network> Network::fromDBC(std::istream& is, std::unique_ptr<Network> network)
+std::unique_ptr<Network> dbcppp::Network::fromDBC(std::istream& is, std::unique_ptr<Network> network)
 {
     auto other = fromDBC(is);
     network->merge(std::move(other));

@@ -57,10 +57,6 @@ file(GLOB src
     "third_party/libxmlmm/src/*.cpp"
 )
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-	add_compile_options("-fPIC")
-endif()
-
 target_sources("libxmlmm"
     PRIVATE ${header}
     PUBLIC ${header_interface}
@@ -72,8 +68,8 @@ install(
     TARGETS "libxmlmm"
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(
-    FILES
-		"third_party/libxmlmm/include/*.h"
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxmlmm)
+    DIRECTORY "third_party/libxmlmm/include"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxmlmm
+    FILES_MATCHING PATTERN "*.h")
 	
 
