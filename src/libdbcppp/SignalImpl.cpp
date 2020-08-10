@@ -282,7 +282,7 @@ std::unique_ptr<Signal> Signal::create(
     , std::string&& unit
     , std::set<std::string>&& receivers
     , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
-    , tsl::robin_map<int64_t, std::string>&& value_descriptions
+    , std::unordered_map<int64_t, std::string>&& value_descriptions
     , std::string&& comment
     , Signal::ExtendedValueType extended_value_type)
 {
@@ -292,6 +292,11 @@ std::unique_ptr<Signal> Signal::create(
     {
         avs.insert(std::make_pair(av.first, std::move(*static_cast<AttributeImpl*>(av.second.get()))));
         av.second.reset(nullptr);
+    }
+    tsl::robin_map<int64_t, std::string> vds;
+    for (auto&& vd : value_descriptions)
+    {
+        vds.insert(std::move(vd));
     }
     result = std::make_unique<SignalImpl>(
           message_size
@@ -309,7 +314,7 @@ std::unique_ptr<Signal> Signal::create(
         , std::move(unit)
         , std::move(receivers)
         , std::move(avs)
-        , std::move(value_descriptions)
+        , std::move(vds)
         , std::move(comment)
         , extended_value_type);
     return result;

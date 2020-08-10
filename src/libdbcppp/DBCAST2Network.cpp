@@ -52,7 +52,7 @@ static auto getValueTables(const G_Network& gnet)
     {
         auto sig_type = getSignalType(gnet, vt);
         auto copy_ved = vt.value_encoding_descriptions;
-        tsl::robin_map<int64_t, std::string> robin_copy_ved(copy_ved.begin(), copy_ved.end());
+        std::unordered_map<int64_t, std::string> robin_copy_ved(copy_ved.begin(), copy_ved.end());
         auto nvt = ValueTable::create(std::string(vt.name), std::move(sig_type), std::move(robin_copy_ved));
         result.insert(std::make_pair(vt.name, std::move(nvt)));
     }
@@ -134,7 +134,7 @@ static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const 
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
-    tsl::robin_map<int64_t, std::string> result;
+    std::unordered_map<int64_t, std::string> result;
     for (const auto& vds : gnet.value_descriptions)
     {
         if (vds.description.type() == typeid(G_ValueDescriptionSignal) &&
@@ -142,7 +142,7 @@ static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, cons
             boost::get<G_ValueDescriptionSignal>(vds.description).signal_name == s.name)
         {
             auto& map = boost::get<G_ValueDescriptionSignal>(vds.description).value_descriptions;
-            result = tsl::robin_map<int64_t, std::string>(map.begin(), map.end());
+            result = std::unordered_map<int64_t, std::string>(map.begin(), map.end());
         }
     }
     return result;
@@ -330,14 +330,14 @@ static auto getMessages(const G_Network& gnet)
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVariable& ev)
 {
-    tsl::robin_map<int64_t, std::string> result;
+    std::unordered_map<int64_t, std::string> result;
     for (const auto& vds : gnet.value_descriptions)
     {
         if (vds.description.type() == typeid(G_ValueDescriptionEnvVar) &&
             boost::get<G_ValueDescriptionEnvVar>(vds.description).env_var_name == ev.name)
         {
             auto& map = boost::get<G_ValueDescriptionEnvVar>(vds.description).value_descriptions;
-            result = tsl::robin_map<int64_t, std::string>(map.begin(), map.end());
+            result = std::unordered_map<int64_t, std::string>(map.begin(), map.end());
             break;
         }
     }

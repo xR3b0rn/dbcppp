@@ -43,7 +43,7 @@ public:
     {
         xml::Document doc;
         doc.read_from_stream(is);
-        doc.validate(g_kcd_xsd, strlen(g_kcd_xsd));
+        doc.validate(g_kcd_xsd, (int)strlen(g_kcd_xsd));
         parseNetworkDefinition(doc.get_root_element());
         auto nodes = parseNodes(doc.get_root_element());
         _networks = std::move(parseNetworks(doc.get_root_element(), nodes));
@@ -259,6 +259,7 @@ public:
         if (multiplex != nullptr)
         {
             auto mux_signal = parseSignal(multiplex, message_size, Signal::Multiplexer::MuxSwitch, 0);
+            sigs.insert(std::make_pair(mux_signal->getName(), std::move(mux_signal)));
             const auto mux_groups = multiplex->find_elements("./*[local-name() = 'MuxGroup']");
             for (const auto* mux_group : mux_groups)
             {
@@ -299,7 +300,7 @@ public:
         auto unit = std::string("");
         auto min = 0.;
         auto max = 1.;
-        auto value_descriptions = tsl::robin_map<int64_t, std::string>();
+        auto value_descriptions = std::unordered_map<int64_t, std::string>();
         if (signal->has_attribute("endianess") &&
             signal->get_attribute("endianess") == "big")
         {

@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <boost/optional.hpp>
 
-#include <robin-map/tsl/robin_map.h>
 #include "Export.h"
 #include "Node.h"
 #include "Attribute.h"
@@ -61,7 +60,7 @@ namespace dbcppp
             , std::string&& unit
             , std::set<std::string>&& receivers
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
-            , tsl::robin_map<int64_t, std::string>&& value_descriptions
+            , std::unordered_map<int64_t, std::string>&& value_descriptions
             , std::string&& comment
             , ExtendedValueType extended_value_type);
             

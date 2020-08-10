@@ -13,7 +13,7 @@ std::unique_ptr<EnvironmentVariable> EnvironmentVariable::create(
     , uint64_t ev_id
     , AccessType access_type
     , std::set<std::string>&& access_nodes
-    , tsl::robin_map<int64_t, std::string>&& value_descriptions
+    , std::unordered_map<int64_t, std::string>&& value_descriptions
     , uint64_t data_size
     , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
     , std::string&& comment)
@@ -23,6 +23,11 @@ std::unique_ptr<EnvironmentVariable> EnvironmentVariable::create(
     {
         avs.insert(std::make_pair(av.first, std::move(static_cast<AttributeImpl&>(*av.second))));
         av.second.reset(nullptr);
+    }
+    tsl::robin_map<int64_t, std::string> ads;
+    for (auto&& ad : value_descriptions)
+    {
+        ads.insert(std::move(ad));
     }
     return std::make_unique<EnvironmentVariableImpl>(
           std::move(name)
@@ -34,7 +39,7 @@ std::unique_ptr<EnvironmentVariable> EnvironmentVariable::create(
         , ev_id
         , access_type
         , std::move(access_nodes)
-        , std::move(value_descriptions)
+        , std::move(ads)
         , data_size
         , std::move(avs)
         , std::move(comment));
