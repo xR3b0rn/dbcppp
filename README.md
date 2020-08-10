@@ -34,6 +34,7 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 # Getting started
 ## Dependencies
 * boost
+* libxml2
 ## Build & Install
 ```
 git clone https://github.com/xR3b0rn/dbcppp.git
