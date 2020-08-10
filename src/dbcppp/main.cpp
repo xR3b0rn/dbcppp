@@ -36,9 +36,8 @@ int main(int argc, char** args)
     po::options_description desc_dbc2("Options");
     desc_dbc2.add_options()
         ("help", "produce help message")
-        ("format,f", po::value<std::string>()->required(), "output format (C, DBC)")
-        ("dbc", po::value<std::vector<std::string>>()->multitoken()->required(), "list of DBC files")
-        ("out,o", po::value<std::string>()->default_value("a.out"), "output filename");
+        ("format,f", po::value<std::string>()->required(), "output format (C, DBC, human)")
+        ("dbc", po::value<std::vector<std::string>>()->multitoken()->required(), "list of DBC files");
     
     po::options_description desc_decode("Options");
     desc_decode.add_options()
@@ -54,7 +53,7 @@ int main(int argc, char** args)
         po::store(po::command_line_parser(argc, args).options(desc).positional(p).run(), vm);
         if (vm.count("help"))
         {
-            std::cout << "Usage:\ndbcppp dbc2c [--help] --format=<format>... --dbc=<dbc filename>... [--out=<output filename>]\n";
+            std::cout << "Usage:\ndbcppp dbc2c [--help] --format=<format>... --dbc=<dbc filename>...\n";
             std::cout << desc_dbc2;
             return 1;
         }
@@ -68,27 +67,30 @@ int main(int argc, char** args)
             return 1;
         }
         const auto& format = vm["format"].as<std::string>();
-        const auto& out = vm["out"].as<std::string>();
         auto dbcs = vm["dbc"].as<std::vector<std::string>>();
-        std::ifstream fdbc(dbcs[0]);
-        dbcs.erase(dbcs.begin());
-        auto net = dbcppp::Network::fromDBC(fdbc);
+        auto net = dbcppp::Network::create({}, {}, dbcppp::BitTiming::create(0, 0, 0), {}, {}, {}, {}, {}, {}, {}, {});
         for (const auto& dbc : dbcs)
         {
-            fdbc = std::ifstream(dbc);
-            auto other = dbcppp::Network::fromDBC(fdbc);
-            net->merge(std::move(other));
+            auto nets = dbcppp::Network::fromFile(dbc);
+            for (auto& other : nets)
+            {
+                net->merge(std::move(other.second));
+            }
         }
-        std::ofstream fout(out);
         if (format == "C")
         {
             using namespace dbcppp::Network2C;
-            fout << *net;
+            std::cout << *net;
         }
         else if (format == "DBC")
         {
             using namespace dbcppp::Network2DBC;
-            fout << *net;
+            std::cout << *net;
+        }
+        else if (format == "human")
+        {
+            using namespace dbcppp::Network2Human;
+            std::cout << *net;
         }
     }
     else if (std::string("decode") == args[1])

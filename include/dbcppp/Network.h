@@ -38,6 +38,7 @@ namespace dbcppp
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_defaults
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
             , std::string&& comment);
+        static std::map<std::string, std::unique_ptr<Network>> fromFile(const std::string& filename);
         static std::unique_ptr<Network> fromDBC(std::istream& is);
         static std::unique_ptr<Network> fromDBC(std::istream& is, std::unique_ptr<Network> network);
         static std::map<std::string, std::unique_ptr<Network>> fromKCD(std::istream& is);
