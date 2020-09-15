@@ -610,11 +610,9 @@ extern "C"
 		if (is.is_open())
 		{
 			std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-			std::cout << str << std::endl;
-
+			
 			const boost::regex e(single_comment_regular_expr, boost::regex_constants::perl);
 			str = boost::regex_replace(str, e, "");
-			std::cout << str << std::endl;
 			
 			auto begin{ str.begin() }, end{ str.end() };
 
