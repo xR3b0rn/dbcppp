@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <vector>
@@ -15,7 +16,7 @@ namespace dbcppp
         static std::unique_ptr<ValueTable> create(
               std::string&& name
             , boost::optional<std::unique_ptr<SignalType>>&& signal_type
-            , std::map<int64_t, std::string>&& value_encoding_descriptions);
+            , std::unordered_map<int64_t, std::string>&& value_encoding_descriptions);
             
         virtual std::unique_ptr<ValueTable> clone() const = 0;
 

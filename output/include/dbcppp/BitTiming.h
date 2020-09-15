@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <memory>
@@ -21,4 +22,3 @@ namespace dbcppp
         virtual uint64_t getBTR2() const = 0;
     };
 }
-

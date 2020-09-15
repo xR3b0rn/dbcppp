@@ -22,11 +22,10 @@ namespace dbcppp
             : uint64_t
         {
             NoError,
-            MaschinesFloatEncodingNotSupported,
-            MaschinesDoubleEncodingNotSupported,
-            SignalExceedsMessageSize,
-            WrongBitSizeForExtendedDataType,
-            MuxIndicatorButNoDiscreteDecode
+            MaschinesFloatEncodingNotSupported = 1,
+            MaschinesDoubleEncodingNotSupported = 2,
+            SignalExceedsMessageSize = 4,
+            WrongBitSizeForExtendedDataType = 8
         };
         enum class Multiplexer
         {
@@ -61,7 +60,7 @@ namespace dbcppp
             , std::string&& unit
             , std::set<std::string>&& receivers
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
-            , std::map<double, std::string>&& value_descriptions
+            , std::unordered_map<int64_t, std::string>&& value_descriptions
             , std::string&& comment
             , ExtendedValueType extended_value_type);
             
@@ -82,14 +81,15 @@ namespace dbcppp
         virtual std::string getUnit() const = 0;
         virtual bool hasReceiver(const std::string& name) const = 0;
         virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const = 0;
-        virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const = 0;
-        virtual const std::string* getValueDescription(double value) const = 0;
+
+        virtual const std::string* getValueDescriptionByValue(int64_t value) const =0;
+        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const = 0;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
         virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
         virtual const std::string& getComment() const = 0;
         virtual ExtendedValueType getExtendedValueType() const = 0;
-        virtual ErrorCode getError() const = 0;
+        virtual bool getError(ErrorCode code) const = 0;
         
         /// \brief Extracts the raw value from a given n byte array
         ///
@@ -105,21 +105,18 @@ namespace dbcppp
         ///               ...
         ///               bit_n-7 - bit_n: bytes[n / 8]
         ///               (like the Unix CAN frame does store the data)
-        inline double decode(const void* bytes) const noexcept { return _decode_steady(this, bytes); }
-        inline void encode(double raw, void* buffer) const noexcept { return _encode_steady(this, raw, buffer); }
-        inline uint64_t decodeDiscrete(const void* bytes) const noexcept { return _decode_discrete(this, bytes); }
-        inline void encodeDiscrete(uint64_t raw, void* buffer) const noexcept { return _encode_discrete(this, raw, buffer); }
+        using raw_t = uint64_t;
+        inline raw_t decode(const void* bytes) const noexcept { return _decode(this, bytes); }
+        inline void encode(raw_t raw, void* buffer) const noexcept { return _encode(this, raw, buffer); }
 
-        inline double rawToPhys(double raw) const { return _raw_to_phys(this, raw); }
-        inline double physToRaw(double phys) const { return _phys_to_raw(this, phys); }
+        inline double rawToPhys(raw_t raw) const { return _raw_to_phys(this, raw); }
+        inline raw_t physToRaw(double phys) const { return _phys_to_raw(this, phys); }
 
     protected:
         // instead of using virtuals dynamic dispatching use function pointers
-        double (*_decode_steady)(const Signal* sig, const void* bytes) noexcept {nullptr};
-        void (*_encode_steady)(const Signal* sig, double raw, void* buffer) noexcept {nullptr};
-        uint64_t (*_decode_discrete)(const Signal* sig, const void* bytes) noexcept {nullptr};
-        void (*_encode_discrete)(const Signal* sig, uint64_t raw, void* buffer) noexcept {nullptr};
-        double (*_raw_to_phys)(const Signal* sig, double raw) noexcept {nullptr};
-        double (*_phys_to_raw)(const Signal* sig, double phys) noexcept {nullptr};
+        raw_t (*_decode)(const Signal* sig, const void* bytes) noexcept {nullptr};
+        void (*_encode)(const Signal* sig, raw_t raw, void* buffer) noexcept {nullptr};
+        double (*_raw_to_phys)(const Signal* sig, raw_t raw) noexcept {nullptr};
+        raw_t (*_phys_to_raw)(const Signal* sig, double phys) noexcept {nullptr};
     };
 }

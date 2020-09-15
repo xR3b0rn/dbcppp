@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <cstddef>
@@ -43,7 +44,6 @@ namespace dbcppp
         virtual const Signal* getSignalByName(const std::string& name) const = 0;
         virtual const Signal* findSignal(std::function<bool(const Signal&)>&& pred) const = 0;
         virtual void forEachSignal(std::function<void(const Signal&)>&& cb) const = 0;
-        virtual void forEachSignalOrderedByStartBit(std::function<void(const Signal&)>&& cb) const = 0;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
         virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;

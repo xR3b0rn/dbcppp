@@ -14,3 +14,5 @@ CTestTestfile.cmake
 /cmake-build-release/
 /src/Test/Config.h
 /CMakeSettings.json
+build64
+output

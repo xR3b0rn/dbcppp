@@ -4,8 +4,6 @@
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
 #include "../../Test/Config.h"
-#define DBCPPP_BYTE_ORDER_LITTLE_ENDIAN 1
-#include "test.h"
 
 // from uapi/linux/can.h
 using canid_t = uint32_t;
@@ -54,7 +52,7 @@ int main()
 {
     std::unique_ptr<dbcppp::Network> net;
     {
-        std::ifstream idbc(TEST_DBC);
+        std::ifstream idbc(Core_Lanes_Host_protocol);
         net = dbcppp::Network::fromDBC(idbc);
     }
     can_frame frame;
@@ -66,7 +64,7 @@ int main()
         {
             const dbcppp::Signal* mux_sig = msg->getMuxSignal();
             if (sig.getMultiplexerIndicator() != dbcppp::Signal::Multiplexer::MuxValue ||
-                (mux_sig && mux_sig->decodeDiscrete(frame.data) == sig.getMultiplexerSwitchValue()))
+                (mux_sig && mux_sig->decode(frame.data) == sig.getMultiplexerSwitchValue()))
             {
                 std::cout << "\t" << sig.getName() << "=" << sig.rawToPhys(sig.decode(frame.data)) << sig.getUnit() << "\n";
             }

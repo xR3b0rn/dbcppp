@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <cstddef>
@@ -5,7 +6,8 @@
 #include <vector>
 #include <functional>
 #include <boost/variant.hpp>
-#include <functional>
+#include <memory>
+
 #include "Export.h"
 
 namespace dbcppp

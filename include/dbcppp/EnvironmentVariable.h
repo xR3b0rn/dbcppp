@@ -37,7 +37,7 @@ namespace dbcppp
             , uint64_t ev_id
             , AccessType access_type
             , std::set<std::string>&& access_nodes
-            , std::map<double, std::string>&& value_descriptions
+            , std::unordered_map<int64_t, std::string>&& value_descriptions
             , uint64_t data_size
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
             , std::string&& comment);
@@ -55,7 +55,8 @@ namespace dbcppp
         virtual AccessType getAccessType() const = 0;
         virtual bool hasAccessNode(const std::string& name) const = 0;
         virtual void forEachAccessNode(std::function<void(const std::string&)>&& cb) const = 0;
-        virtual void forEachValueDescription(std::function<void(double, const std::string&)>&& cb) const = 0;
+        virtual const std::string* getValueDescriptionByValue(int64_t value) const = 0;
+        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const = 0;
         virtual uint64_t getDataSize() const = 0;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;

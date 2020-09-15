@@ -1,7 +1,7 @@
 VERSION "4"
+//SharepointID=RNDSITE-1050793592-3471
 
-
-NS_ : 
+NS_: 
 	NS_DESC_
 	CM_
 	BA_DEF_
@@ -35,7 +35,7 @@ BS_:
 
 BU_: EyeQ4 MCU
 
-
+//SharepointID=RNDSITE-1050793592-3471
 
 BO_ 142 Core_Lanes_Host_protocol: 136 EyeQ4
  SG_ LH_Zero_byte : 0|8@1+ (1,0) [0|255] "NA" MCU

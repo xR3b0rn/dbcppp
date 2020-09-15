@@ -1,12 +1,3 @@
-﻿
-include(GNUInstallDirs)
-
-add_library(${PROJECT_NAME} SHARED "")
-set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
-
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
-
-add_compile_definitions(DBCPPP_EXPORT)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/src
@@ -16,29 +7,18 @@ include_directories(
 file(GLOB header
     "*.h"
 )
-file(GLOB header_interface
-    "../../include/dbcppp/*.h"
-)
 file(GLOB src
     "*.cpp"
 )
 
-target_sources(${PROJECT_NAME}
-    PRIVATE ${header}
-    PUBLIC ${header_interface}
-    PRIVATE ${src}
-)
+add_executable(dbcppp ${header} ${src})
+set_property(TARGET dbcppp PROPERTY CXX_STANDARD 17)
+add_dependencies(dbcppp ${PROJECT_NAME})
+message(STATUS "Boost libraries")
+message(STATUS ${Boost_LIBRARIES})
+target_link_libraries(dbcppp ${PROJECT_NAME} ${Boost_LIBRARIES})
 
-include(GenerateExportHeader)
-generate_export_header(${PROJECT_NAME})
-
-# install
 install(
-    TARGETS ${PROJECT_NAME}
-    DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(
-    FILES
-		${CMAKE_CURRENT_BINARY_DIR}/dbcppp_export.h
-		$<TARGET_PROPERTY:${PROJECT_NAME},INTERFACE_SOURCES>
-	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dbcppp)
-	
+    TARGETS dbcppp
+    DESTINATION ${CMAKE_INSTALL_BINDIR})
+    

@@ -32,7 +32,7 @@ extern "C"
     } dbcppp_AttributeDefinitionValueType;
     typedef struct
     {
-        double value;
+        int64_t value;
         const char* description;
     } dbcppp_ValueDescriptionPair;
     typedef enum
@@ -145,7 +145,8 @@ extern "C"
     DBCPPP_API dbcppp_EnvironmentVariableAccessType dbcppp_EnvironmentVariableGetAccessType(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableHasNode(const dbcppp_EnvironmentVariable* env_var, const char* node_name);
     DBCPPP_API void dbcppp_EnvironmentVariableForEachAccessNode(const dbcppp_EnvironmentVariable* env_var, void(*cb)(const char*, void*), void* data);
-    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(double, const char*, void*), void* data);
+    DBCPPP_API const char* dbcppp_EnvironmentVariableGetValueDescriptionByValue(const dbcppp_EnvironmentVariable* env_var, int64_t value);
+    DBCPPP_API void dbcppp_EnvironmentVariableForEachValueDescription(const dbcppp_EnvironmentVariable* env_var, void(*cb)(int64_t, const char*, void*), void* data);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableGetDataSize(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableGetAttributeValueByName(const dbcppp_EnvironmentVariable* env_var, const char* attribute_name);
     DBCPPP_API dbcppp_Attribute* dbcppp_EnvironmentVariableFindAttributeValue(const dbcppp_EnvironmentVariable* env_var, bool(*pred)(dbcppp_Attribute*, void*), void* data);
@@ -257,18 +258,17 @@ extern "C"
     DBCPPP_API const char* dbcppp_SignalGetUnit(const dbcppp_Signal* sig);
     DBCPPP_API bool dbcppp_SignalHasReceiver(const dbcppp_Signal* sig, const char* name);
     DBCPPP_API void dbcppp_SignalForEachReceiver(const dbcppp_Signal* sig, void(*cb)(const char*, void*), void* data);
-    DBCPPP_API void dbcppp_SignalForEachValueDescription(const dbcppp_Signal* sig, void(*cb)(double, const char*, void*), void* data);
+    DBCPPP_API const char* dbcppp_SignalGetValueDescriptionByValue(const dbcppp_Signal* signal, int64_t value);
+    DBCPPP_API void dbcppp_SignalForEachValueDescription(const dbcppp_Signal* sig, void(*cb)(int64_t, const char*, void*), void* data);
     DBCPPP_API const dbcppp_Attribute* dbcppp_SignalGetAttributeValueByName(const dbcppp_Signal* sig, const char* name);
     DBCPPP_API const dbcppp_Attribute* dbcppp_SignalFindAttributeValue(const dbcppp_Signal* sig, bool(*pred)(const dbcppp_Attribute*, void*), void* data);
     DBCPPP_API void dbcppp_SignalForEachAttributeValue(const dbcppp_Signal* sig, void(*cb)(const dbcppp_Attribute*, void*), void* data);
     DBCPPP_API const char* dbcppp_SignalGetComment(const dbcppp_Signal* sig);
     DBCPPP_API dbcppp_SignalExtendedValueType dbcppp_SignalGetGetExtendedValueType(const dbcppp_Signal* sig);
-    DBCPPP_API double dbcppp_SignalDecode(const dbcppp_Signal* sig, const void* bytes);
-    DBCPPP_API void dbcppp_SignalEncode(const dbcppp_Signal* sig, double raw, void* buffer);
-    DBCPPP_API uint64_t dbcppp_SignalDecodeDiscrete(const dbcppp_Signal* sig, const void* bytes);
-    DBCPPP_API void dbcppp_SignalEncodeDiscrete(const dbcppp_Signal* sig, uint64_t raw, void* buffer);
-    DBCPPP_API double dbcppp_SignalRawToPhys(const dbcppp_Signal* sig, double raw);
-    DBCPPP_API double dbcppp_SignalPhysToRaw(const dbcppp_Signal* sig, double phys);
+    DBCPPP_API uint64_t dbcppp_SignalDecode(const dbcppp_Signal* sig, const void* bytes);
+    DBCPPP_API void dbcppp_SignalEncode(const dbcppp_Signal* sig, uint64_t raw, void* buffer);
+    DBCPPP_API double dbcppp_SignalRawToPhys(const dbcppp_Signal* sig, uint64_t raw);
+    DBCPPP_API uint64_t dbcppp_SignalPhysToRaw(const dbcppp_Signal* sig, double phys);
 
     DBCPPP_API const dbcppp_SignalType* dbcppp_SignalTypeCreate(
           const char* name
@@ -297,7 +297,7 @@ extern "C"
     DBCPPP_API void dbcppp_ValueTableFree(const dbcppp_ValueTable* value_table);
     DBCPPP_API const char* dbcppp_ValueTableGetName(const dbcppp_ValueTable* value_table);
     DBCPPP_API const dbcppp_SignalType* dbcppp_ValueTableGetSignalType(const dbcppp_ValueTable* value_table);
-    DBCPPP_API void dbcppp_ValueTableForEachValueEncodingDescription(const dbcppp_ValueTable* value_table, void(*cb)(double, const char*, void*), void* data);
+    DBCPPP_API void dbcppp_ValueTableForEachValueEncodingDescription(const dbcppp_ValueTable* value_table, void(*cb)(int64_t, const char*, void*), void* data);
 
 #ifdef __cplusplus
 }
