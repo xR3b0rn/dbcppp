@@ -1,0 +1,50 @@
+VERSION ""
+
+//It's a comment - 12!@ AS as -=\ ==
+NS_ : NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	 // It's the comment with tab	 - 	sorry about that !@#$%^.
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+// It's the comment with tab	 - 	sorry about that !@#$%^.
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+
+BS_:
+
+	//It's another comment - 	please parse me. //
+
+BU_:
+
+
+
+BA_DEF_  "BusType" STRING ;
+BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_ BU_  "ECU" STRING ;
+BA_DEF_ BU_  "CANoeJitterMax" INT 0 0;
+BA_DEF_ BU_  "CANoeJitterMin" INT 0 0;
+BA_DEF_ BU_  "CANoeDrift" INT 0 0;
+BA_DEF_ BU_  "CANoeStartDelay" INT 0 0;
+BA_DEF_DEF_  "BusType" "";
+BA_DEF_DEF_  "NodeLayerModules" "";
+BA_DEF_DEF_  "ECU" "";
+BA_DEF_DEF_  "CANoeJitterMax" 0;
+BA_DEF_DEF_  "CANoeJitterMin" 0;
+BA_DEF_DEF_  "CANoeDrift" 0;
+BA_DEF_DEF_  "CANoeStartDelay" 0;
+
+// It's the last comment - 	sorry about that !@#$%^.
