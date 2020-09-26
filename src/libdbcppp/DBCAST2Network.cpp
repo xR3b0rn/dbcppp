@@ -2,6 +2,7 @@
 #include <iterator>
 #include "../../include/dbcppp/Network.h"
 #include "DBC_Grammar.h"
+
 #include <boost/regex.hpp>
 
 constexpr auto single_comment_regular_expr = "(?!\\\")/[/]+[^\\\"\\n]*$";
@@ -176,10 +177,8 @@ static auto getSignalExtendedValueType(const G_Network& gnet, const G_Message& m
     {
         switch (iter->value)
         {
-        case 1: result = Signal::ExtendedValueType::Float;
-            break;
-        case 2: result = Signal::ExtendedValueType::Double;
-            break;
+        case 1: result = Signal::ExtendedValueType::Float; break;
+        case 2: result = Signal::ExtendedValueType::Double; break;
         }
     }
     return result;
@@ -397,12 +396,9 @@ static auto getEnvironmentVariables(const G_Network& gnet)
         }
         switch (ev.var_type)
         {
-        case 0: var_type = EnvironmentVariable::VarType::Integer;
-            break;
-        case 1: var_type = EnvironmentVariable::VarType::Float;
-            break;
-        case 2: var_type = EnvironmentVariable::VarType::String;
-            break;
+        case 0: var_type = EnvironmentVariable::VarType::Integer; break;
+        case 1: var_type = EnvironmentVariable::VarType::Float; break;
+        case 2: var_type = EnvironmentVariable::VarType::String; break;
         }
         if (ev.access_type == "DUMMY_NODE_VECTOR0")
         {
@@ -580,10 +576,11 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
     std::unique_ptr<Network> result;
     std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 
-    const boost::regex e{ single_comment_regular_expr };
+  const boost::regex e{ single_comment_regular_expr };
     str = boost::regex_replace(str, e, "");
 
     auto begin{ str.begin() }, end{ str.end() };
+
     NetworkGrammar<std::string::iterator> g(begin);
     G_Network gnet;
     bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
