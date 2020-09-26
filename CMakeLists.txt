@@ -12,7 +12,7 @@ if (!${Boost_USE_STATIC_LIBS})
 	add_definitions(-DBOOST_LOG_DYN_LINK)
 endif()
 
-find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options)
+find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options regex)
 find_package(LibXml2 REQUIRED)
 #find_package(LLVM REQUIRED CONFIG)
 
