@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(ParsingCppApiWithSingleLineComments)
 {
 	std::ifstream dbc_file(TEST_DBC_WITH_SINGLE_COMMENTS);
 	
-	BOOST_TEST_MESSAGE("Testing dbcppp C and C++ API for parsing DBC with single line comments...");
+	BOOST_TEST_MESSAGE("Testing dbcppp C and C++ APIs for skipping a DBC with single line comments...");
 
 	const dbcppp_Network* impl = dbcppp_NetworkLoadDBCFromFile(TEST_DBC_WITH_SINGLE_COMMENTS);
 	BOOST_REQUIRE_MESSAGE(impl, "C API DBC parsing failed!");
