@@ -6,13 +6,14 @@
 
 #include <boost/regex.hpp>
 
-constexpr auto single_comment_regular_expr = "^\\s*//.*?$";
+//constexpr auto single_comment_regular_expr = "^\\s*//.*?$";
+constexpr auto single_comment_regular_expr = "(?!\\\")/[/]+[^\\\"\\n]*$";
 
 using namespace dbcppp;
 
 static auto getVersion(const G_Network& gnet)
 {
-	return gnet.version.version;
+    return gnet.version.version;
 }
 static auto getNewSymbols(const G_Network& gnet)
 {
@@ -577,7 +578,7 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
 	std::unique_ptr<Network> result;
 	std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 
-	const boost::regex e{ single_comment_regular_expr, boost::regex_constants::perl };
+	const boost::regex e{ single_comment_regular_expr };
 	str = boost::regex_replace(str, e, "");
 
 	auto begin{ str.begin() }, end{ str.end() };
@@ -611,7 +612,7 @@ extern "C"
 		{
 			std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 			
-			const boost::regex e(single_comment_regular_expr, boost::regex_constants::perl);
+			const boost::regex e( single_comment_regular_expr);
 			str = boost::regex_replace(str, e, "");
 			
 			auto begin{ str.begin() }, end{ str.end() };
