@@ -20,9 +20,9 @@ BOOST_AUTO_TEST_CASE(DBCParsingCApi)
 {
     BOOST_TEST_MESSAGE("Testing dbcppp C API for correctness...");
 
-    std::ifstream dbc_file(Core_Lanes_Host_protocol);
+    std::ifstream dbc_file(TEST_DBC);
     auto spec = dbcppp::Network::fromDBC(dbc_file);
-    const dbcppp_Network* impl = dbcppp_NetworkLoadDBCFromFile(Core_Lanes_Host_protocol);
+    const dbcppp_Network* impl = dbcppp_NetworkLoadDBCFromFile(TEST_DBC);
     BOOST_REQUIRE(impl);
     BOOST_REQUIRE_EQUAL(spec->getVersion(), dbcppp_NetworkGetVersion(impl));
     BOOST_REQUIRE_EQUAL(spec->hasNewSymbol("SIGTYPE_VALTYPE_"), dbcppp_NetworkHasNewSymbol(impl, "SIGTYPE_VALTYPE_"));

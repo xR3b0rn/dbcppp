@@ -52,7 +52,7 @@ int main()
 {
     std::unique_ptr<dbcppp::Network> net;
     {
-        std::ifstream idbc(Core_Lanes_Host_protocol);
+        std::ifstream idbc(TEST_DBC);
         net = dbcppp::Network::fromDBC(idbc);
     }
     can_frame frame;

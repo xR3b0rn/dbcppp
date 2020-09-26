@@ -34,7 +34,7 @@ std::vector<std::string> dbc_to_vec(std::istream& is)
 
 BOOST_AUTO_TEST_CASE(ParsingCppApi)
 {
-    std::string dbc_file(Core_Lanes_Host_protocol);
+    std::string dbc_file(TEST_DBC);
 
     BOOST_TEST_MESSAGE("Testing dbcppp C++ API for correctness...");
 
