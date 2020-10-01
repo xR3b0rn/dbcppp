@@ -1,9 +1,8 @@
 #include <boost/log/trivial.hpp>
 #include <iterator>
+#include <regex>
 #include "../../include/dbcppp/Network.h"
 #include "DBC_Grammar.h"
-
-#include <boost/regex.hpp>
 
 constexpr auto single_comment_regular_expr = "(?!\\\")/[/]+[^\\\"\\n]*$";
 
@@ -576,8 +575,8 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
     std::unique_ptr<Network> result;
     std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 
-  const boost::regex e{ single_comment_regular_expr };
-    str = boost::regex_replace(str, e, "");
+    const std::regex e{ single_comment_regular_expr };
+    str = std::regex_replace(str, e, "");
 
     auto begin{ str.begin() }, end{ str.end() };
 
@@ -611,8 +610,8 @@ extern "C"
         {
             std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
 
-            const boost::regex e(single_comment_regular_expr);
-            str = boost::regex_replace(str, e, "");
+            const std::regex e(single_comment_regular_expr);
+            str = std::regex_replace(str, e, "");
 
             auto begin{ str.begin() }, end{ str.end() };
 
