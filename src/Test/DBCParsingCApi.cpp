@@ -1,4 +1,3 @@
-
 #include <array>
 #include <fstream>
 #include <iostream>
@@ -29,15 +28,15 @@ BOOST_AUTO_TEST_CASE(DBCParsingCApi)
     BOOST_REQUIRE_EQUAL(!spec->hasNewSymbol("Not there"), !dbcppp_NetworkHasNewSymbol(impl, "Not there"));
     spec->forEachNewSymbol(
         [&](const std::string& ns)
-        {
-            BOOST_REQUIRE(dbcppp_NetworkHasNewSymbol(impl, ns.c_str()));
-        });
+    {
+        BOOST_REQUIRE(dbcppp_NetworkHasNewSymbol(impl, ns.c_str()));
+    });
     dbcppp_NetworkForEachNewSymbol(impl,
         [](const char* ns, void* data)
-        {
-            dbcppp::Network* spec = (dbcppp::Network*)data;
-            BOOST_REQUIRE(spec->hasNewSymbol(ns));
-        }, const_cast<dbcppp::Network*>(spec.get()));
+    {
+        dbcppp::Network* spec = (dbcppp::Network*)data;
+        BOOST_REQUIRE(spec->hasNewSymbol(ns));
+    }, const_cast<dbcppp::Network*>(spec.get()));
     BOOST_REQUIRE_EQUAL(spec->getComment(), dbcppp_NetworkGetComment(impl));
     dbcppp_NetworkFree(impl);
 }

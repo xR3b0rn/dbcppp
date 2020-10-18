@@ -319,6 +319,8 @@ std::unique_ptr<Signal> Signal::create(
         , extended_value_type);
     return result;
 }
+
+
 SignalImpl::SignalImpl(
       uint64_t message_size
     , std::string&& name
@@ -581,6 +583,7 @@ void SignalImpl::forEachValueDescription(std::function<void(int64_t, const std::
         cb(av.first, av.second);
     }
 }
+
 const Attribute* SignalImpl::getAttributeValueByName(const std::string& name) const
 {
     const Attribute* result = nullptr;

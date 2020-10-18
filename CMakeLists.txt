@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.12)
 
 project("libdbcppp" VERSION 0.1.0)
@@ -7,7 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 
 if (!${Boost_USE_STATIC_LIBS})
 	add_definitions(-DBOOST_LOG_DYN_LINK)
@@ -71,5 +69,3 @@ install(
     DIRECTORY "third_party/libxmlmm/include"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libxmlmm
     FILES_MATCHING PATTERN "*.h")
-	
-

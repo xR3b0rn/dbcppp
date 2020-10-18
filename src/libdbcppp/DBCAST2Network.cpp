@@ -1,8 +1,11 @@
-
 #include <boost/log/trivial.hpp>
 #include <iterator>
+#include <regex>
 #include "../../include/dbcppp/Network.h"
 #include "DBC_Grammar.h"
+
+//constexpr auto single_comment_regular_expr = "(?!\\\")/[/]+[^\\\"\\n]*$";
+constexpr auto single_comment_regular_expr = "(?!\")/[/]+[^\"\n]*(?=\n|$)";
 
 using namespace dbcppp;
 
@@ -31,7 +34,7 @@ static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
     {
         auto& st = *iter;
         result = SignalType::create(
-              std::string(st.name)
+            std::string(st.name)
             , st.size
             , st.byte_order == '0' ? Signal::ByteOrder::BigEndian : Signal::ByteOrder::LittleEndian
             , st.value_type == '+' ? Signal::ValueType::Unsigned : Signal::ValueType::Signed
@@ -211,7 +214,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
             receivers.insert(n);
         }
         auto ns = Signal::create(
-              m.size
+            m.size
             , std::string(s.name)
             , multiplexer_indicator
             , multiplexer_switch_value
@@ -312,7 +315,7 @@ static auto getMessages(const G_Network& gnet)
         auto attribute_values = getAttributeValues(gnet, m);
         auto comment = getComment(gnet, m);
         auto msg = Message::create(
-              m.id
+            m.id
             , std::string(m.name)
             , m.size
             , std::string(m.transmitter)
@@ -423,7 +426,7 @@ static auto getEnvironmentVariables(const G_Network& gnet)
             }
         }
         auto env_var = EnvironmentVariable::create(
-              std::string(ev.name)
+            std::string(ev.name)
             , var_type
             , ev.minimum
             , ev.maximum
@@ -530,7 +533,7 @@ static auto getAttributeValues(const G_Network& gnet)
         {
             auto av_ = boost::get<G_AttributeNetwork>(av);
             auto attribute = Attribute::create(
-                  std::string(av_.attribute_name)
+                std::string(av_.attribute_name)
                 , AttributeDefinition::ObjectType::Network
                 , std::move(av_.value));
             result.insert(std::make_pair(av_.attribute_name, std::move(attribute)));
@@ -555,7 +558,7 @@ static auto getComment(const G_Network& gnet)
 std::unique_ptr<Network> DBCAST2Network(const G_Network& gnet)
 {
     return Network::create(
-          getVersion(gnet)
+        getVersion(gnet)
         , getNewSymbols(gnet)
         , getBitTiming(gnet)
         , getNodes(gnet)
@@ -572,7 +575,12 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
 {
     std::unique_ptr<Network> result;
     std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-    auto begin{str.begin()}, end{str.end()};
+
+    const std::regex e{ single_comment_regular_expr };
+    str = std::regex_replace(str, e, "");
+
+    auto begin{ str.begin() }, end{ str.end() };
+
     NetworkGrammar<std::string::iterator> g(begin);
     G_Network gnet;
     bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
@@ -582,7 +590,7 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
     }
     else
     {
-        auto[line, column] = getErrPos(str.begin(), begin);
+        auto [line, column] = getErrPos(str.begin(), begin);
         std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
     }
     return result;
@@ -602,7 +610,12 @@ extern "C"
         if (is.is_open())
         {
             std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-            auto begin{str.begin()}, end{str.end()};
+
+            const std::regex e(single_comment_regular_expr);
+            str = std::regex_replace(str, e, "");
+
+            auto begin{ str.begin() }, end{ str.end() };
+
             NetworkGrammar<std::string::iterator> g(begin);
             G_Network gnet;
             bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
@@ -612,7 +625,7 @@ extern "C"
             }
             else
             {
-                auto[line, column] = getErrPos(str.begin(), begin);
+                auto [line, column] = getErrPos(str.begin(), begin);
                 std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
             }
         }
