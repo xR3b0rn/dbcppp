@@ -4,7 +4,8 @@
 #include "../../include/dbcppp/Network.h"
 #include "DBC_Grammar.h"
 
-constexpr auto single_comment_regular_expr = "(?!\\\")/[/]+[^\\\"\\n]*$";
+//constexpr auto single_comment_regular_expr = "(?!\\\")/[/]+[^\\\"\\n]*$";
+constexpr auto single_comment_regular_expr = "(?!\")/[/]+[^\"\n]*(?=\n|$)";
 
 using namespace dbcppp;
 
