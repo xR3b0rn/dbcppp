@@ -45,6 +45,7 @@ cmake ..
 make -j
 make RunTests
 make install
+ldconfig
 ```
 # Usage example
 ## Command line tool
