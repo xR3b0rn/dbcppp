@@ -6,7 +6,13 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <filesystem>
+
+#ifdef __cpp_lib_filesystem
+#  include <filesystem>
+#elif __cpp_lib_experimental_filesystem
+#  include <experimental/filesystem>
+#endif
+
 #include <boost/program_options.hpp>
 
 #include <robin-map/tsl/robin_map.h>
