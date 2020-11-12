@@ -45,7 +45,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j
 make RunTests
 make install
-ldconfig
+ldconfig # on Unix-systems only
 ```
 # Usage example
 ## Command line tool
