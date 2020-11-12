@@ -41,7 +41,7 @@ git clone https://github.com/xR3b0rn/dbcppp.git
 cd dbcppp
 mkdir build
 cd build
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Release ..
 make -j
 make RunTests
 make install
