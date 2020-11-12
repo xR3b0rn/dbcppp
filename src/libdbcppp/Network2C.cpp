@@ -1,6 +1,6 @@
 
 #include "NetworkImpl.h"
-#include "../../include/dbcppp/Network2C.h"
+#include "../../include/dbcppp/Network2Functions.h"
 
 using namespace dbcppp;
 using namespace dbcppp::Network2C;
@@ -46,7 +46,7 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                 {
                     const SignalImpl& sigi = static_cast<const SignalImpl&>(sig);
                     os << boost::format(
-                        "uint64_t dbcppp_decode_%2%(const void* nbytes)\n"
+                        "uint64_t dbcppp_decode_%s(const void* nbytes)\n"
                         "{\n"
                         "    uint64_t data;\n")
                         % (msg.getName() + "_" + std::to_string(msg.getId()) + "_" + sig.getName());

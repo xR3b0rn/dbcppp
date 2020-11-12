@@ -7,7 +7,8 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 * DBC is editable through C/C++ interface exported from the library
 * read/write DBC file
 * decode functionality for frames of arbitrarily byte length
-* cantools like decoding
+* [cantools](https://github.com/eerimoq/cantools) like decoding
+* [KCD](https://github.com/julietkilo/kcd) file format support
 ## DBC data types
 ### Supported
 * version
@@ -33,6 +34,7 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 # Getting started
 ## Dependencies
 * boost
+* libxml2
 ## Build & Install
 ```
 git clone https://github.com/xR3b0rn/dbcppp.git
@@ -48,12 +50,13 @@ make install
 ## Command line tool
 ### dbc2
 ```
-# generate C source from DBC
-dbcppp dbc2 --dbc=file.dbc --format=C --out=file.h
-# beauty or merge DBC
-dbcppp dbc2 --dbc=file1.dbc --dbc=file2.dbc --format=DBC --out=merged.dbc
+# generate C source from DBC/KCD
+dbcppp dbc2 --dbc=file.dbc --format=C
+# beauty or merge DBC/KCD
+dbcppp dbc2 --dbc=file1.dbc --dbc=file2.kcd --format=DBC
+# print DBC/KCD in human readable format
+dbcppp dbc2 --dbc=file1.dbc --dbc=file2.kcd --format=human
 ```
-This feature isn't well tested. Especially the C generator does have a high chance of generating erroneous code.
 ### decode
 [cantools](https://github.com/eerimoq/cantools) like decoding:
 ```

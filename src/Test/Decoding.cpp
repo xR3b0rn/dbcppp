@@ -1,4 +1,3 @@
-
 #include <array>
 #include <fstream>
 #include <iostream>
@@ -10,7 +9,7 @@
 #include <string>
 #include <iomanip>
 
-#include "../../include/dbcppp/Network2DBC.h"
+#include "../../include/dbcppp/Network2Functions.h"
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
 

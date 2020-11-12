@@ -7,7 +7,7 @@ using namespace dbcppp;
 std::unique_ptr<ValueTable> ValueTable::create(
       std::string&& name
     , boost::optional<std::unique_ptr<SignalType>>&& signal_type
-    , tsl::robin_map<int64_t, std::string>&& value_encoding_descriptions)
+    , std::unordered_map<int64_t, std::string>&& value_encoding_descriptions)
 {
     boost::optional<SignalTypeImpl> st;
     if (signal_type)
@@ -15,7 +15,12 @@ std::unique_ptr<ValueTable> ValueTable::create(
         st = std::move(static_cast<SignalTypeImpl&>(**signal_type));
         (*signal_type).reset(nullptr);
     }
-    return std::make_unique<ValueTableImpl>(std::move(name), std::move(st), std::move(value_encoding_descriptions));
+    tsl::robin_map<int64_t, std::string> veds;
+    for (auto&& ved : value_encoding_descriptions)
+    {
+        veds.insert(std::move(ved));
+    }
+    return std::make_unique<ValueTableImpl>(std::move(name), std::move(st), std::move(veds));
 }
 ValueTableImpl::ValueTableImpl(
       std::string&& name

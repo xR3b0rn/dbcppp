@@ -436,3 +436,18 @@ void Network::merge(std::unique_ptr<Network>&& other)
     }
     other.reset(nullptr);
 }
+std::map<std::string, std::unique_ptr<Network>> Network::fromFile(const std::string& filename)
+{
+    auto result = std::map<std::string, std::unique_ptr<Network>>();
+    auto ending = filename.substr(filename.size() - 3, 3);
+    auto is = std::ifstream(filename);
+    if (ending == "dbc")
+    {
+        result.insert(std::make_pair("", fromDBC(is)));
+    }
+    else if (ending == "kcd")
+    {
+        result = fromKCD(is);
+    }
+    return std::move(result);
+}

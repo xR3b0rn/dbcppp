@@ -51,16 +51,21 @@ namespace dbcppp
         virtual std::string getUnit() const override;
         virtual bool hasReceiver(const std::string& name) const override;
         virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const override;
+
         virtual const std::string* getValueDescriptionByValue(int64_t value) const override;
         virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const override;
+    
+
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
         virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
         virtual const std::string& getComment() const override;
         virtual ExtendedValueType getExtendedValueType() const override;
-        virtual ErrorCode getError() const override;
+        virtual bool getError(ErrorCode code) const override;
 
     private:
+        void setError(ErrorCode code);
+
         std::string _name;
         Multiplexer _multiplexer_indicator;
         uint64_t _multiplexer_switch_value;

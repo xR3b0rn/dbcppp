@@ -1,8 +1,11 @@
-
 #include <boost/log/trivial.hpp>
 #include <iterator>
+#include <regex>
 #include "../../include/dbcppp/Network.h"
 #include "DBC_Grammar.h"
+
+//constexpr auto single_comment_regular_expr = "(?!\\\")/[/]+[^\\\"\\n]*$";
+constexpr auto single_comment_regular_expr = "(?!\")/[/]+[^\"\n]*(?=\n|$)";
 
 using namespace dbcppp;
 
@@ -31,7 +34,7 @@ static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
     {
         auto& st = *iter;
         result = SignalType::create(
-              std::string(st.name)
+            std::string(st.name)
             , st.size
             , st.byte_order == '0' ? Signal::ByteOrder::BigEndian : Signal::ByteOrder::LittleEndian
             , st.value_type == '+' ? Signal::ValueType::Unsigned : Signal::ValueType::Signed
@@ -52,7 +55,7 @@ static auto getValueTables(const G_Network& gnet)
     {
         auto sig_type = getSignalType(gnet, vt);
         auto copy_ved = vt.value_encoding_descriptions;
-        tsl::robin_map<int64_t, std::string> robin_copy_ved(copy_ved.begin(), copy_ved.end());
+        std::unordered_map<int64_t, std::string> robin_copy_ved(copy_ved.begin(), copy_ved.end());
         auto nvt = ValueTable::create(std::string(vt.name), std::move(sig_type), std::move(robin_copy_ved));
         result.insert(std::make_pair(vt.name, std::move(nvt)));
     }
@@ -134,7 +137,7 @@ static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const 
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
-    tsl::robin_map<int64_t, std::string> result;
+    std::unordered_map<int64_t, std::string> result;
     for (const auto& vds : gnet.value_descriptions)
     {
         if (vds.description.type() == typeid(G_ValueDescriptionSignal) &&
@@ -142,7 +145,7 @@ static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, cons
             boost::get<G_ValueDescriptionSignal>(vds.description).signal_name == s.name)
         {
             auto& map = boost::get<G_ValueDescriptionSignal>(vds.description).value_descriptions;
-            result = tsl::robin_map<int64_t, std::string>(map.begin(), map.end());
+            result = std::unordered_map<int64_t, std::string>(map.begin(), map.end());
         }
     }
     return result;
@@ -211,7 +214,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
             receivers.insert(n);
         }
         auto ns = Signal::create(
-              m.size
+            m.size
             , std::string(s.name)
             , multiplexer_indicator
             , multiplexer_switch_value
@@ -229,24 +232,25 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
             , std::move(value_descriptions)
             , std::move(comment)
             , extended_value_type);
-        switch (ns->getError())
+        if (ns->getError(Signal::ErrorCode::SignalExceedsMessageSize))
         {
-        case Signal::ErrorCode::SignalExceedsMessageSize:
             std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"
                 << " start_bit + bit_size exceeds the byte size of the message! Ignoring this error will lead to garbage data when using the decode function of this signal." << std::endl;
-            break;
-        case Signal::ErrorCode::WrongBitSizeForExtendedDataType:
+        }
+        if (ns->getError(Signal::ErrorCode::WrongBitSizeForExtendedDataType))
+        {
             std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"
                 << " bit_size does not fit the bit size of the specified ExtendedValueType." << std::endl;
-            break;
-        case Signal::ErrorCode::MaschinesFloatEncodingNotSupported:
+        }
+        if (ns->getError(Signal::ErrorCode::MaschinesFloatEncodingNotSupported))
+        {
             std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
                 << " This warning appears when a signal uses type float but the system this programm is running on does not uses IEEE 754 encoding for floats." << std::endl;
-            break;
-        case Signal::ErrorCode::MaschinesDoubleEncodingNotSupported:
+        }
+        if (ns->getError(Signal::ErrorCode::MaschinesDoubleEncodingNotSupported))
+        {
             std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
                 << " This warning appears when a signal uses type double but the system this programm is running on does not uses IEEE 754 encoding for doubles." << std::endl;
-            break;
         }
         result.insert(std::make_pair(s.name, std::move(ns)));
     }
@@ -311,7 +315,7 @@ static auto getMessages(const G_Network& gnet)
         auto attribute_values = getAttributeValues(gnet, m);
         auto comment = getComment(gnet, m);
         auto msg = Message::create(
-              m.id
+            m.id
             , std::string(m.name)
             , m.size
             , std::string(m.transmitter)
@@ -329,14 +333,14 @@ static auto getMessages(const G_Network& gnet)
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVariable& ev)
 {
-    tsl::robin_map<int64_t, std::string> result;
+    std::unordered_map<int64_t, std::string> result;
     for (const auto& vds : gnet.value_descriptions)
     {
         if (vds.description.type() == typeid(G_ValueDescriptionEnvVar) &&
             boost::get<G_ValueDescriptionEnvVar>(vds.description).env_var_name == ev.name)
         {
             auto& map = boost::get<G_ValueDescriptionEnvVar>(vds.description).value_descriptions;
-            result = tsl::robin_map<int64_t, std::string>(map.begin(), map.end());
+            result = std::unordered_map<int64_t, std::string>(map.begin(), map.end());
             break;
         }
     }
@@ -422,7 +426,7 @@ static auto getEnvironmentVariables(const G_Network& gnet)
             }
         }
         auto env_var = EnvironmentVariable::create(
-              std::string(ev.name)
+            std::string(ev.name)
             , var_type
             , ev.minimum
             , ev.maximum
@@ -529,7 +533,7 @@ static auto getAttributeValues(const G_Network& gnet)
         {
             auto av_ = boost::get<G_AttributeNetwork>(av);
             auto attribute = Attribute::create(
-                  std::string(av_.attribute_name)
+                std::string(av_.attribute_name)
                 , AttributeDefinition::ObjectType::Network
                 , std::move(av_.value));
             result.insert(std::make_pair(av_.attribute_name, std::move(attribute)));
@@ -554,7 +558,7 @@ static auto getComment(const G_Network& gnet)
 std::unique_ptr<Network> DBCAST2Network(const G_Network& gnet)
 {
     return Network::create(
-          getVersion(gnet)
+        getVersion(gnet)
         , getNewSymbols(gnet)
         , getBitTiming(gnet)
         , getNodes(gnet)
@@ -571,7 +575,12 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
 {
     std::unique_ptr<Network> result;
     std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-    auto begin{str.begin()}, end{str.end()};
+
+    const std::regex e{ single_comment_regular_expr };
+    str = std::regex_replace(str, e, "");
+
+    auto begin{ str.begin() }, end{ str.end() };
+
     NetworkGrammar<std::string::iterator> g(begin);
     G_Network gnet;
     bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
@@ -581,12 +590,12 @@ std::unique_ptr<Network> Network::fromDBC(std::istream& is)
     }
     else
     {
-        auto[line, column] = getErrPos(str.begin(), begin);
+        auto [line, column] = getErrPos(str.begin(), begin);
         std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
     }
     return result;
 }
-std::unique_ptr<Network> Network::fromDBC(std::istream& is, std::unique_ptr<Network> network)
+std::unique_ptr<Network> dbcppp::Network::fromDBC(std::istream& is, std::unique_ptr<Network> network)
 {
     auto other = fromDBC(is);
     network->merge(std::move(other));
@@ -601,7 +610,12 @@ extern "C"
         if (is.is_open())
         {
             std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-            auto begin{str.begin()}, end{str.end()};
+
+            const std::regex e(single_comment_regular_expr);
+            str = std::regex_replace(str, e, "");
+
+            auto begin{ str.begin() }, end{ str.end() };
+
             NetworkGrammar<std::string::iterator> g(begin);
             G_Network gnet;
             bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
@@ -611,7 +625,7 @@ extern "C"
             }
             else
             {
-                auto[line, column] = getErrPos(str.begin(), begin);
+                auto [line, column] = getErrPos(str.begin(), begin);
                 std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
             }
         }

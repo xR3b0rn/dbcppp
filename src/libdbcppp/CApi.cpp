@@ -290,7 +290,7 @@ extern "C"
         EnvironmentVariable::VarType vt;
         EnvironmentVariable::AccessType at;
         std::set<std::string> ans;
-        tsl::robin_map<int64_t, std::string> vds;
+        std::unordered_map<int64_t, std::string> vds;
         std::map<std::string, std::unique_ptr<Attribute>> avs;
         switch (var_type)
         {
@@ -537,7 +537,7 @@ extern "C"
     DBCPPP_API uint64_t dbcppp_MessageGetMessageSize(const dbcppp_Message* msg)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
-        return msgi->getId();
+        return msgi->getMessageSize();
     }
     DBCPPP_API const char* dbcppp_MessageGetTransmitter(const dbcppp_Message* msg)
     {
@@ -971,7 +971,7 @@ extern "C"
         Signal::ValueType vt;
         std::set<std::string> rs;
         std::map<std::string, std::unique_ptr<Attribute>> avs;
-        tsl::robin_map<int64_t, std::string> vds;
+        std::unordered_map<int64_t, std::string> vds;
         Signal::ExtendedValueType evt;
         switch (multiplexer_indicator)
         {
@@ -1305,7 +1305,7 @@ extern "C"
 
     DBCPPP_API const dbcppp_ValueTable* dbcppp_ValueTableCreate(const char* name, dbcppp_SignalType* signal_type, dbcppp_ValueDescriptionPair** pairs)
     {
-        tsl::robin_map<int64_t, std::string> descs;
+        std::unordered_map<int64_t, std::string> descs;
         for (; *pairs; pairs++)
         {
             descs.insert(std::make_pair((*pairs)->value, (*pairs)->description));

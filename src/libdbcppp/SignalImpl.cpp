@@ -282,7 +282,7 @@ std::unique_ptr<Signal> Signal::create(
     , std::string&& unit
     , std::set<std::string>&& receivers
     , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
-    , tsl::robin_map<int64_t, std::string>&& value_descriptions
+    , std::unordered_map<int64_t, std::string>&& value_descriptions
     , std::string&& comment
     , Signal::ExtendedValueType extended_value_type)
 {
@@ -292,6 +292,11 @@ std::unique_ptr<Signal> Signal::create(
     {
         avs.insert(std::make_pair(av.first, std::move(*static_cast<AttributeImpl*>(av.second.get()))));
         av.second.reset(nullptr);
+    }
+    tsl::robin_map<int64_t, std::string> vds;
+    for (auto&& vd : value_descriptions)
+    {
+        vds.insert(std::move(vd));
     }
     result = std::make_unique<SignalImpl>(
           message_size
@@ -309,15 +314,13 @@ std::unique_ptr<Signal> Signal::create(
         , std::move(unit)
         , std::move(receivers)
         , std::move(avs)
-        , std::move(value_descriptions)
+        , std::move(vds)
         , std::move(comment)
         , extended_value_type);
-    if (result->getError() != SignalImpl::ErrorCode::NoError)
-    {
-        result = nullptr;
-    }
     return result;
 }
+
+
 SignalImpl::SignalImpl(
       uint64_t message_size
     , std::string&& name
@@ -364,7 +367,7 @@ SignalImpl::SignalImpl(
     case ByteOrder::LittleEndian:
         if ((start_bit + bit_size) > message_size * 8)
         {
-            _error = ErrorCode::SignalExceedsMessageSize;
+            setError(ErrorCode::SignalExceedsMessageSize);
         }
         break;
     case ByteOrder::BigEndian:
@@ -372,7 +375,7 @@ SignalImpl::SignalImpl(
         int64_t fstart = int64_t(start_bit) - (start_bit % 8);
         if (fstart + ((fsize - 1) / 8) * 8 >= message_size * 8)
         {
-            _error = ErrorCode::SignalExceedsMessageSize;
+            setError(ErrorCode::SignalExceedsMessageSize);
         }
         break;
     }
@@ -381,23 +384,23 @@ SignalImpl::SignalImpl(
     case Signal::ExtendedValueType::Float:
         if (bit_size != 32)
         {
-            _error = ErrorCode::WrongBitSizeForExtendedDataType;
+            setError(ErrorCode::WrongBitSizeForExtendedDataType);
         }
         break;
     case Signal::ExtendedValueType::Double:
         if (bit_size != 64)
         {
-            _error = ErrorCode::WrongBitSizeForExtendedDataType;
+            setError(ErrorCode::WrongBitSizeForExtendedDataType);
         }
         break;
     }
     if (extended_value_type == ExtendedValueType::Float && !std::numeric_limits<float>::is_iec559)
     {
-        _error = ErrorCode::MaschinesFloatEncodingNotSupported;
+            setError(ErrorCode::MaschinesFloatEncodingNotSupported);
     }
     if (extended_value_type == ExtendedValueType::Double && !std::numeric_limits<double>::is_iec559)
     {
-        _error = ErrorCode::MaschinesDoubleEncodingNotSupported;
+            setError(ErrorCode::MaschinesDoubleEncodingNotSupported);
     }
 
     // save some additional values to speed up decoding
@@ -580,6 +583,7 @@ void SignalImpl::forEachValueDescription(std::function<void(int64_t, const std::
         cb(av.first, av.second);
     }
 }
+
 const Attribute* SignalImpl::getAttributeValueByName(const std::string& name) const
 {
     const Attribute* result = nullptr;
@@ -618,7 +622,11 @@ Signal::ExtendedValueType SignalImpl::getExtendedValueType() const
 {
     return _extended_value_type;
 }
-Signal::ErrorCode SignalImpl::getError() const
+bool SignalImpl::getError(ErrorCode code) const
 {
-    return _error;
+    return code == _error || (uint64_t(_error) & uint64_t(code));
+}
+void SignalImpl::setError(ErrorCode code)
+{
+    _error = ErrorCode(uint64_t(_error) | uint64_t(code));
 }
