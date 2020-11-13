@@ -31,7 +31,7 @@ NS_:
  BU_BO_REL_
  SG_MUL_VAL_
 
-BS_: 1 : 2, 2
+BS_: 1 : 2, 2 // It's the comment with tab	 - 	sorry about that !@#$%^.
 
 BU_: Bus0 Bus1 Bus2 Receiver
 
@@ -139,7 +139,9 @@ BA_ "Signal attribute definition" SG_ 0 s1 "value1";
 BA_ "EnvVar attribute definition" EV_ EnvVar0 "value1";
 
 VAL_ 0 s0 1 "VAL_1" 2 "VAL_2";
-VAL_ EnvVar0 1 "VAL_1" 2 "VAL_3";
-
+VAL_ EnvVar0 1 "VAL_1" 2 "VAL_3"; // It's the comment with tab	 - 	sorry about that !@#$%^.
+/*
+asdf
+*/
 SIG_VALTYPE_ 0 s1 : 1;
 SIG_VALTYPE_ 0 s2 : 2;

@@ -30,5 +30,6 @@ BOOST_AUTO_TEST_CASE(ParsingCppApiWithSingleLineComments)
 
     BOOST_REQUIRE_EQUAL(spec->getVersion(), dbcppp_NetworkGetVersion(impl));
 
+    dbcppp_NetworkFree(impl);
     BOOST_TEST_MESSAGE("Done!");
 }

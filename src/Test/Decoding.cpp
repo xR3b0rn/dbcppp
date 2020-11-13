@@ -65,7 +65,7 @@ auto generate_random_signal(
         {
             sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
                 rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
-            if (sig)
+            if (sig->getError(Signal::ErrorCode::NoError))
             {
                 break;
             }
@@ -94,7 +94,7 @@ uint64_t easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
     {
         auto srcBit = sig.getStartBit();
         auto dstBit = sig.getBitSize() - 1;
-        for (auto i = 0; i < sig.getBitSize(); ++i)
+        for (auto i = 0; i < sig.getBitSize(); i++)
         {
             if (data[srcBit / 8] & (1ull << (srcBit % 8)))
             {
@@ -115,7 +115,7 @@ uint64_t easy_decode(dbcppp::Signal& sig, std::vector<uint8_t>& data)
     {
         auto srcBit = sig.getStartBit();
         auto dstBit = 0;
-        for (auto i = 0; i < sig.getBitSize(); ++i)
+        for (auto i = 0; i < sig.getBitSize(); i++)
         {
             if (data[srcBit / 8] & (1 << (srcBit % 8)))
             {
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(Decoding)
 {
     using namespace dbcppp;
 
-    std::size_t n_tests = 1000000;
+    std::size_t n_tests = 10000;
     std::size_t max_msg_byte_size = 64;
 
     BOOST_TEST_MESSAGE("Testing decode-function with " << n_tests << " randomly generated tests...");
