@@ -3,7 +3,7 @@
 
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
-#include "../../Test/Config.h"
+#include "../../tests/Config.h"
 
 // from uapi/linux/can.h
 using canid_t = uint32_t;
@@ -53,7 +53,7 @@ int main()
     std::unique_ptr<dbcppp::Network> net;
     {
         std::ifstream idbc(TEST_DBC);
-        net = dbcppp::Network::fromDBC(idbc);
+        net = dbcppp::Network::loadDBCFromIs(idbc);
     }
     can_frame frame;
     receive_frame_data(&frame);

@@ -38,6 +38,8 @@ include_directories("include")
 include_directories("third_party/libxmlmm/include")
 
 add_subdirectory(src)
+add_subdirectory(tests)
+add_subdirectory(examples)
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
