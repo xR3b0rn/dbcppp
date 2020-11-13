@@ -1,7 +1,0 @@
-
-[submodule "third_party/throw_exception"]
-	path = third_party/throw_exception
-	url = https://github.com/boostorg/throw_exception.git
-[submodule "third_party/boost"]
-	path = third_party/boost
-	url = https://github.com/boostorg/boost.git
