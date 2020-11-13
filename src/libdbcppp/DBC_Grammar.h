@@ -549,8 +549,6 @@ namespace dbcppp
             bool succeeded = phrase_parse(pp_begin, end, grammar, skipper, gnet);
             if (!succeeded || (pp_begin != end))
             {
-                auto [line, column] = getErrPos(begin, pp_begin);
-                std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
                 result = false;
             }
             return result;

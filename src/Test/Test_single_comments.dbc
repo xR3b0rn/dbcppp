@@ -1,4 +1,5 @@
 VERSION "1.0.0"
+
 //It's a comment - 12!@ AS as -=\ ==
 NS_:
  NS_DESC_
@@ -31,7 +32,7 @@ NS_:
  BU_BO_REL_
  SG_MUL_VAL_
 
-BS_: 1 : 2, 2 // It's the comment with tab	 - 	sorry about that !@#$%^.
+BS_: 1 : 2, 2
 
 BU_: Bus0 Bus1 Bus2 Receiver
 
@@ -112,7 +113,7 @@ EV_ EnvVar0: 0 [0|1] "u//nit" 0.5 0 DUMMY_NODE_VECTOR0 Bus0, Bus1, Bus2;
 ENVVAR_DATA_ EnvVar0 : 8;
 
 
-CM_ "Test comment with // in it (that should not be preprocessed!)"; // but that should
+CM_ "Test √ comment with // in it (that should not be preprocessed!)"; // but that should
 CM_ BU_ Bus0 "Node comment";
 CM_ BO_ 0 "Message comment";
 CM_ SG_ 0 s0 "Signal comment";
@@ -139,9 +140,7 @@ BA_ "Signal attribute definition" SG_ 0 s1 "value1";
 BA_ "EnvVar attribute definition" EV_ EnvVar0 "value1";
 
 VAL_ 0 s0 1 "VAL_1" 2 "VAL_2";
-VAL_ EnvVar0 1 "VAL_1" 2 "VAL_3"; // It's the comment with tab	 - 	sorry about that !@#$%^.
-/*
-asdf
-*/
+VAL_ EnvVar0 1 "VAL_1" 2 "VAL_3";
+
 SIG_VALTYPE_ 0 s1 : 1;
 SIG_VALTYPE_ 0 s2 : 2;
