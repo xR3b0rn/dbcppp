@@ -71,7 +71,7 @@ int main(int argc, char** args)
         auto net = dbcppp::Network::create({}, {}, dbcppp::BitTiming::create(0, 0, 0), {}, {}, {}, {}, {}, {}, {}, {});
         for (const auto& dbc : dbcs)
         {
-            auto nets = dbcppp::Network::fromFile(dbc);
+            auto nets = dbcppp::Network::loadNetworkFromFile(dbc);
             for (auto& other : nets)
             {
                 net->merge(std::move(other.second));
@@ -138,7 +138,7 @@ int main(int argc, char** args)
             if (std::getline(ss, opt))
             {
                 std::ifstream fdbc(opt);
-                b.net = dbcppp::Network::fromDBC(fdbc);
+                b.net = dbcppp::Network::loadDBCFromIs(fdbc);
             }
             else
             {
