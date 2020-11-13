@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(ParsingCppApi)
             spec = dbc_to_vec(idbc);
         }
         std::ifstream idbc(dbc_file);
-        auto net = dbcppp::Network::fromDBC(idbc);
+        auto net = dbcppp::Network::loadDBCFromIs(idbc);
         std::clock_t begin = std::clock();
 
         BOOST_REQUIRE_MESSAGE(net, "DBC parsing failed!");

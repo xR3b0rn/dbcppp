@@ -32,9 +32,7 @@
 #include <boost/spirit/include/phoenix_object.hpp>
 #include <boost/spirit/repository/include/qi_iter_pos.hpp>
 
-#include "../../include/dbcppp/CApi.h"
 #include "DBC_Grammar.h"
-#include "NetworkImpl.h"
 
 namespace dbcppp
 {
@@ -519,14 +517,44 @@ namespace dbcppp
         return {line, column};
     }
 
+    
+    template <class Iter>
+    struct DBCSkipper
+        : boost::spirit::qi::grammar<Iter>
+    {
+        DBCSkipper()
+            : boost::spirit::qi::grammar<Iter>(skipper)
+        {
+            using namespace boost::spirit::qi;
+            single_line_comment = "//" >> *(char_ - eol) >> (eol | eoi);
+            block_comment       = ("/*" >> *(block_comment | char_ - "*/")) > "*/";
+            skipper             = space | single_line_comment | block_comment;
+        }
 
+        boost::spirit::qi::rule<Iter> block_comment, single_line_comment, skipper;
+    };
     template <class Iter>
     class NetworkGrammar
-        : public boost::spirit::qi::grammar<Iter, G_Network(), boost::spirit::ascii::space_type>
+        : public boost::spirit::qi::grammar<Iter, G_Network(), DBCSkipper<Iter>>
     {
     public:
-        using Skipper = boost::spirit::ascii::space_type;
+        using Skipper = DBCSkipper<Iter>;
 
+        static auto parse(Iter begin, Iter end, G_Network& gnet)
+        {
+            bool result = true;
+            DBCSkipper<Iter> skipper;
+            NetworkGrammar<Iter> grammar(begin);
+            auto pp_begin = begin;
+            bool succeeded = phrase_parse(pp_begin, end, grammar, skipper, gnet);
+            if (!succeeded || (pp_begin != end))
+            {
+                auto [line, column] = getErrPos(begin, pp_begin);
+                std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
+                result = false;
+            }
+            return result;
+        }
         NetworkGrammar(Iter begin)
             : NetworkGrammar::base_type(_network, "DBC_Network")
         {
@@ -536,109 +564,54 @@ namespace dbcppp
             namespace sp = boost::spirit::labels;
             namespace ascii = boost::spirit::ascii;
 
-            _unsigned_integer.name("uint");
-            _signed_integer.name("int");
-            _double.name("double");
-            _char_string.name("QuotedString");
-            _C_identifier.name("Identifier");
-            _C_identifier_.name("Identifier");
-            _version.name("Version");
-            _new_symbol.name("NewSymbol");
-            _new_symbols.name("NS_");
-            _bit_timing.name("BitTiming");
-            _baudrate.name("Baudrate");
-            _BTR1.name("BTR1");
-            _BTR2.name("BTR2");
-            _nodes.name("Nodes");
-            _node_.name("Node");
-            _node_name.name("NodeName");
-            _node_name.name("NodeName");
-            _value_tables.name("ValueTables");
-            _value_table.name("ValueTable");
-            _value_table_name.name("ValueTableName");
-            _value_encoding_descriptions.name("VAlueEncodingDescriptions");
-            _value_encoding_description.name("VAlueEncodingDescription");
-            _messages.name("Messages");
-            _message.name("Message");
-            _message_id.name("MessageId");
-            _message_name.name("MessageName");
-            _message_size.name("MessageSize");
-            _transmitter.name("NodeName");
-            _transmitter_.name("NodeName");
-            _signals.name("Signals");
-            _signal.name("Signal");
-            _signal_name.name("SignalName");
-            _multiplexer_indicator.name("SignalMultiplexerIndicator");
-            _attribute_value_type_string.name("AttributeValueTypeString");
-            _start_bit.name("SignalStartBit");
-            _start_bit %= _unsigned_integer;
-            _signal_size.name("SignalSize");
-            _signal_size %= _unsigned_integer;
-            _byte_order.name("ByteOrder");
-            _byte_order = qi::lexeme[qi::char_('0') | qi::char_('1')];
-            _value_type.name("ValueType");
-            _value_type = qi::lexeme[qi::char_('-') | qi::char_('+')];
-            _factor.name("Factor");
-            _factor %= _double;
-            _offset.name("Offset");
-            _offset %= _double;
-            _minimum.name("Minimum");
-            _minimum %= _double;
-            _maximum.name("Maximum");
-            _unit.name("Unit");
-            _receivers.name("NodeNames");
-            _receiver_.name("NodeName");
-            _receivers_.name("NodeNames");
-            _message_transmitters.name("MessageTransmitters");
-            _message_transmitter.name("MessageTransmitter");
-            _transmitters.name("NodeNames");
-            _environment_variables.name("EnvironmentVariables");
-            _environment_variable.name("EnvironmentVariable");
-            _env_var_name.name("EnvVarName");
-            _env_var_type.name("EnvVarType");
-            _initial_value.name("InitialValue");
-            _ev_id.name("EvId");
-            _access_type.name("AccessType");
-            _access_nodes.name("NodeNames");
-            _environment_variable_datas.name("EnvironmentVariableDatas");
-            _environment_variable_data.name("EnvironmentVariableData");
-            _data_size.name("DataSize");
-            _signal_types.name("SignalTypes");
-            _signal_type.name("SignalType");
-            _signal_type_name.name("SignalTypeName");
-            _default_value.name("DefaultValue");
-            _comments.name("Comments");
-            _comment.name("Comment");
-            _comment_network.name("CommentNetwork");
-            _comment_node.name("CommentNode");
-            _comment_message.name("CommentMessage");
-            _comment_signal.name("CommentSignal");
-            _comment_env_var.name("CommentEnvVar");
-            _attribute_definitions.name("AttributeDefinitions");
-            _attribute_definition.name("AttributeDefinition");
-            _object_type.name("ObjectType");
-            _attribute_name.name("AttributeName");
-            _attribute_value_type.name("AttributeValueType");
-            _attribute_value_type_int.name("AttributeValueTypeInt");
-            _attribute_value_type_hex.name("AttributeValueTypeHex");
-            _attribute_value_type_float.name("AttributeValueTypeFloat");
-            _attribute_value_type_enum.name("AttributeValueTypeEnum");
-            _attribute_defaults.name("AttributeDefaults");
-            _attribute_default.name("AttributeDefault");
-            _attribute_value.name("AttributeValue");
-            _attribute_values.name("AttributeValues");
-            _attribute_value_ent.name("AttributeValueEnt");
-            _attribute_value_ent_network.name("AttributeValueEntNetwork");
-            _attribute_value_ent_node.name("AttributeValueEntNode");
-            _attribute_value_ent_message.name("AttributeValueEntMessage");
-            _attribute_value_ent_signal.name("AttributeValueEntSignal");
-            _attribute_value_ent_env_var.name("AttributeValueEntEnvVar");
-            _value_descriptions.name("ValueDescriptions");
-            _value_description_sig_env_var.name("ValueDescriptionsSigEnvVar");
-            _value_description_signal.name("ValueDescriptionsSignal");
-            _value_description_env_var.name("ValueDescriptionsEnvVar");
-            _signal_extended_value_types.name("SignalExtendedValueTypes");
-            _signal_extended_value_type.name("SignalExtendedValueType");
+            _unsigned_integer.name("uint");                                   _signed_integer.name("int");
+            _double.name("double");                                           _char_string.name("QuotedString");
+            _C_identifier.name("Identifier");                                 _C_identifier_.name("Identifier");
+            _version.name("Version");                                         _new_symbol.name("NewSymbol");
+            _new_symbols.name("NS_");                                         _bit_timing.name("BitTiming");
+            _baudrate.name("Baudrate");                                       _BTR1.name("BTR1");
+            _BTR2.name("BTR2");                                               _nodes.name("Nodes");
+            _node_.name("Node");                                              _node_name.name("NodeName");
+            _node_name.name("NodeName");                                      _value_tables.name("ValueTables");
+            _value_table.name("ValueTable");                                  _value_table_name.name("ValueTableName");
+            _value_encoding_descriptions.name("VAlueEncodingDescriptions");   _value_encoding_description.name("VAlueEncodingDescription");
+            _messages.name("Messages");                                       _message.name("Message");
+            _message_id.name("MessageId");                                    _message_name.name("MessageName");
+            _message_size.name("MessageSize");                                _transmitter.name("NodeName");
+            _transmitter_.name("NodeName");                                   _signals.name("Signals");
+            _signal.name("Signal");                                           _signal_name.name("SignalName");
+            _multiplexer_indicator.name("SignalMultiplexerIndicator");        _attribute_value_type_string.name("AttributeValueTypeString");
+            _start_bit.name("SignalStartBit");                                _signal_size.name("SignalSize");
+            _byte_order.name("ByteOrder");                                    _value_type.name("ValueType");
+            _factor.name("Factor");                                           _offset.name("Offset");
+            _minimum.name("Minimum");                                         _maximum.name("Maximum");
+            _unit.name("Unit");                                               _receivers.name("NodeNames");
+            _receiver_.name("NodeName");                                      _receivers_.name("NodeNames");
+            _message_transmitters.name("MessageTransmitters");                _message_transmitter.name("MessageTransmitter");
+            _transmitters.name("NodeNames");                                  _environment_variables.name("EnvironmentVariables");
+            _environment_variable.name("EnvironmentVariable");                _env_var_name.name("EnvVarName");
+            _env_var_type.name("EnvVarType");                                 _initial_value.name("InitialValue");
+            _ev_id.name("EvId");                                              _access_type.name("AccessType");
+            _access_nodes.name("NodeNames");                                  _environment_variable_datas.name("EnvironmentVariableDatas");
+            _environment_variable_data.name("EnvironmentVariableData");       _data_size.name("DataSize");
+            _signal_types.name("SignalTypes");                                _signal_type.name("SignalType");
+            _signal_type_name.name("SignalTypeName");                         _default_value.name("DefaultValue");
+            _comments.name("Comments");                                       _comment.name("Comment");
+            _comment_network.name("CommentNetwork");                          _comment_node.name("CommentNode");
+            _comment_message.name("CommentMessage");                          _comment_signal.name("CommentSignal");
+            _comment_env_var.name("CommentEnvVar");                           _attribute_definitions.name("AttributeDefinitions");
+            _attribute_definition.name("AttributeDefinition");                _object_type.name("ObjectType");
+            _attribute_name.name("AttributeName");                            _attribute_value_type.name("AttributeValueType");
+            _attribute_value_type_int.name("AttributeValueTypeInt");          _attribute_value_type_hex.name("AttributeValueTypeHex");
+            _attribute_value_type_float.name("AttributeValueTypeFloat");      _attribute_value_type_enum.name("AttributeValueTypeEnum");
+            _attribute_defaults.name("AttributeDefaults");                    _attribute_default.name("AttributeDefault");
+            _attribute_value.name("AttributeValue");                          _attribute_values.name("AttributeValues");
+            _attribute_value_ent.name("AttributeValueEnt");                   _attribute_value_ent_network.name("AttributeValueEntNetwork");
+            _attribute_value_ent_node.name("AttributeValueEntNode");          _attribute_value_ent_message.name("AttributeValueEntMessage");
+            _attribute_value_ent_signal.name("AttributeValueEntSignal");      _attribute_value_ent_env_var.name("AttributeValueEntEnvVar");
+            _value_descriptions.name("ValueDescriptions");                    _value_description_sig_env_var.name("ValueDescriptionsSigEnvVar");
+            _value_description_signal.name("ValueDescriptionsSignal");        _value_description_env_var.name("ValueDescriptionsEnvVar");
+            _signal_extended_value_types.name("SignalExtendedValueTypes");    _signal_extended_value_type.name("SignalExtendedValueType");
 
 
             using boost::spirit::repository::qi::iter_pos;
@@ -664,13 +637,21 @@ namespace dbcppp
                 > _value_descriptions
                 > _signal_extended_value_types
                 ;
-
+            
             _unsigned_integer %= qi::uint_;
             _signed_integer %= qi::int_;
             _double %= qi::double_;
             _char_string %= qi::lexeme['"' >> *(('\\' >> qi::char_("\\\"")) | ~qi::char_('"')) >> '"'];
             _C_identifier %= qi::lexeme[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")];
             _C_identifier_ %= qi::lexeme[qi::char_("a-zA-Z_") >> *qi::char_("a-zA-Z_0-9")];
+            
+            _start_bit %= _unsigned_integer;
+            _signal_size %= _unsigned_integer;
+            _factor %= _double;
+            _offset %= _double;
+            _minimum %= _double;
+            _byte_order = qi::lexeme[qi::char_('0') | qi::char_('1')];
+            _value_type = qi::lexeme[qi::char_('-') | qi::char_('+')];
 
             _version %= iter_pos >> qi::lit("VERSION") > _char_string;
         

@@ -406,8 +406,7 @@ private:
     std::map<std::size_t, std::string> _node_id_to_node_name;
 };
 
-std::map<std::string, std::unique_ptr<Network>>
-    Network::fromKCD(std::istream& is)
+std::map<std::string, std::unique_ptr<Network>> Network::loadKCDFromIs(std::istream& is)
 {
     KCD kcd(is);
     return std::move(kcd._networks);

@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(DBCParsingCApi)
     BOOST_TEST_MESSAGE("Testing dbcppp C API for correctness...");
 
     std::ifstream dbc_file(TEST_DBC);
-    auto spec = dbcppp::Network::fromDBC(dbc_file);
+    auto spec = dbcppp::Network::loadDBCFromIs(dbc_file);
     const dbcppp_Network* impl = dbcppp_NetworkLoadDBCFromFile(TEST_DBC);
     BOOST_REQUIRE(impl);
     BOOST_REQUIRE_EQUAL(spec->getVersion(), dbcppp_NetworkGetVersion(impl));
