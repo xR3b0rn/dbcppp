@@ -72,7 +72,7 @@ candump any | dbcppp decode --bus=vcan0,file1.dbc --bus=vcan1,file2.dbc
 int main()
 {
     std::ifstream dbc_file{"your_dbc.dbc"};
-    std::unique_ptr<dbcppp::Network> net = dbcppp::Network::fromDBC(dbc_file);
+    std::unique_ptr<dbcppp::Network> net = dbcppp::Network::loadDBCFromIs(dbc_file);
     if (net)
     {
         can_frame frame;
