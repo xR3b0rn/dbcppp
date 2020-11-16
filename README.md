@@ -64,7 +64,7 @@ dbcppp dbc2 --dbc=file1.dbc --dbc=file2.kcd --format=human
 candump any | dbcppp decode --bus=vcan0,file1.dbc --bus=vcan1,file2.dbc
 ```
 ## Library
-* [Examples](https://github.com/xR3b0rn/dbcppp/tree/master/src/Examples)
+* [Examples](https://github.com/xR3b0rn/dbcppp/tree/master/examples)
 * `C++`
 ```C++
 #include <fstream>
