@@ -25,10 +25,11 @@ BOOST_AUTO_TEST_CASE(ParsingCppApiWithSingleLineComments)
     const dbcppp_Network* impl = dbcppp_NetworkLoadDBCFromFile(TEST_DBC_WITH_SINGLE_COMMENTS);
     BOOST_REQUIRE_MESSAGE(impl, "C API DBC parsing failed!");
 
-    auto spec = dbcppp::Network::fromDBC(dbc_file);
+    auto spec = dbcppp::Network::loadDBCFromIs(dbc_file);
     BOOST_REQUIRE_MESSAGE(spec, "C++ API DBC parsing failed!");
 
     BOOST_REQUIRE_EQUAL(spec->getVersion(), dbcppp_NetworkGetVersion(impl));
 
+    dbcppp_NetworkFree(impl);
     BOOST_TEST_MESSAGE("Done!");
 }

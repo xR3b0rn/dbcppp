@@ -1,11 +1,14 @@
+
+#include <boost/spirit/home/x3.hpp>
+
 #include <boost/log/trivial.hpp>
 #include <iterator>
 #include <regex>
-#include "../../include/dbcppp/Network.h"
-#include "DBC_Grammar.h"
 
-//constexpr auto single_comment_regular_expr = "(?!\\\")/[/]+[^\\\"\\n]*$";
-constexpr auto single_comment_regular_expr = "(?!\")/[/]+[^\"\n]*(?=\n|$)";
+#include "../../include/dbcppp/Network.h"
+#include "../../include/dbcppp/CApi.h"
+
+#include "DBC_Grammar.h"
 
 using namespace dbcppp;
 
@@ -571,68 +574,40 @@ std::unique_ptr<Network> DBCAST2Network(const G_Network& gnet)
         , getComment(gnet));
 }
 
-std::unique_ptr<Network> Network::fromDBC(std::istream& is)
+std::map<std::string, std::unique_ptr<Network>> Network::loadNetworkFromFile(const std::string& filename)
+{
+    auto result = std::map<std::string, std::unique_ptr<Network>>();
+    auto ending = filename.substr(filename.size() - 3, 3);
+    auto is = std::ifstream(filename);
+    if (ending == "dbc")
+    {
+        result.insert(std::make_pair("", loadDBCFromIs(is)));
+    }
+    else if (ending == "kcd")
+    {
+        result = loadKCDFromIs(is);
+    }
+    return std::move(result);
+}
+std::unique_ptr<Network> Network::loadDBCFromIs(std::istream& is)
 {
     std::unique_ptr<Network> result;
     std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-
-    const std::regex e{ single_comment_regular_expr };
-    str = std::regex_replace(str, e, "");
-
-    auto begin{ str.begin() }, end{ str.end() };
-
-    NetworkGrammar<std::string::iterator> g(begin);
+    using Iter = std::string::iterator;
+    Iter begin(str.begin()), end(str.end());
     G_Network gnet;
-    bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
-    if (succeeded && (begin == end))
+    if (NetworkGrammar<Iter>::parse(begin, end, gnet))
     {
         result = DBCAST2Network(gnet);
     }
-    else
-    {
-        auto [line, column] = getErrPos(str.begin(), begin);
-        std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
-    }
     return result;
-}
-std::unique_ptr<Network> dbcppp::Network::fromDBC(std::istream& is, std::unique_ptr<Network> network)
-{
-    auto other = fromDBC(is);
-    network->merge(std::move(other));
-    return std::move(network);
 }
 extern "C"
 {
     DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromFile(const char* filename)
     {
-        std::unique_ptr<Network> result;
         std::ifstream is(filename);
-        if (is.is_open())
-        {
-            std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-
-            const std::regex e(single_comment_regular_expr);
-            str = std::regex_replace(str, e, "");
-
-            auto begin{ str.begin() }, end{ str.end() };
-
-            NetworkGrammar<std::string::iterator> g(begin);
-            G_Network gnet;
-            bool succeeded = phrase_parse(begin, end, g, boost::spirit::ascii::space, gnet);
-            if (succeeded && (begin == end))
-            {
-                result = DBCAST2Network(gnet);
-            }
-            else
-            {
-                auto [line, column] = getErrPos(str.begin(), begin);
-                std::cout << line << ":" << column << " Error! Unexpected token near here!" << std::endl;
-            }
-        }
-        else
-        {
-            std::cout << "Error! Couldn't find \"" << filename << "\"" << std::endl;
-        }
+        std::unique_ptr<Network> result = Network::loadDBCFromIs(is);
         return reinterpret_cast<const dbcppp_Network*>(result.release());
     }
 }

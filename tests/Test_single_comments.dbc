@@ -1,5 +1,6 @@
 VERSION "1.0.0"
 
+//It's a comment - 12!@ AS as -=\ ==
 NS_:
  NS_DESC_
  CM_
@@ -13,6 +14,7 @@ NS_:
  EV_DATA_
  ENVVAR_DATA_
  SGTYPE_
+  // It's the comment with tab	 - 	sorry about that !@#$%^.
  SGTYPE_VAL_
  BA_DEF_SGTYPE_
  BA_SGTYPE_
@@ -106,12 +108,12 @@ BO_ 1 test_msg_mux0: 8 VehicleBus
 
 BO_TX_BU_ 0 : Bus0, Bus2;
 
-EV_ EnvVar0: 0 [0|1] "unit" 0.5 0 DUMMY_NODE_VECTOR0 Bus0, Bus1, Bus2;
+EV_ EnvVar0: 0 [0|1] "u//nit" 0.5 0 DUMMY_NODE_VECTOR0 Bus0, Bus1, Bus2;
 
 ENVVAR_DATA_ EnvVar0 : 8;
 
 
-CM_ "Network comment";
+CM_ "Test √ comment with // in it (that should not be preprocessed!)"; // but that should
 CM_ BU_ Bus0 "Node comment";
 CM_ BO_ 0 "Message comment";
 CM_ SG_ 0 s0 "Signal comment";
