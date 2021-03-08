@@ -12,13 +12,13 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-10
+            - g++-9
       env:
-        - CXX=g++-10 BUILD=Release
+        - CXX=g++-9 BUILD=Release
 before_install:  
   - CXX=g++-10 BUILD=Release
   - sudo rm /usr/bin/g++
-  - sudo ln -s /usr/bin/g++-10 /usr/bin/g++
+  - sudo ln -s /usr/bin/g++-9 /usr/bin/g++
   - g++ --version
   - >
     if [[ ! -f boost_1_72_0 ]]; then
