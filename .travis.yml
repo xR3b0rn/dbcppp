@@ -1,10 +1,6 @@
 language: generic
 dist: xenial
 
-branches:
-  only:
-    - master
-
 matrix:
   include:
     - os: linux
