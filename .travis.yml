@@ -26,7 +26,7 @@ before_install:
   - >
     if ! test -f boost_1_72_0; then
         wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.gz;
-        tar -xzvf boost_1_72_0.tar.gz >/dev/null;
+        tar -xf boost_1_72_0.tar.gz
         cd boost_1_72_0;
         sudo ./bootstrap.sh --prefix=/usr/local --with-libraries=all;
         sudo ./b2 -j16 install;
