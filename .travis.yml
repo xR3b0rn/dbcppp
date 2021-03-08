@@ -21,7 +21,7 @@ before_install:
   - sudo ln -s /usr/bin/g++-9 /usr/bin/g++
   - g++ --version
   - >
-    if [ ! -f boost_1_72_0 ]; then
+    if ! test -f boost_1_72_0; then
         wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.gz;
         tar -xf boost_1_72_0.tar.gz
         cd boost_1_72_0;
@@ -34,7 +34,7 @@ before_install:
     sudo ldconfig;
     cd ..
   - >
-    if [ ! -f cmake-3.20.0-rc3 ]; then
+    if ! test -f cmake-3.20.0-rc3; then
         wget https://github.com/Kitware/CMake/releases/download/v3.20.0-rc3/cmake-3.20.0-rc3.tar.gz
         tar -xf cmake-3.20.0-rc3.tar.gz
         cd cmake-3.20.0-rc3
