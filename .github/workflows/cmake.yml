@@ -31,13 +31,13 @@ jobs:
         
     - name:  Build Environment
       run: >
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt-get install g++-10 gcc-10
-        sudo apt-get update
-        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10
-        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-10 10
-        sudo update-alternatives --set cc /usr/bin/gcc
-        sudo update-alternatives --set c++ /usr/bin/g++
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test;
+        sudo apt-get install g++-10 gcc-10;
+        sudo apt-get update;
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10;
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-10 10;
+        sudo update-alternatives --set cc /usr/bin/gcc;
+        sudo update-alternatives --set c++ /usr/bin/g++;
         if ! test -f boost_1_72_0; then
             wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.gz;
             tar -xf boost_1_72_0.tar.gz;
