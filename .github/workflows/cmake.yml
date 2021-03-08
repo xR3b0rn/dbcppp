@@ -38,10 +38,10 @@ jobs:
         sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-10 10;
         sudo update-alternatives --set cc /usr/bin/gcc;
         sudo update-alternatives --set c++ /usr/bin/g++;
-        sudo rm /usr/bin/gcc
-        sudo rm /usr/bin/g++
-        sudo ln -s /usr/bin/gcc-10 /usr/bin/gcc
-        sudo ln -s /usr/bin/g++-10 /usr/bin/g++
+        sudo rm /usr/bin/gcc;
+        sudo rm /usr/bin/g++;
+        sudo ln -s /usr/bin/gcc-10 /usr/bin/gcc;
+        sudo ln -s /usr/bin/g++-10 /usr/bin/g++;
         if ! test -f boost_1_72_0; then
             wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.gz;
             tar -xf boost_1_72_0.tar.gz;
