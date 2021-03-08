@@ -16,7 +16,7 @@ matrix:
       env:
         - CXX=g++-10 BUILD=Release
 before_install:
-  - deb http://cz.archive.ubuntu.com/ubuntu groovy main 
+  - echo "deb http://cz.archive.ubuntu.com/ubuntu groovy main" >> /etc/apt/sources.list
   - apt-get update
   - apt-get install cmake
   - CXX=g++-10 BUILD=Release
