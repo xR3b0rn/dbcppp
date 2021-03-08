@@ -31,6 +31,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 endif()
 
 include_directories("include")
+include_directories("third_party/PEGTL/include")
 include_directories("third_party/libxml2/include")
 include_directories("third_party/libxmlmm/include")
 include_directories("${CMAKE_BINARY_DIR}/third_party/libxml2")
