@@ -12,15 +12,16 @@ matrix:
           sources:
             - ubuntu-toolchain-r-test
           packages:
-            - g++-9
-            - libpq-dev
-            - libxml2-dev
+            - g++-10
       env:
-        - CXX=g++-9 BUILD=Release
+        - CXX=g++-10 BUILD=Release
 before_install:
-  - CXX=g++-9 BUILD=Release
+  - deb http://cz.archive.ubuntu.com/ubuntu groovy main 
+  - apt-get update
+  - apt-get install cmake
+  - CXX=g++-10 BUILD=Release
   - sudo rm /usr/bin/g++
-  - sudo ln -s /usr/bin/g++-9 /usr/bin/g++
+  - sudo ln -s /usr/bin/g++-10 /usr/bin/g++
   - g++ --version
   - >
     if ! test -f boost_1_72_0; then
