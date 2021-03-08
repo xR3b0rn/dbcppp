@@ -17,6 +17,18 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: CacheBoost
+      uses: actions/cache@v2.1.4
+      with:
+        path: boost_1_72_0
+        key: ${{ runner.os }}-boost_1_72_0
+        
+    - name: CacheCMake
+      uses: actions/cache@v2.1.4
+      with:
+        path: cmake-3.20.0-rc3
+        key: ${{ runner.os }}-cmake-3.20.0-rc3
+        
     - name:  Build Environment
       run: >
         if ! test -f boost_1_72_0; then
