@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <optional>
 
 #include "Export.h"
 #include "SignalType.h"
@@ -15,8 +16,8 @@ namespace dbcppp
     public:
         static std::unique_ptr<ValueTable> create(
               std::string&& name
-            , boost::optional<std::unique_ptr<SignalType>>&& signal_type
-            , std::unordered_map<int64_t, std::string>&& value_encoding_descriptions);
+            , std::optional<std::unique_ptr<SignalType>>&& signal_type
+            , std::vector<std::tuple<int64_t, std::string>>&& value_encoding_descriptions);
             
         virtual std::unique_ptr<ValueTable> clone() const = 0;
 

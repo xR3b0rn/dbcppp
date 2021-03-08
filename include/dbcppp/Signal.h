@@ -58,9 +58,9 @@ namespace dbcppp
             , double minimum
             , double maximum
             , std::string&& unit
-            , std::set<std::string>&& receivers
-            , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
-            , std::unordered_map<int64_t, std::string>&& value_descriptions
+            , std::vector<std::string>&& receivers
+            , std::vector<std::unique_ptr<Attribute>>&& attribute_values
+            , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
             , std::string&& comment
             , ExtendedValueType extended_value_type);
             

@@ -289,9 +289,9 @@ extern "C"
     {
         EnvironmentVariable::VarType vt;
         EnvironmentVariable::AccessType at;
-        std::set<std::string> ans;
-        std::unordered_map<int64_t, std::string> vds;
-        std::map<std::string, std::unique_ptr<Attribute>> avs;
+        std::vector<std::string> ans;
+        std::vector<std::tuple<int64_t, std::string>> vds;
+        std::vector<std::unique_ptr<Attribute>> avs;
         switch (var_type)
         {
         case dbcppp_EnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeInteger:
@@ -324,18 +324,18 @@ extern "C"
         }
         for (; *access_nodes; access_nodes++)
         {
-            ans.insert(*access_nodes);
+            ans.push_back(*access_nodes);
             *access_nodes = nullptr;
         }
         for (; *value_descriptions; value_descriptions++)
         {
-            vds.insert(std::make_pair((*value_descriptions)->value, (*value_descriptions)->description));
+            vds.push_back(std::make_tuple((*value_descriptions)->value, (*value_descriptions)->description));
             *value_descriptions = nullptr;
         }
         for (; *attribute_values; attribute_values++)
         {
             AttributeImpl* attr = reinterpret_cast<AttributeImpl*>(*attribute_values);
-            avs.insert(std::make_pair(attr->getName(), std::unique_ptr<AttributeImpl>(attr)));
+            avs.push_back(std::unique_ptr<AttributeImpl>(attr));
             *attribute_values = nullptr;
         }
         auto result = EnvironmentVariable::create(
@@ -489,24 +489,24 @@ extern "C"
         , dbcppp_Attribute** attribute_values
         , const char* comment)
     {
-        std::set<std::string> msg_trans;
-        std::map<std::string, std::unique_ptr<Signal>> sigs;
-        std::map<std::string, std::unique_ptr<Attribute>> attrs;
+        std::vector<std::string> msg_trans;
+        std::vector<std::unique_ptr<Signal>> sigs;
+        std::vector<std::unique_ptr<Attribute>> attrs;
         for (; *message_transmitters; message_transmitters++)
         {
-            msg_trans.insert(*message_transmitters);
+            msg_trans.push_back(*message_transmitters);
             *message_transmitters = nullptr;
         }
         for (; *signals; signals++)
         {
             SignalImpl* si = reinterpret_cast<SignalImpl*>(*signals);
-            sigs.insert(std::make_pair(si->getName(), std::unique_ptr<SignalImpl>(si)));
+            sigs.push_back(std::unique_ptr<SignalImpl>(si));
             *signals = nullptr;
         }
         for (; *attribute_values; attribute_values++)
         {
             AttributeImpl* attr = reinterpret_cast<AttributeImpl*>(*attribute_values);
-            attrs.insert(std::make_pair(attr->getName(), std::unique_ptr<AttributeImpl>(attr)));
+            attrs.push_back(std::unique_ptr<AttributeImpl>(attr));
             *attribute_values = nullptr;
         }
         auto result = Message::create(
@@ -628,60 +628,60 @@ extern "C"
         , const char* comment)
     {
         std::string v(version);
-        std::set<std::string> ns;
+        std::vector<std::string> ns;
         for (; *new_symbols; new_symbols++)
         {
-            ns.insert(*new_symbols);
+            ns.push_back(*new_symbols);
             *new_symbols = nullptr;
         }
         std::unique_ptr<BitTiming> bt(reinterpret_cast<BitTimingImpl*>(bit_timing));
-        std::map<std::string, std::unique_ptr<Node>> n;
+        std::vector<std::unique_ptr<Node>> n;
         for (; *nodes; nodes++)
         {
             NodeImpl* ni = reinterpret_cast<NodeImpl*>(*nodes);
-            n.insert(std::make_pair(ni->getName(), std::unique_ptr<Node>(ni)));
+            n.push_back(std::unique_ptr<Node>(ni));
             *nodes = nullptr;
         }
-        std::map<std::string, std::unique_ptr<ValueTable>> vt;
+        std::vector<std::unique_ptr<ValueTable>> vt;
         for (; *value_tables; value_tables++)
         {
             ValueTableImpl* vti = reinterpret_cast<ValueTableImpl*>(*value_tables);
-            vt.insert(std::make_pair(vti->getName(), std::unique_ptr<ValueTable>(vti)));
+            vt.push_back(std::unique_ptr<ValueTable>(vti));
             *value_tables = nullptr;
         }
-        std::unordered_map<uint64_t, std::unique_ptr<Message>> m;
+        std::vector<std::unique_ptr<Message>> m;
         for (; *messages; messages++)
         {
             MessageImpl* mi = reinterpret_cast<MessageImpl*>(*messages);
-            m.insert(std::make_pair(mi->getId(), std::unique_ptr<Message>(mi)));
+            m.push_back(std::unique_ptr<Message>(mi));
             *messages = nullptr;
         }
-        std::map<std::string, std::unique_ptr<EnvironmentVariable>> ev;
+        std::vector<std::unique_ptr<EnvironmentVariable>> ev;
         for (; *environment_variables; environment_variables++)
         {
             EnvironmentVariableImpl* evi = reinterpret_cast<EnvironmentVariableImpl*>(*environment_variables);
-            ev.insert(std::make_pair(evi->getName(), std::unique_ptr<EnvironmentVariable>(evi)));
+            ev.push_back(std::unique_ptr<EnvironmentVariable>(evi));
             *environment_variables = nullptr;
         }
-        std::map<std::string, std::unique_ptr<AttributeDefinition>> adef;
+        std::vector<std::unique_ptr<AttributeDefinition>> adef;
         for (; *attribute_definitions; attribute_definitions++)
         {
             AttributeDefinitionImpl* adefi = reinterpret_cast<AttributeDefinitionImpl*>(*attribute_definitions);
-            adef.insert(std::make_pair(adefi->getName(), std::unique_ptr<AttributeDefinition>(adefi)));
+            adef.push_back(std::unique_ptr<AttributeDefinition>(adefi));
             *attribute_definitions = nullptr;
         }
-        std::map<std::string, std::unique_ptr<Attribute>> ad;
+        std::vector<std::unique_ptr<Attribute>> ad;
         for (; *attribute_defaults; attribute_defaults++)
         {
             AttributeImpl* adi = reinterpret_cast<AttributeImpl*>(*attribute_defaults);
-            ad.insert(std::make_pair(adi->getName(), std::unique_ptr<Attribute>(adi)));
+            ad.push_back(std::unique_ptr<Attribute>(adi));
             *attribute_defaults = nullptr;
         }
-        std::map<std::string, std::unique_ptr<Attribute>> av;
+        std::vector<std::unique_ptr<Attribute>> av;
         for (; *attribute_values; attribute_values++)
         {
             AttributeImpl* avi = reinterpret_cast<AttributeImpl*>(*attribute_values);
-            ad.insert(std::make_pair(avi->getName(), std::unique_ptr<Attribute>(avi)));
+            ad.push_back(std::unique_ptr<Attribute>(avi));
             *attribute_values = nullptr;
         }
         std::string c(comment);
@@ -897,11 +897,11 @@ extern "C"
 
     DBCPPP_API const dbcppp_Node* dbcppp_NodeCreate(const char* name, const char* comment, dbcppp_Attribute** attributes)
     {
-        std::map<std::string, std::unique_ptr<Attribute>> attrs;
+        std::vector<std::unique_ptr<Attribute>> attrs;
         for (; *attributes; attributes++)
         {
             AttributeImpl* ai = reinterpret_cast<AttributeImpl*>(*attributes);
-            attrs.insert(std::make_pair(ai->getName(), std::unique_ptr<Attribute>(ai)));
+            attrs.push_back(std::unique_ptr<Attribute>(ai));
             *attributes = nullptr;
         }
         auto result = Node::create(std::string(name), std::string(comment), std::move(attrs));
@@ -969,9 +969,9 @@ extern "C"
         Signal::Multiplexer m;
         Signal::ByteOrder bo;
         Signal::ValueType vt;
-        std::set<std::string> rs;
-        std::map<std::string, std::unique_ptr<Attribute>> avs;
-        std::unordered_map<int64_t, std::string> vds;
+        std::vector<std::string> rs;
+        std::vector<std::unique_ptr<Attribute>> avs;
+        std::vector<std::tuple<int64_t, std::string>> vds;
         Signal::ExtendedValueType evt;
         switch (multiplexer_indicator)
         {
@@ -991,18 +991,18 @@ extern "C"
         }
         for (; *receivers; receivers++)
         {
-            rs.insert(*receivers);
+            rs.push_back(*receivers);
             *receivers = nullptr;
         }
         for (; *attribute_values; attribute_values++)
         {
             auto av = reinterpret_cast<AttributeImpl*>(*attribute_values);
-            avs.insert(std::make_pair(av->getName(), std::unique_ptr<AttributeImpl>(av)));
+            avs.push_back(std::unique_ptr<AttributeImpl>(av));
             *attribute_values = nullptr;
         }
         for (; *value_descriptions; value_descriptions++)
         {
-            vds.insert(std::make_pair((*value_descriptions)->value, (*value_descriptions)->description));
+            vds.push_back(std::make_tuple((*value_descriptions)->value, (*value_descriptions)->description));
             *value_descriptions = nullptr;
         }
         switch (extended_value_type)
@@ -1305,12 +1305,12 @@ extern "C"
 
     DBCPPP_API const dbcppp_ValueTable* dbcppp_ValueTableCreate(const char* name, dbcppp_SignalType* signal_type, dbcppp_ValueDescriptionPair** pairs)
     {
-        std::unordered_map<int64_t, std::string> descs;
+        std::vector<std::tuple<int64_t, std::string>> descs;
         for (; *pairs; pairs++)
         {
-            descs.insert(std::make_pair((*pairs)->value, (*pairs)->description));
+            descs.push_back(std::make_pair((*pairs)->value, (*pairs)->description));
         }
-        boost::optional<std::unique_ptr<SignalType>> st;
+        std::optional<std::unique_ptr<SignalType>> st;
         if (signal_type)
         {
             st = std::unique_ptr<SignalTypeImpl>(reinterpret_cast<SignalTypeImpl*>(signal_type));

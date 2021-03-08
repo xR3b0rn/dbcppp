@@ -3,8 +3,8 @@
 
 #include <map>
 #include <memory>
+#include <optional>
 
-#include <robin-map/tsl/robin_map.h>
 #include "../../include/dbcppp/ValueTable.h"
 #include "SignalTypeImpl.h"
 
@@ -16,8 +16,8 @@ namespace dbcppp
     public:
         ValueTableImpl(
               std::string&& name
-            , boost::optional<SignalTypeImpl>&& signal_type
-            , tsl::robin_map<int64_t, std::string>&& value_encoding_descriptions);
+            , std::optional<SignalTypeImpl>&& signal_type
+            , std::vector<std::tuple<int64_t, std::string>>&& value_encoding_descriptions);
 
         virtual std::unique_ptr<ValueTable> clone() const override;
 
@@ -28,7 +28,7 @@ namespace dbcppp
 
     private:
         std::string _name;
-        boost::optional<SignalTypeImpl> _signal_type;
-        tsl::robin_map<int64_t, std::string> _value_encoding_descriptions;
+        std::optional<SignalTypeImpl> _signal_type;
+        std::vector<std::tuple<int64_t, std::string>> _value_encoding_descriptions;
     };
 }

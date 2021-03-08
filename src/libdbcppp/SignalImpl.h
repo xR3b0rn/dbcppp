@@ -4,7 +4,6 @@
 #include <string>
 #include <memory>
 
-#include <robin-map/tsl/robin_map.h>
 #include "../../include/dbcppp/Signal.h"
 #include "../../include/dbcppp/Node.h"
 #include "AttributeImpl.h"
@@ -29,9 +28,9 @@ namespace dbcppp
             , double minimum
             , double maximum
             , std::string&& unit
-            , std::set<std::string>&& receivers
-            , std::map<std::string, AttributeImpl>&& attribute_values
-            , tsl::robin_map<int64_t, std::string>&& value_descriptions
+            , std::vector<std::string>&& receivers
+            , std::vector<AttributeImpl>&& attribute_values
+            , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
             , std::string&& comment
             , Signal::ExtendedValueType extended_value_type);
             
@@ -78,9 +77,9 @@ namespace dbcppp
         double _minimum;
         double _maximum;
         std::string _unit;
-        std::set<std::string> _receivers;
-        std::map<std::string, AttributeImpl> _attribute_values;
-        tsl::robin_map<int64_t, std::string> _value_descriptions;
+        std::vector<std::string> _receivers;
+        std::vector<AttributeImpl> _attribute_values;
+        std::vector<std::tuple<int64_t, std::string>> _value_descriptions;
         std::string _comment;
         ExtendedValueType _extended_value_type;
 

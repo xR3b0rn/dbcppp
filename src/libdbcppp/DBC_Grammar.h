@@ -64,7 +64,7 @@ namespace dbcppp
     {
         std::string::iterator position;
         std::string name;
-        std::map<int64_t, std::string> value_encoding_descriptions;
+        std::vector<std::tuple<int64_t, std::string>> value_encoding_descriptions;
     };
     struct G_Signal
     {
@@ -258,13 +258,13 @@ namespace dbcppp
         std::string::iterator position;
         uint64_t message_id;
         std::string signal_name;
-        std::map<int64_t, std::string> value_descriptions;
+        std::vector<std::tuple<int64_t, std::string>> value_descriptions;
     };
     struct G_ValueDescriptionEnvVar
     {
         std::string::iterator position;
         std::string env_var_name;
-        std::map<int64_t, std::string> value_descriptions;
+        std::vector<std::tuple<int64_t, std::string>> value_descriptions;
     };
     struct G_ValueDescription
     {
@@ -780,7 +780,7 @@ namespace dbcppp
             _attribute_value_type_enum %= iter_pos >> qi::lit("ENUM") > (_char_string % ',');
         
             _attribute_defaults %= *_attribute_default;
-            _attribute_default %= iter_pos >> (qi::lexeme[(qi::lit("BA_DEF_DEF_REL_") | qi::lit("BA_DEF_DEF_"))  >> qi::omit[qi::space]])
+            _attribute_default %= iter_pos >> (qi::lexeme[(qi::lit("BA_DEF_DEF_REL_") | qi::lit("BA_DEF_DEF_")) >> qi::omit[qi::space]])
                 > _attribute_name > _attribute_value > ';';
             _attribute_value %= _double | _signed_integer | _char_string;
 

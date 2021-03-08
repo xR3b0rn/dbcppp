@@ -1,5 +1,5 @@
 
-#include "kcd.h"
+#include "KcdXsd.h"
 
 const char* g_kcd_xsd =
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
