@@ -17,5 +17,29 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Create Build Environment
-      run: echo "Nothing"
+    - name:  Build Environment
+      run: >
+        if ! test -f boost_1_72_0; then
+            wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.gz;
+            tar -xf boost_1_72_0.tar.gz
+            cd boost_1_72_0;
+            sudo ./bootstrap.sh --prefix=/usr/local --with-libraries=all;
+            cd ..;
+        fi
+        cd boost_1_72_0;
+        sudo ./b2 -j16 install;
+        sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/boost.conf';
+        sudo ldconfig;
+        cd ..
+      run: >
+        if ! test -f cmake-3.20.0-rc3; then
+            wget https://github.com/Kitware/CMake/releases/download/v3.20.0-rc3/cmake-3.20.0-rc3.tar.gz
+            tar -xf cmake-3.20.0-rc3.tar.gz
+            cd cmake-3.20.0-rc3
+            ./configure
+            make -j16
+            cd ..
+        fi
+        cd cmake-3.20.0-rc3
+        make install
+        cd ..
