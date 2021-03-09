@@ -48,6 +48,8 @@ jobs:
             cd boost_1_72_0;
             sudo ./bootstrap.sh --prefix=/usr/local --with-libraries=all;
             cd ..;
+        else
+            echo "Found boost in cache!"
         fi;
         cd boost_1_72_0;
         sudo ./b2 -j16 install;
@@ -61,6 +63,8 @@ jobs:
             ./configure;
             make -j16;
             cd ..;
+        else
+            echo "Found cmake in cache!"
         fi;
         cd cmake-3.20.0-rc3;
         sudo make install;
