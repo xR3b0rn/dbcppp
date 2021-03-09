@@ -63,5 +63,5 @@ jobs:
             cd ..;
         fi;
         cd cmake-3.20.0-rc3;
-        make install;
+        sudo make install;
         cd ..;
