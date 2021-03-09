@@ -70,10 +70,10 @@ jobs:
       run: >
         mkdir build;
         cd build;
-        cmake -DCMAKE_BUILD_TYPE=Release ..
-        make -j6
+        cmake -DCMAKE_BUILD_TYPE=Release ..;
+        make -j6;
     - name: RunTests
       run: >
-        cd build
-        make RunTests
+        cd build;
+        make RunTests;
         
