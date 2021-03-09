@@ -65,3 +65,15 @@ jobs:
         cd cmake-3.20.0-rc3;
         sudo make install;
         cd ..;
+
+    - name:  Build dbcppp
+      run: >
+        mkdir build;
+        cd build;
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        make -j6
+    - name: RunTests
+      run: >
+        cd build
+        make RunTests
+        
