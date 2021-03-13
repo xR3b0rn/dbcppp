@@ -30,7 +30,7 @@ jobs:
         key: ${{ runner.os }}-cmake-3.20.0-rc3
           
     - name:  Build Environment
-      run: >
+      run: |
         printf "pwd: "
         pwd
         find / -iname "cmake-3.20.0-rc3"
