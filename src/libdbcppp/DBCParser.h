@@ -255,14 +255,26 @@ public:
         : _begin(begin)
         , _cur(begin)
     {}
-    DBCIterator(const DBCIterator& it)
-        : _begin(it._begin)
-        , _cur(it._cur)
+    DBCIterator(const DBCIterator& iter)
+        : _begin(iter._begin)
+        , _cur(iter._cur)
     {}
-    DBCIterator(DBCIterator&& it)
-        : _begin(it._begin)
-        , _cur(it._cur)
+    DBCIterator(DBCIterator&& iter)
+        : _begin(iter._begin)
+        , _cur(iter._cur)
     {}
+    DBCIterator& operator=(const DBCIterator& iter)
+    {
+        _begin = iter._begin;
+        _cur = iter._cur;
+        return *this;
+    }
+    DBCIterator& operator=(DBCIterator&& iter)
+    {
+        _begin = iter._begin;
+        _cur = iter._cur;
+        return *this;
+    }
     const char* operator++()
     {
         return ++_cur;
