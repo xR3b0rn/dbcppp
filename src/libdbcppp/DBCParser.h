@@ -259,6 +259,10 @@ public:
         : _begin(it._begin)
         , _cur(it._cur)
     {}
+    DBCIterator(DBCIterator&& it)
+        : _begin(it._begin)
+        , _cur(it._cur)
+    {}
     const char* operator++()
     {
         return ++_cur;
