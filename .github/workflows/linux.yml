@@ -24,7 +24,6 @@ jobs:
         done
         git submodule sync
         git submodule update --init --recursive
-
     - name: CacheBoost
       uses: actions/cache@v2.1.4
       with:
@@ -81,7 +80,6 @@ jobs:
         cd cmake-3.20.0-rc3;
         sudo make install;
         cd ..;
-
     - name:  Build dbcppp
       run: |
         mkdir build;
