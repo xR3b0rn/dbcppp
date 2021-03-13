@@ -454,7 +454,7 @@ public:
         }
         return result;
     }
-    static bool NextIsSpace(DBCIterator& in)
+    static bool NextIsSpace(const DBCIterator& in)
     {
         return *in == ' ' || *in == '\t' || *in == '\n' || *in == '\r';
     }
