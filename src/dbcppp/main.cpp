@@ -9,7 +9,6 @@
 #include <filesystem>
 #include <boost/program_options.hpp>
 
-#include <robin-map/tsl/robin_map.h>
 #include "../../include/dbcppp/Network.h"
 #include "../../include/dbcppp/Network2Functions.h"
 
@@ -121,7 +120,7 @@ int main(int argc, char** args)
             std::string name;
             std::unique_ptr<dbcppp::Network> net;
         };
-        tsl::robin_map<std::string, Bus> buses;
+        std::unordered_map<std::string, Bus> buses;
         for (const auto& opt_bus : opt_buses)
         {
             std::istringstream ss(opt_bus);
