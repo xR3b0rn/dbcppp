@@ -16,6 +16,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    
+    - name: Checkout submodules using a PAT
+      run: |
+        git config --file .gitmodules --get-regexp url | while read url; do
+          git config --file=.gitmodules $(echo "$url" | sed -E "s/git@github.com:|https:\/\/github.com\//https:\/\/${{ secrets.CI_PAT }}:${{ secrets.CI_PAT }}@github.com\//")
+        done
+        git submodule sync
+        git submodule update --init --recursive
 
     - name: CacheBoost
       uses: actions/cache@v2.1.4
@@ -31,7 +39,6 @@ jobs:
           
     - name:  Build Environment
       run: |
-        g++ --version
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test;
         sudo apt-get install g++-10 gcc-10;
         sudo apt-get update;
