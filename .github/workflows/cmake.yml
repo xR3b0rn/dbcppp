@@ -75,13 +75,14 @@ jobs:
         cd ..;
 
     - name:  Build dbcppp
-      run: >
+      run: |
+        git submodule update --recursive
         mkdir build;
         cd build;
         cmake -DCMAKE_BUILD_TYPE=Release ..;
         make -j6;
     - name: RunTests
-      run: >
+      run: |
         cd build;
         make RunTests;
         
