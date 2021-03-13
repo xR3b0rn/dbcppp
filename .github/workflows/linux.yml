@@ -1,0 +1,93 @@
+name: CMake
+
+on: [push]
+
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Checkout submodules using a PAT
+      run: |
+        git config --file .gitmodules --get-regexp url | while read url; do
+          git config --file=.gitmodules $(echo "$url" | sed -E "s/git@github.com:|https:\/\/github.com\//https:\/\/${{ secrets.CI_PAT }}:${{ secrets.CI_PAT }}@github.com\//")
+        done
+        git submodule sync
+        git submodule update --init --recursive
+    - name: CacheBoost
+      uses: actions/cache@v2.1.4
+      with:
+        path: boost_1_72_0
+        key: ${{ runner.os }}-boost_1_72_0
+        
+    - name: CacheCMake
+      uses: actions/cache@v2.1.4
+      with:
+        path: cmake-3.20.0-rc3
+        key: ${{ runner.os }}-cmake-3.20.0-rc3
+          
+    - name:  Build Environment
+      run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test;
+        sudo apt-get install g++-10 gcc-10;
+        sudo apt-get update;
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 10;
+        sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-10 10;
+        sudo update-alternatives --set cc /usr/bin/gcc;
+        sudo update-alternatives --set c++ /usr/bin/g++;
+        sudo rm /usr/bin/gcc;
+        sudo rm /usr/bin/g++;
+        sudo ln -s /usr/bin/gcc-10 /usr/bin/gcc;
+        sudo ln -s /usr/bin/g++-10 /usr/bin/g++;
+        if ! test -d boost_1_72_0; then
+            echo "Downloading boost"
+            wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.gz;
+            echo "Unpacking boost"
+            tar -xf boost_1_72_0.tar.gz;
+            cd boost_1_72_0;
+            echo "Bootstraping boost"
+            sudo ./bootstrap.sh --prefix=/usr/local --with-libraries=all;
+            cd ..;
+        else
+            echo "Found boost in cache!"
+        fi;
+        cd boost_1_72_0;
+        echo "Building and installing boost"
+        sudo ./b2 -j16 install;
+        sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/boost.conf';
+        sudo ldconfig;
+        cd ..;
+        if ! test -d cmake-3.20.0-rc3; then
+            wget https://github.com/Kitware/CMake/releases/download/v3.20.0-rc3/cmake-3.20.0-rc3.tar.gz;
+            tar -xf cmake-3.20.0-rc3.tar.gz;
+            cd cmake-3.20.0-rc3;
+            ./configure;
+            make -j16;
+            cd ..;
+        else
+            echo "Found cmake in cache!"
+        fi;
+        cd cmake-3.20.0-rc3;
+        sudo make install;
+        cd ..;
+    - name:  Build dbcppp
+      run: |
+        mkdir build;
+        cd build;
+        cmake -DCMAKE_BUILD_TYPE=Release ..;
+        make -j6;
+    - name: RunTests
+      run: |
+        cd build;
+        make RunTests;
+        
