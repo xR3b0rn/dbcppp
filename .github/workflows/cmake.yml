@@ -31,9 +31,6 @@ jobs:
           
     - name:  Build Environment
       run: |
-        printf "pwd: "
-        pwd
-        find / -iname "cmake-3.20.0-rc3" 2> /dev/null 
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test;
         sudo apt-get install g++-10 gcc-10;
         sudo apt-get update;
