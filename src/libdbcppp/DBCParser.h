@@ -10,6 +10,7 @@
 #include <optional>
 #include <variant>
 #include <map>
+#include <cstring>
 
 namespace dbcppp
 {
