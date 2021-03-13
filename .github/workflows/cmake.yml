@@ -45,7 +45,7 @@ jobs:
         sudo rm /usr/bin/g++;
         sudo ln -s /usr/bin/gcc-10 /usr/bin/gcc;
         sudo ln -s /usr/bin/g++-10 /usr/bin/g++;
-        if ! test -f boost_1_72_0; then
+        if ! test -d boost_1_72_0; then
             echo "Downloading boost"
             wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.gz;
             echo "Unpacking boost"
@@ -63,7 +63,7 @@ jobs:
         sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/boost.conf';
         sudo ldconfig;
         cd ..;
-        if ! test -f cmake-3.20.0-rc3; then
+        if ! test -d cmake-3.20.0-rc3; then
             wget https://github.com/Kitware/CMake/releases/download/v3.20.0-rc3/cmake-3.20.0-rc3.tar.gz;
             tar -xf cmake-3.20.0-rc3.tar.gz;
             cd cmake-3.20.0-rc3;
