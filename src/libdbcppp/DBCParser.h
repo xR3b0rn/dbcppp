@@ -623,6 +623,7 @@ public:
                 SkipSpace(in);
             }
         }
+        return result;
     }
     static bool ParseNewSymbol(DBCIterator& in)
     {
@@ -683,6 +684,7 @@ public:
                 Skip(in);
             }
         }
+        return result;
     }
     static bool ParseValueEncodingDescription(DBCIterator& in, std::tuple<int64_t, std::string>& ved)
     {

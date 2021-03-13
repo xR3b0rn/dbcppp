@@ -9,7 +9,7 @@
 #include <boost/test/unit_test.hpp>
 namespace utf = boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(PEGTL_grammar_test)
+BOOST_AUTO_TEST_CASE(DBCParserTest)
 {
     const char* str_double = "1e10abcd";
     double r_double;
