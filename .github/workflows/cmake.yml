@@ -84,8 +84,6 @@ jobs:
 
     - name:  Build dbcppp
       run: |
-        git checkout --recurse-submodules
-        ls -l third_party/libxml2
         mkdir build;
         cd build;
         cmake -DCMAKE_BUILD_TYPE=Release ..;
