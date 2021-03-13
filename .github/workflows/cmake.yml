@@ -31,6 +31,7 @@ jobs:
           
     - name:  Build Environment
       run: |
+        g++ --version
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test;
         sudo apt-get install g++-10 gcc-10;
         sudo apt-get update;
@@ -76,7 +77,7 @@ jobs:
 
     - name:  Build dbcppp
       run: |
-        git submodule update --recursive
+        git checkout --recurse-submodules
         ls -l third_party/libxml2
         mkdir build;
         cd build;
