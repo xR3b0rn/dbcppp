@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(Decoding)
 {
     using namespace dbcppp;
 
-    std::size_t n_tests = 1000000;
+    std::size_t n_tests = 1000;
     std::size_t max_msg_byte_size = 64;
 
     BOOST_TEST_MESSAGE("Testing decode-function with " << n_tests << " randomly generated tests...");

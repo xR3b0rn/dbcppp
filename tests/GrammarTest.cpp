@@ -14,7 +14,6 @@ BOOST_AUTO_TEST_CASE(PEGTL_grammar_test)
     const char* str_double = "1e10abcd";
     double r_double;
     auto iter = DBCIterator(str_double);
-    DBCParser::ParseDouble(iter, r_double);
 
     const char* str_int = "0x1e10abcd";
     int64_t r_int;
