@@ -1,5 +1,4 @@
-[![Build Status](https://travis-ci.org/xR3b0rn/dbcppp.svg?branch=master)](https://travis-ci.org/xR3b0rn/dbcppp)
-[![Build Status](https://github.com/xR3b0rn/dbcppp/actions/workflows/cmake.yml/badge.svg?branch=master)
+[![Build Status](https://github.com/xR3b0rn/dbcppp/actions/workflows/linux.yml/badge.svg?branch=master)
 # dbcppp
 A C/C++ DBC file parser based on `boost.spirit`. This library is designed for decoding performance.
 # Features
