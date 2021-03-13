@@ -242,7 +242,6 @@ namespace dbcppp
     };
 }
 
-template <class It>
 class DBCIterator
 {
 public:
@@ -252,14 +251,12 @@ public:
         std::size_t column;
     };
 
-    using type_t = std::remove_cvref_t<std::remove_pointer_t<It>>;
-
-    DBCIterator(It beg)
-        : _beg(beg)
-        , _cur(beg)
+    DBCIterator(const char* begin)
+        : _begin(begin)
+        , _cur(begin)
     {}
-    DBCIterator(const DBCIterator<It>& it)
-        : _beg(it._beg)
+    DBCIterator(const DBCIterator& it)
+        : _begin(it._begin)
         , _cur(it._cur)
     {}
     const char* operator++()
@@ -289,14 +286,14 @@ public:
     {
         return _cur;
     }
-    operator It() const
+    operator const char*() const
     {
         return _cur;
     }
     Pos GetPos() const
     {
         Pos result;
-        auto iter = _beg;
+        auto iter = _begin;
         while (iter != _cur)
         {
             if (*iter == '\n')
@@ -314,25 +311,25 @@ public:
     }
 
 private:
-    It _beg;
-    It _cur;
+    const char* _begin;
+    const char* _cur;
 };
 
-template <class It>
 class ParserError
 {
 public:
-    ParserError(DBCIterator<It> it, const std::string& what)
-        : _it(it)
+    ParserError(DBCIterator iter, const std::string& what)
+        : _iter(iter)
         , _what(what)
     {}
 
 private:
     std::string _what;
-    DBCIterator<It> _it;
+    DBCIterator _iter;
 };
 
 #define ExpectLit(In, Lit) if (!ParseLit(In, Lit)) throw ParserError(In, "Expected ':'");
+#define ExpectCharLit(In, Lit) if (!ParseCharLit(In, Lit)) throw ParserError(In, "Expected ':'");
 #define Expect(In, Func, Var, Err) if (!Func(In, Var)) throw ParserError(In, Err);
 #define ParseCommaSeperatedCIdentifiers(in, Var)                                                        \
     {                                                                                                   \
@@ -368,8 +365,7 @@ private:
 class DBCParser
 {
 public:
-    template <class It>
-    static bool SkipSpace(DBCIterator<It>& in)
+    static bool SkipSpace(DBCIterator& in)
     {
         bool result = false;
         while (*in == ' ' || *in == '\t')
@@ -379,8 +375,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool SkipNewLine(DBCIterator<It>& in)
+    static bool SkipNewLine(DBCIterator& in)
     {
         bool result = false;
         while (*in == '\r' || *in == '\n')
@@ -390,8 +385,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool SkipSingleLineComment(DBCIterator<It>& in)
+    static bool SkipSingleLineComment(DBCIterator& in)
     {
         bool result = false;
         if (*in != '\0' && *in == '/' && *(in + 1) == '/')
@@ -405,8 +399,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool SkipBlockComment(DBCIterator<It>& in)
+    static bool SkipBlockComment(DBCIterator& in)
     {
         bool result = false;
         if (*in != '\0' && *in == '/' && *(in + 1) == '*')
@@ -425,8 +418,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool Skip(DBCIterator<It>& in)
+    static bool Skip(DBCIterator& in)
     {
         bool result = false;
         while (SkipSpace(in) || SkipNewLine(in) || SkipSingleLineComment(in) || SkipBlockComment(in))
@@ -435,8 +427,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseChar(DBCIterator<It>& in, char& chr)
+    static bool ParseChar(DBCIterator& in, char& chr)
     {
         bool result = false;
         if (*in != '\0')
@@ -447,27 +438,34 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool NextIsSpace(DBCIterator<It> in)
+    static bool NextIsSpace(DBCIterator& in)
     {
         return *in == ' ' || *in == '\t' || *in == '\n' || *in == '\r';
     }
-    template <class It>
-    static bool ParseLit(DBCIterator<It>& in, std::string_view lit)
+    static bool ParseCharLit(DBCIterator& in, char lit)
     {
         bool result = false;
-        if (std::strncmp(in, lit.data(), lit.size()) == 0 && NextIsSpace(DBCIterator<It>(in + lit.size())))
+        if (*in == lit)
+        {
+            result = true;
+            in += 1;
+        }
+        return result;
+    }
+    static bool ParseLit(DBCIterator& in, std::string_view lit)
+    {
+        bool result = false;
+        if (std::strncmp(in, lit.data(), lit.size()) == 0 && NextIsSpace(DBCIterator(in + lit.size())))
         {
             result = true;
             in += lit.size();
         }
         return result;
     }
-    template <class It>
-    static bool ParseDouble(DBCIterator<It>& in, double& r)
+    static bool ParseDouble(DBCIterator& in, double& r)
     {
         bool result = false;
-        typename DBCIterator<It>::type_t* end;
+        char* end;
         r = std::strtod(in, &end);
         if (in != end)
         {
@@ -476,11 +474,10 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseInt(DBCIterator<It>& in, int64_t& r)
+    static bool ParseInt(DBCIterator& in, int64_t& r)
     {
         bool result = false;
-        typename DBCIterator<It>::type_t* end;
+        char* end;
         r = std::strtol(in, &end, 10);
         if (in != end)
         {
@@ -489,11 +486,10 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseUint(DBCIterator<It>& in, uint64_t& r)
+    static bool ParseUint(DBCIterator& in, uint64_t& r)
     {
         bool result = false;
-        typename DBCIterator<It>::type_t* end;
+        char* end;
         r = std::strtoul(in, &end, 10);
         if (in != end)
         {
@@ -502,12 +498,11 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseHex(DBCIterator<It>& in, uint64_t& r)
+    static bool ParseHex(DBCIterator& in, uint64_t& r)
     {
         bool result = false;
-        typename DBCIterator<It>::type_t* tmp, end;
-        if (*tmp == '0' && (*tmp == 'x' || tmp == 'X'))
+        char* tmp, * end;
+        if (*tmp == '0' && (*tmp == 'x' || *tmp == 'X'))
         {
             r = std::strtoul(tmp, &end, 16);
             if (in != end)
@@ -518,8 +513,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseCharString(DBCIterator<It>& in, std::string& str)
+    static bool ParseCharString(DBCIterator& in, std::string& str)
     {
         bool result = false;
         auto beg = in;
@@ -548,8 +542,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseCIdentifier(DBCIterator<It>& in, std::string& identifier)
+    static bool ParseCIdentifier(DBCIterator& in, std::string& identifier)
     {
         identifier = "";
         auto beg = in;
@@ -569,11 +562,10 @@ public:
         }
         return beg != in;
     }
-    template <class It>
-    static bool ParseVersion(DBCIterator<It>& in, dbcppp::G_Version& version)
+    static bool ParseVersion(DBCIterator& in, dbcppp::G_Version& version)
     {
         bool result = false;
-        if (ParseLit("VERSION"))
+        if (ParseLit(in, "VERSION"))
         {
             result = true;
             SkipSpace(in);
@@ -581,34 +573,32 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseBitTiming(DBCIterator<It>& in, dbcppp::G_BitTiming& bit_timing)
+    static bool ParseBitTiming(DBCIterator& in, dbcppp::G_BitTiming& bit_timing)
     {
         bool result = false;
         if (ParseLit(in, "BS_"))
         {
             result = true;
             Skip(in);
-            ExpectLit(in, ":") Skip(in);
+            ExpectCharLit(in, ':') Skip(in);
             if (ParseUint(in, bit_timing.baudrate))
             {
                 Skip(in);
-                ExpectLit(in, ":"); Skip(in);
+                ExpectCharLit(in, ':'); Skip(in);
                 Expect(in, ParseUint, bit_timing.BTR1, "Expected Uint (bit_timing.BTR1)"); Skip(in);
-                ExpectLit(in, ","); Skip(in);
+                ExpectCharLit(in, ','); Skip(in);
                 Expect(in, ParseUint, bit_timing.BTR2, "Expected Uint (bit_timing.BTR2)")
             }
         }
         return result;
     }
-    template <class It>
-    static bool ParseNodes(DBCIterator<It>& in, std::vector<dbcppp::G_Node>& nodes)
+    static bool ParseNodes(DBCIterator& in, std::vector<dbcppp::G_Node>& nodes)
     {
         bool result = false;
         if (ParseLit(in, "BU_"))
         {
             Skip(in);
-            ExpectLit(in, ":"); SkipSpace(in);
+            ExpectCharLit(in, ':'); SkipSpace(in);
             dbcppp::G_Node node;
             while (ParseCIdentifier(in, node.name))
             {
@@ -617,8 +607,7 @@ public:
             }
         }
     }
-    template <class It>
-    static bool ParseNewSymbol(DBCIterator<It>& in)
+    static bool ParseNewSymbol(DBCIterator& in)
     {
         static constexpr std::string_view new_symbols[] =
             {
@@ -665,22 +654,20 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseNewSymbols(DBCIterator<It>& in)
+    static bool ParseNewSymbols(DBCIterator& in)
     {
         bool result = false;
         if (ParseLit(in, "NS_"))
         {
             Skip(in);
-            ExpectLit(in, ":"); Skip(in);
+            ExpectCharLit(in, ':'); Skip(in);
             while (ParseNewSymbol(in))
             {
                 Skip(in);
             }
         }
     }
-    template <class It>
-    static bool ParseValueEncodingDescription(DBCIterator<It>& in, std::pair<int64_t, std::string>& ved)
+    static bool ParseValueEncodingDescription(DBCIterator& in, std::tuple<int64_t, std::string>& ved)
     {
         bool result = false;
         if (ParseInt(in, std::get<0>(ved)))
@@ -691,21 +678,19 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseValueEncodingDescriptions(DBCIterator<It>& in, std::map<int64_t, std::string>& veds)
+    static bool ParseValueEncodingDescriptions(DBCIterator& in, std::vector<std::tuple<int64_t, std::string>>& veds)
     {
         bool result = false;
-        std::pair<int64_t, std::string> ved;
+        std::tuple<int64_t, std::string> ved;
         while (ParseValueEncodingDescription(in, ved))
         {
             result = true;
-            veds.insert(ved);
+            veds.push_back(ved);
             Skip(in);
         }
         return result;
     }
-    template <class It>
-    static bool ParseValueTable(DBCIterator<It>& in, dbcppp::G_ValueTable& value_table)
+    static bool ParseValueTable(DBCIterator& in, dbcppp::G_ValueTable& value_table)
     {
         bool result = false;
         if (ParseLit(in, "VAL_TABLE_"))
@@ -718,8 +703,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseValueTables(DBCIterator<It>& in, std::vector<dbcppp::G_ValueTable>& value_tables)
+    static bool ParseValueTables(DBCIterator& in, std::vector<dbcppp::G_ValueTable>& value_tables)
     {
         bool result = false;
         dbcppp::G_ValueTable value_table;
@@ -731,8 +715,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseSignal(DBCIterator<It>& in, dbcppp::G_Signal& signal)
+    static bool ParseSignal(DBCIterator& in, dbcppp::G_Signal& signal)
     {
         bool result = false;
         if (ParseLit(in, "SG_"))
@@ -746,30 +729,29 @@ public:
                 signal.multiplexer_indicator = std::move(multiplexer_indicator);
             }
             Skip(in);
-            ExpectLit(in, ":"); Skip(in);
+            ExpectCharLit(in, ':'); Skip(in);
             Expect(in, ParseUint, signal.start_bit, "Expected Uint (signal.start_bit)"); Skip(in);
-            ExpectLit(in, "|"); Skip(in);
+            ExpectCharLit(in, '|'); Skip(in);
             Expect(in, ParseUint, signal.signal_size, "Expected Uint (signal.signal_size)"); Skip(in);
-            ExpectLit(in, "@"); Skip(in);
+            ExpectCharLit(in, '@'); Skip(in);
             Expect(in, ParseChar, signal.byte_order, "Expected char (signal.byte_order)"); Skip(in);
             Expect(in, ParseChar, signal.value_type, "Expected char (signal.value_type)"); Skip(in);
-            ExpectLit(in, "("); Skip(in);
+            ExpectCharLit(in, '('); Skip(in);
             Expect(in, ParseDouble, signal.factor, "Expected double (signal.factor)"); Skip(in);
-            ExpectLit(in, ","); Skip(in);
+            ExpectCharLit(in, ','); Skip(in);
             Expect(in, ParseDouble, signal.offset, "Expected double (signal.offset)"); Skip(in);
-            ExpectLit(in, ")"); Skip(in);
-            ExpectLit(in, "["); Skip(in);
+            ExpectCharLit(in, ')'); Skip(in);
+            ExpectCharLit(in, '['); Skip(in);
             Expect(in, ParseDouble, signal.minimum, "Expected double (signal.minimum)"); Skip(in);
-            ExpectLit(in, "|"); Skip(in);
+            ExpectCharLit(in, '|'); Skip(in);
             Expect(in, ParseDouble, signal.maximum, "Expected double (signal.maximum)"); Skip(in);
-            ExpectLit(in, "]"); Skip(in);
+            ExpectCharLit(in, ']'); Skip(in);
             Expect(in, ParseCharString, signal.unit, "Expected char_string (signal.unit)"); Skip(in);
             ParseCommaSeperatedCIdentifiersSkipSpace(in, signal.receivers);
         }
         return result;
     }
-    template <class It>
-    static bool ParseSignals(DBCIterator<It>& in, std::vector<dbcppp::G_Signal>& signals)
+    static bool ParseSignals(DBCIterator& in, std::vector<dbcppp::G_Signal>& signals)
     {
         bool result = false;
         dbcppp::G_Signal signal;
@@ -781,8 +763,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseMessage(DBCIterator<It>& in, dbcppp::G_Message& message)
+    static bool ParseMessage(DBCIterator& in, dbcppp::G_Message& message)
     {
         bool result = false;
         if (ParseLit(in, "BO_"))
@@ -791,15 +772,14 @@ public:
             Skip(in);
             Expect(in, ParseUint, message.id, "Expected Uint (message.id)"); Skip(in);
             Expect(in, ParseCIdentifier, message.name, "Expected C_identifier (message.name)"); Skip(in);
-            ExpectLit(in, ":"); Skip(in);
+            ExpectCharLit(in, ':'); Skip(in);
             Expect(in, ParseUint, message.size, "Expected Uint (message.size)"); Skip(in);
             Expect(in, ParseCIdentifier, message.transmitter, "Expected C_identifier (message.transmitter)"); Skip(in);
             ParseSignals(in, message.signals);
         }
         return result;
     }
-    template <class It>
-    static bool ParseMessages(DBCIterator<It>& in, std::vector<dbcppp::G_Message>& messages)
+    static bool ParseMessages(DBCIterator& in, std::vector<dbcppp::G_Message>& messages)
     {
         bool result = false;
         dbcppp::G_Message message;
@@ -811,8 +791,7 @@ public:
         }
         return result;
     }
-    template <class It>
-    static bool ParseMessageTransmitter(DBCIterator<It>& in, dbcppp::G_MessageTransmitter& message_transmitter)
+    static bool ParseMessageTransmitter(DBCIterator& in, dbcppp::G_MessageTransmitter& message_transmitter)
     {
         bool result = false;
         if (ParseLit(in, "BO_TX_BU_"))
@@ -820,14 +799,13 @@ public:
             result = true;
             Skip(in);
             Expect(in, ParseUint, message_transmitter.id, "Expected Uint (message_transmitter.id)"); Skip(in);
-            ExpectLit(in, ":"); Skip(in);
+            ExpectCharLit(in, ':'); Skip(in);
             ParseCommaSeperatedCIdentifiers(in, message_transmitter.transmitters); Skip(in);
-            ExpectLit(in, ";"); Skip(in);
+            ExpectCharLit(in, ';'); Skip(in);
         }
         return result;
     }
-    template <class It>
-    static bool ParseMessageTransmitters(DBCIterator<It>& in, std::vector<dbcppp::G_MessageTransmitter>& message_transmitters)
+    static bool ParseMessageTransmitters(DBCIterator& in, std::vector<dbcppp::G_MessageTransmitter>& message_transmitters)
     {
         bool result = false;
         dbcppp::G_MessageTransmitter message_transmitter;
@@ -839,8 +817,7 @@ public:
         }
         return result = true;
     }
-    template <class It>
-    static bool ParseEnvironmentVariable(DBCIterator<It>& in, dbcppp::G_EnvironmentVariable& environment_variable)
+    static bool ParseEnvironmentVariable(DBCIterator& in, dbcppp::G_EnvironmentVariable& environment_variable)
     {
         bool result = false;
         if (ParseLit(in, "EV_"))
@@ -848,24 +825,23 @@ public:
             result = true;
             Skip(in);
             Expect(in, ParseCIdentifier, environment_variable.name, "Expected C_identifier (environment_variable.name)"); Skip(in);
-            ExpectLit(in, ":"); Skip(in);
+            ExpectCharLit(in, ':'); Skip(in);
             Expect(in, ParseUint, environment_variable.var_type, "Expect Uint (environment_variable.var_type)"); Skip(in);
-            ExpectLit(in, "["); Skip(in);
+            ExpectCharLit(in, '['); Skip(in);
             Expect(in, ParseDouble, environment_variable.minimum, "Expected Double (environment_variable.minimum)"); Skip(in);
-            ExpectLit(in, "|"); Skip(in);
+            ExpectCharLit(in, '|'); Skip(in);
             Expect(in, ParseDouble, environment_variable.maximum, "Expected Double (environment_variable.maximum)"); Skip(in);
-            ExpectLit(in, "]"); Skip(in);
+            ExpectCharLit(in, ']'); Skip(in);
             Expect(in, ParseCharString, environment_variable.unit, "Expected CharString (environment_variable.unit)"); Skip(in);
-            Expect(in, ParseCharString, environment_variable.initial_value, "Expected Double (environment_variable.initial_value)"); Skip(in);
-            Expect(in, ParseCharString, environment_variable.id, "Expected Uint (environment_variable.id)"); Skip(in);
+            Expect(in, ParseDouble, environment_variable.initial_value, "Expected Double (environment_variable.initial_value)"); Skip(in);
+            Expect(in, ParseUint, environment_variable.id, "Expected Uint (environment_variable.id)"); Skip(in);
             Expect(in, ParseCharString, environment_variable.access_type, "Expected Uint (environment_variable.access_type)"); Skip(in);
             ParseCommaSeperatedCIdentifiers(in, environment_variable.access_nodes); Skip(in);
-            ExpectLit(in, ";");
+            ExpectCharLit(in, ';');
         }
         return result;
     }
-    template <class It>
-    static bool ParseEnvironmentVariables(DBCIterator<It>& in, std::vector<dbcppp::G_EnvironmentVariable>& environment_variables)
+    static bool ParseEnvironmentVariables(DBCIterator& in, std::vector<dbcppp::G_EnvironmentVariable>& environment_variables)
     {
         bool result = false;
         dbcppp::G_EnvironmentVariable environment_variable;
@@ -877,8 +853,7 @@ public:
         }
         return result = true;
     }
-    template <class It>
-    static bool ParseEnvironmentVariableData(DBCIterator<It>& in, dbcppp::G_EnvironmentVariableData& environment_variable_data)
+    static bool ParseEnvironmentVariableData(DBCIterator& in, dbcppp::G_EnvironmentVariableData& environment_variable_data)
     {
         bool result = false;
         if (ParseLit(in, "ENVVAR_DATA_"))
@@ -886,14 +861,13 @@ public:
             result = true;
             Skip(in);
             Expect(in, ParseCIdentifier, environment_variable_data.name, "Expected C_identifier (environment_variable_data.name)"); Skip(in);
-            ExpectLit(in, ":"); Skip(in);
+            ExpectCharLit(in, ':'); Skip(in);
             Expect(in, ParseUint, environment_variable_data.size, "Expect Uint (environment_variable_data.size)"); Skip(in);
-            ExpectLit(in, ";");
+            ExpectCharLit(in, ';');
         }
         return result;
     }
-    template <class It>
-    static bool ParseEnvironmentVariableDatas(DBCIterator<It>& in, std::vector<dbcppp::G_EnvironmentVariableData>& environment_variable_datas)
+    static bool ParseEnvironmentVariableDatas(DBCIterator& in, std::vector<dbcppp::G_EnvironmentVariableData>& environment_variable_datas)
     {
         bool result = false;
         dbcppp::G_EnvironmentVariableData environment_variable_data;
@@ -905,8 +879,7 @@ public:
         }
         return result = true;
     }
-    template <class It>
-    static bool ParseSignalType(DBCIterator<It>& in, dbcppp::G_SignalType& signal_type)
+    static bool ParseSignalType(DBCIterator& in, dbcppp::G_SignalType& signal_type)
     {
         bool result = false;
         if (ParseLit(in, "SGTYPE_"))
@@ -914,31 +887,30 @@ public:
             result = true;
             Skip(in);
             Expect(in, ParseCIdentifier, signal_type.name, "Expected C_identifier (signal_type.name)"); Skip(in);
-            ExpectLit(in, ":"); Skip(in);
+            ExpectCharLit(in, ':'); Skip(in);
             Expect(in, ParseUint, signal_type.size, "Expected Uint (signal_type.size)"); Skip(in);
-            ExpectLit(in, "@"); Skip(in);
+            ExpectCharLit(in, '@'); Skip(in);
             Expect(in, ParseChar, signal_type.byte_order, "Expected Char (signal_type.byte_order)"); Skip(in);
             Expect(in, ParseChar, signal_type.value_type, "Expected Char (signal_type.value_type)"); Skip(in);
-            ExpectLit(in, "("); Skip(in);
+            ExpectCharLit(in, '('); Skip(in);
             Expect(in, ParseDouble, signal_type.factor, "Expected Double (signal_type.factor)"); Skip(in);
-            ExpectLit(in, ","); Skip(in);
+            ExpectCharLit(in, ','); Skip(in);
             Expect(in, ParseDouble, signal_type.offset, "Expected Double (signal_type.offset)"); Skip(in);
-            ExpectLit(in, ")"); Skip(in);
-            ExpectLit(in, "["); Skip(in);
+            ExpectCharLit(in, ')'); Skip(in);
+            ExpectCharLit(in, '['); Skip(in);
             Expect(in, ParseDouble, signal_type.minimum, "Expected Double (signal_type.minimum)"); Skip(in);
-            ExpectLit(in, "|"); Skip(in);
+            ExpectCharLit(in, '|'); Skip(in);
             Expect(in, ParseDouble, signal_type.maximum, "Expected Double (signal_type.maximum)"); Skip(in);
-            ExpectLit(in, "]"); Skip(in);
+            ExpectCharLit(in, ']'); Skip(in);
             Expect(in, ParseCharString, signal_type.unit, "Expected CharString (signal_type.unit)"); Skip(in);
             Expect(in, ParseDouble, signal_type.default_value, "Expected Double (signal_type.default_value)"); Skip(in);
-            ExpectLit(in, ","); Skip(in);
+            ExpectCharLit(in, ','); Skip(in);
             Expect(in, ParseCIdentifier, signal_type.value_table_name, "Expected C_identifier (signal_type.value_table_name)"); Skip(in);
-            ExpectLit(in, ";");
+            ExpectCharLit(in, ';');
         }
         return result;
     }
-    template <class It>
-    static bool ParseSignalTypes(DBCIterator<It>& in, std::vector<dbcppp::G_SignalType>& signal_types)
+    static bool ParseSignalTypes(DBCIterator& in, std::vector<dbcppp::G_SignalType>& signal_types)
     {
         bool result = false;
         dbcppp::G_SignalType signal_type;
@@ -950,8 +922,7 @@ public:
         }
         return result = true;
     }
-    template <class It>
-    static bool ParseComment(DBCIterator<It>& in, dbcppp::G_Comment& comment)
+    static bool ParseComment(DBCIterator& in, dbcppp::G_Comment& comment)
     {
         bool result = false;
         if (ParseLit(in, "CM_"))
@@ -960,7 +931,7 @@ public:
             Skip(in);
             if (std::string com; ParseCharString(in, com))
             {
-                comment.comment = G_CommentNetwork{com};
+                comment.comment = dbcppp::G_CommentNetwork{com};
             }
             else if (ParseLit(in, "BU_"))
             {
@@ -968,7 +939,7 @@ public:
                 std::string com;
                 Expect(in, ParseCIdentifier, node_name, "Expected C_identifier (node_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = G_CommentNode{node_name, com};
+                comment.comment = dbcppp::G_CommentNode{node_name, com};
             }
             else if (ParseLit(in, "BO_"))
             {
@@ -976,17 +947,17 @@ public:
                 std::string com;
                 Expect(in, ParseUint, message_id, "Expected Uint (message_id)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = G_CommentMessage{message_id, com};
+                comment.comment = dbcppp::G_CommentMessage{message_id, com};
             }
             else if (ParseLit(in, "SG_"))
             {
                 uint64_t message_id;
-                std::string signal_name
+                std::string signal_name;
                 std::string com;
                 Expect(in, ParseUint, message_id, "Expected Uint (message_id)"); Skip(in);
                 Expect(in, ParseCIdentifier, signal_name, "Expect C_identifier (signal_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = G_CommentSignal{message_id, signal_name, com};
+                comment.comment = dbcppp::G_CommentSignal{message_id, signal_name, com};
             }
             else if (ParseLit(in, "EV_"))
             {
@@ -994,22 +965,21 @@ public:
                 std::string com;
                 Expect(in, ParseCIdentifier, env_var_name, "Expected C_identifier (env_var_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = G_CommentEnvVar{env_var_name, com};
+                comment.comment = dbcppp::G_CommentEnvVar{env_var_name, com};
             }
             else
             {
                 throw ParserError(in, "Expected BU_, BO_, SG_, EV_ or CharString (comment)");
             }
-            ExpectLit(in, ";");
+            ExpectCharLit(in, ';');
         }
         return result;
     }
-    template <class It>
-    static bool ParseComments(DBCIterator<It>& in, std::vector<dbcppp::G_Comment>& comments)
+    static bool ParseComments(DBCIterator& in, std::vector<dbcppp::G_Comment>& comments)
     {
         bool result = false;
         dbcppp::G_Comment comment;
-        while (ParseComments(in, comment))
+        while (ParseComment(in, comment))
         {
             result = true;
             comments.push_back(comment);
