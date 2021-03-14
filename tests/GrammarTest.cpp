@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(DBCParserTest)
 
     const char* str_nodes =
         "BU_: Bus0 Bus1 Bus2 Receiver";
-    std::vector<dbcppp::G_Node> nodes;
+    std::vector<dbcppp::GNode> nodes;
     iter = DBCIterator(str_nodes);
     DBCParser::ParseNodes(iter, nodes);
     
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(DBCParserTest)
         " SG_ s4_16 m4 : 38|1@1+ (1,0) [0|0] \"\" Receiver\n"
         " SG_ s4_17 m4 : 40|6@1+ (1,0) [0|0] \"%/s\" Receiver\n"
         " SG_ s4_18 m4 : 46|1@1+ (1,0) [0|0] \"\" Receiver\n";
-    std::vector<dbcppp::G_Message> messages;
+    std::vector<dbcppp::GMessage> messages;
     iter = DBCIterator(str_messages);
     DBCParser::ParseMessages(iter, messages);
 

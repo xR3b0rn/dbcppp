@@ -16,30 +16,30 @@ namespace dbcppp
 {
     using variant_attr_value_t = std::variant<int64_t, double, std::string>;
 
-    struct G_Version
+    struct GVersion
     {
         std::string version;
     };
-    struct G_NewSymbols
+    struct GNewSymbols
     {
         std::vector<std::string> new_symbols;
     };
-    struct G_BitTiming
+    struct GBitTiming
     {
         uint64_t baudrate;
         uint64_t BTR1;
         uint64_t BTR2;
     };
-    struct G_Node
+    struct GNode
     {
         std::string name;
     };
-    struct G_ValueTable
+    struct GValueTable
     {
         std::string name;
         std::vector<std::tuple<int64_t, std::string>> value_encoding_descriptions;
     };
-    struct G_Signal
+    struct GSignal
     {
         std::string name;
         std::optional<std::string> multiplexer_indicator;
@@ -54,20 +54,20 @@ namespace dbcppp
         std::string unit;
         std::vector<std::string> receivers;
     };
-    struct G_Message
+    struct GMessage
     {
         uint64_t id;
         std::string name;
         uint64_t size;
         std::string transmitter;
-        std::vector<G_Signal> signals;
+        std::vector<GSignal> signals;
     };
-    struct G_MessageTransmitter
+    struct GMessageTransmitter
     {
         uint64_t id;
         std::vector<std::string> transmitters;
     };
-    struct G_EnvironmentVariable
+    struct GEnvironmentVariable
     {
         std::string name;
         uint64_t var_type;
@@ -79,12 +79,12 @@ namespace dbcppp
         std::string access_type;
         std::vector<std::string> access_nodes;
     };
-    struct G_EnvironmentVariableData
+    struct GEnvironmentVariableData
     {
         std::string name;
         uint64_t size;
     };
-    struct G_SignalType
+    struct GSignalType
     {
         std::string name;
         uint64_t size;
@@ -98,148 +98,148 @@ namespace dbcppp
         double default_value;
         std::string value_table_name;
     };
-    struct G_CommentNetwork
+    struct GCommentNetwork
     {
         std::string comment;
     };
-    struct G_CommentNode
+    struct GCommentNode
     {
         std::string node_name;
         std::string comment;
     };
-    struct G_CommentMessage
+    struct GCommentMessage
     {
         uint64_t message_id;
         std::string comment;
     };
-    struct G_CommentSignal
+    struct GCommentSignal
     {
         uint64_t message_id;
         std::string signal_name;
         std::string comment;
     };
-    struct G_CommentEnvVar
+    struct GCommentEnvVar
     {
         std::string env_var_name;
         std::string comment;
     };
-    using variant_comment_t = std::variant<G_CommentNetwork, G_CommentNode, G_CommentMessage, G_CommentSignal, G_CommentEnvVar>;
-    struct G_Comment
+    using variant_comment_t = std::variant<GCommentNetwork, GCommentNode, GCommentMessage, GCommentSignal, GCommentEnvVar>;
+    struct GComment
     {
         variant_comment_t comment;
     };
-    struct G_AttributeValueTypeInt
+    struct GAttributeValueTypeInt
     {
         int64_t minimum;
         int64_t maximum;
     };
-    struct G_AttributeValueTypeHex
+    struct GAttributeValueTypeHex
     {
         int64_t minimum;
         int64_t maximum;
     };
-    struct G_AttributeValueTypeFloat
+    struct GAttributeValueTypeFloat
     {
         double minimum;
         double maximum;
     };
-    struct G_AttributeValueTypeString
+    struct GAttributeValueTypeString
     {
     };
-    struct G_AttributeValueTypeEnum
+    struct GAttributeValueTypeEnum
     {
         std::vector<std::string> values;
     };
     using variant_attribute_value_t =
         std::variant<
-            G_AttributeValueTypeInt, G_AttributeValueTypeHex,
-            G_AttributeValueTypeFloat, G_AttributeValueTypeString,
-            G_AttributeValueTypeEnum>;
-    struct G_AttributeValue
+            GAttributeValueTypeInt, GAttributeValueTypeHex,
+            GAttributeValueTypeFloat, GAttributeValueTypeString,
+            GAttributeValueTypeEnum>;
+    struct GAttributeValue
     {
         variant_attribute_value_t value;
     };
-    struct G_AttributeDefinition
+    struct GAttributeDefinition
     {
         std::optional<std::string> object_type;
         std::string name;
-        G_AttributeValue value_type;
+        GAttributeValue value_type;
     };
-    struct G_Attribute
+    struct GAttribute
     {
         std::string name;
         variant_attr_value_t value;
     };
-    struct G_AttributeNetwork
+    struct GAttributeNetwork
     {
         std::string attribute_name;
         variant_attr_value_t value;
     };
-    struct G_AttributeNode
+    struct GAttributeNode
     {
         std::string attribute_name;
         std::string node_name;
         variant_attr_value_t value;
     };
-    struct G_AttributeMessage
+    struct GAttributeMessage
     {
         std::string attribute_name;
         uint64_t message_id;
         variant_attr_value_t value;
     };
-    struct G_AttributeSignal
+    struct GAttributeSignal
     {
         std::string attribute_name;
         uint64_t message_id;
         std::string signal_name;
         variant_attr_value_t value;
     };
-    struct G_AttributeEnvVar
+    struct GAttributeEnvVar
     {
         std::string attribute_name;
         std::string env_var_name;
         variant_attr_value_t value;
     };
-    using variant_attribute_t = std::variant<G_AttributeNetwork, G_AttributeNode, G_AttributeMessage, G_AttributeSignal, G_AttributeEnvVar>;
-    struct G_ValueDescriptionSignal
+    using variant_attribute_t = std::variant<GAttributeNetwork, GAttributeNode, GAttributeMessage, GAttributeSignal, GAttributeEnvVar>;
+    struct GValueDescriptionSignal
     {
         uint64_t message_id;
         std::string signal_name;
         std::vector<std::tuple<int64_t, std::string>> value_descriptions;
     };
-    struct G_ValueDescriptionEnvVar
+    struct GValueDescriptionEnvVar
     {
         std::string env_var_name;
         std::vector<std::tuple<int64_t, std::string>> value_descriptions;
     };
-    struct G_ValueDescription
+    struct GValueDescription
     {
-        std::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar> description;
+        std::variant<GValueDescriptionSignal, GValueDescriptionEnvVar> description;
     };
-    struct G_SignalExtendedValueType
+    struct GSignalExtendedValueType
     {
         uint64_t message_id;
         std::string signal_name;
         uint64_t value;
     };
-    struct G_Network
+    struct GNetwork
     {
-        G_Version version;
+        GVersion version;
         std::vector<std::string> new_symbols;
-        std::optional<G_BitTiming> bit_timing;
-        std::vector<G_Node> nodes;
-        std::vector<G_ValueTable> value_tables;
-        std::vector<G_Message> messages;
-        std::vector<G_MessageTransmitter> message_transmitters;
-        std::vector<G_EnvironmentVariable> environment_variables;
-        std::vector<G_EnvironmentVariableData> environment_variable_datas;
-        std::vector<G_SignalType> signal_types;
+        std::optional<GBitTiming> bit_timing;
+        std::vector<GNode> nodes;
+        std::vector<GValueTable> value_tables;
+        std::vector<GMessage> messages;
+        std::vector<GMessageTransmitter> message_transmitters;
+        std::vector<GEnvironmentVariable> environment_variables;
+        std::vector<GEnvironmentVariableData> environment_variable_datas;
+        std::vector<GSignalType> signal_types;
         std::vector<variant_comment_t> comments;
-        std::vector<G_AttributeDefinition> attribute_definitions;
-        std::vector<G_Attribute> attribute_defaults;
+        std::vector<GAttributeDefinition> attribute_definitions;
+        std::vector<GAttribute> attribute_defaults;
         std::vector<variant_attribute_t> attribute_values;
-        std::vector<G_ValueDescription> value_descriptions;
-        std::vector<G_SignalExtendedValueType> signal_extended_value_types;
+        std::vector<GValueDescription> value_descriptions;
+        std::vector<GSignalExtendedValueType> signal_extended_value_types;
     };
 }
 
@@ -579,7 +579,7 @@ public:
         }
         return beg != in;
     }
-    static bool ParseVersion(DBCIterator& in, dbcppp::G_Version& version)
+    static bool ParseVersion(DBCIterator& in, dbcppp::GVersion& version)
     {
         bool result = false;
         if (ParseLit(in, "VERSION"))
@@ -590,7 +590,7 @@ public:
         }
         return result;
     }
-    static bool ParseBitTiming(DBCIterator& in, dbcppp::G_BitTiming& bit_timing)
+    static bool ParseBitTiming(DBCIterator& in, dbcppp::GBitTiming& bit_timing)
     {
         bool result = false;
         if (ParseLit(in, "BS_"))
@@ -609,14 +609,14 @@ public:
         }
         return result;
     }
-    static bool ParseNodes(DBCIterator& in, std::vector<dbcppp::G_Node>& nodes)
+    static bool ParseNodes(DBCIterator& in, std::vector<dbcppp::GNode>& nodes)
     {
         bool result = false;
         if (ParseLit(in, "BU_"))
         {
             Skip(in);
             ExpectCharLit(in, ':'); SkipSpace(in);
-            dbcppp::G_Node node;
+            dbcppp::GNode node;
             while (ParseCIdentifier(in, node.name))
             {
                 nodes.push_back(node);
@@ -709,7 +709,7 @@ public:
         }
         return result;
     }
-    static bool ParseValueTable(DBCIterator& in, dbcppp::G_ValueTable& value_table)
+    static bool ParseValueTable(DBCIterator& in, dbcppp::GValueTable& value_table)
     {
         bool result = false;
         if (ParseLit(in, "VAL_TABLE_"))
@@ -722,10 +722,10 @@ public:
         }
         return result;
     }
-    static bool ParseValueTables(DBCIterator& in, std::vector<dbcppp::G_ValueTable>& value_tables)
+    static bool ParseValueTables(DBCIterator& in, std::vector<dbcppp::GValueTable>& value_tables)
     {
         bool result = false;
-        dbcppp::G_ValueTable value_table;
+        dbcppp::GValueTable value_table;
         while (ParseValueTable(in, value_table))
         {
             result = true;
@@ -734,7 +734,7 @@ public:
         }
         return result;
     }
-    static bool ParseSignal(DBCIterator& in, dbcppp::G_Signal& signal)
+    static bool ParseSignal(DBCIterator& in, dbcppp::GSignal& signal)
     {
         bool result = false;
         if (ParseLit(in, "SG_"))
@@ -770,10 +770,10 @@ public:
         }
         return result;
     }
-    static bool ParseSignals(DBCIterator& in, std::vector<dbcppp::G_Signal>& signals)
+    static bool ParseSignals(DBCIterator& in, std::vector<dbcppp::GSignal>& signals)
     {
         bool result = false;
-        dbcppp::G_Signal signal;
+        dbcppp::GSignal signal;
         while (ParseSignal(in, signal))
         {
             result = true;
@@ -782,7 +782,7 @@ public:
         }
         return result;
     }
-    static bool ParseMessage(DBCIterator& in, dbcppp::G_Message& message)
+    static bool ParseMessage(DBCIterator& in, dbcppp::GMessage& message)
     {
         bool result = false;
         if (ParseLit(in, "BO_"))
@@ -798,10 +798,10 @@ public:
         }
         return result;
     }
-    static bool ParseMessages(DBCIterator& in, std::vector<dbcppp::G_Message>& messages)
+    static bool ParseMessages(DBCIterator& in, std::vector<dbcppp::GMessage>& messages)
     {
         bool result = false;
-        dbcppp::G_Message message;
+        dbcppp::GMessage message;
         while (ParseMessage(in, message))
         {
             result = true;
@@ -810,7 +810,7 @@ public:
         }
         return result;
     }
-    static bool ParseMessageTransmitter(DBCIterator& in, dbcppp::G_MessageTransmitter& message_transmitter)
+    static bool ParseMessageTransmitter(DBCIterator& in, dbcppp::GMessageTransmitter& message_transmitter)
     {
         bool result = false;
         if (ParseLit(in, "BO_TX_BU_"))
@@ -824,10 +824,10 @@ public:
         }
         return result;
     }
-    static bool ParseMessageTransmitters(DBCIterator& in, std::vector<dbcppp::G_MessageTransmitter>& message_transmitters)
+    static bool ParseMessageTransmitters(DBCIterator& in, std::vector<dbcppp::GMessageTransmitter>& message_transmitters)
     {
         bool result = false;
-        dbcppp::G_MessageTransmitter message_transmitter;
+        dbcppp::GMessageTransmitter message_transmitter;
         while (ParseMessageTransmitter(in, message_transmitter))
         {
             result = true;
@@ -836,7 +836,7 @@ public:
         }
         return result = true;
     }
-    static bool ParseEnvironmentVariable(DBCIterator& in, dbcppp::G_EnvironmentVariable& environment_variable)
+    static bool ParseEnvironmentVariable(DBCIterator& in, dbcppp::GEnvironmentVariable& environment_variable)
     {
         bool result = false;
         if (ParseLit(in, "EV_"))
@@ -860,10 +860,10 @@ public:
         }
         return result;
     }
-    static bool ParseEnvironmentVariables(DBCIterator& in, std::vector<dbcppp::G_EnvironmentVariable>& environment_variables)
+    static bool ParseEnvironmentVariables(DBCIterator& in, std::vector<dbcppp::GEnvironmentVariable>& environment_variables)
     {
         bool result = false;
-        dbcppp::G_EnvironmentVariable environment_variable;
+        dbcppp::GEnvironmentVariable environment_variable;
         while (ParseEnvironmentVariable(in, environment_variable))
         {
             result = true;
@@ -872,7 +872,7 @@ public:
         }
         return result = true;
     }
-    static bool ParseEnvironmentVariableData(DBCIterator& in, dbcppp::G_EnvironmentVariableData& environment_variable_data)
+    static bool ParseEnvironmentVariableData(DBCIterator& in, dbcppp::GEnvironmentVariableData& environment_variable_data)
     {
         bool result = false;
         if (ParseLit(in, "ENVVAR_DATA_"))
@@ -886,10 +886,10 @@ public:
         }
         return result;
     }
-    static bool ParseEnvironmentVariableDatas(DBCIterator& in, std::vector<dbcppp::G_EnvironmentVariableData>& environment_variable_datas)
+    static bool ParseEnvironmentVariableDatas(DBCIterator& in, std::vector<dbcppp::GEnvironmentVariableData>& environment_variable_datas)
     {
         bool result = false;
-        dbcppp::G_EnvironmentVariableData environment_variable_data;
+        dbcppp::GEnvironmentVariableData environment_variable_data;
         while (ParseEnvironmentVariableData(in, environment_variable_data))
         {
             result = true;
@@ -898,7 +898,7 @@ public:
         }
         return result = true;
     }
-    static bool ParseSignalType(DBCIterator& in, dbcppp::G_SignalType& signal_type)
+    static bool ParseSignalType(DBCIterator& in, dbcppp::GSignalType& signal_type)
     {
         bool result = false;
         if (ParseLit(in, "SGTYPE_"))
@@ -929,10 +929,10 @@ public:
         }
         return result;
     }
-    static bool ParseSignalTypes(DBCIterator& in, std::vector<dbcppp::G_SignalType>& signal_types)
+    static bool ParseSignalTypes(DBCIterator& in, std::vector<dbcppp::GSignalType>& signal_types)
     {
         bool result = false;
-        dbcppp::G_SignalType signal_type;
+        dbcppp::GSignalType signal_type;
         while (ParseSignalType(in, signal_type))
         {
             result = true;
@@ -941,7 +941,7 @@ public:
         }
         return result = true;
     }
-    static bool ParseComment(DBCIterator& in, dbcppp::G_Comment& comment)
+    static bool ParseComment(DBCIterator& in, dbcppp::GComment& comment)
     {
         bool result = false;
         if (ParseLit(in, "CM_"))
@@ -950,7 +950,7 @@ public:
             Skip(in);
             if (std::string com; ParseCharString(in, com))
             {
-                comment.comment = dbcppp::G_CommentNetwork{com};
+                comment.comment = dbcppp::GCommentNetwork{com};
             }
             else if (ParseLit(in, "BU_"))
             {
@@ -958,7 +958,7 @@ public:
                 std::string com;
                 Expect(in, ParseCIdentifier, node_name, "Expected C_identifier (node_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = dbcppp::G_CommentNode{node_name, com};
+                comment.comment = dbcppp::GCommentNode{node_name, com};
             }
             else if (ParseLit(in, "BO_"))
             {
@@ -966,7 +966,7 @@ public:
                 std::string com;
                 Expect(in, ParseUint, message_id, "Expected Uint (message_id)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = dbcppp::G_CommentMessage{message_id, com};
+                comment.comment = dbcppp::GCommentMessage{message_id, com};
             }
             else if (ParseLit(in, "SG_"))
             {
@@ -976,7 +976,7 @@ public:
                 Expect(in, ParseUint, message_id, "Expected Uint (message_id)"); Skip(in);
                 Expect(in, ParseCIdentifier, signal_name, "Expect C_identifier (signal_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = dbcppp::G_CommentSignal{message_id, signal_name, com};
+                comment.comment = dbcppp::GCommentSignal{message_id, signal_name, com};
             }
             else if (ParseLit(in, "EV_"))
             {
@@ -984,7 +984,7 @@ public:
                 std::string com;
                 Expect(in, ParseCIdentifier, env_var_name, "Expected C_identifier (env_var_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = dbcppp::G_CommentEnvVar{env_var_name, com};
+                comment.comment = dbcppp::GCommentEnvVar{env_var_name, com};
             }
             else
             {
@@ -994,10 +994,10 @@ public:
         }
         return result;
     }
-    static bool ParseComments(DBCIterator& in, std::vector<dbcppp::G_Comment>& comments)
+    static bool ParseComments(DBCIterator& in, std::vector<dbcppp::GComment>& comments)
     {
         bool result = false;
-        dbcppp::G_Comment comment;
+        dbcppp::GComment comment;
         while (ParseComment(in, comment))
         {
             result = true;
