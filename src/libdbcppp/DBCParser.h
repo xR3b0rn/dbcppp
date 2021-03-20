@@ -242,7 +242,6 @@ namespace dbcppp
         std::vector<GSignalExtendedValueType> signal_extended_value_types;
     };
 }
-
 class DBCIterator
 {
 public:
@@ -331,7 +330,6 @@ private:
     const char* _begin;
     const char* _cur;
 };
-
 class ParserError
 {
 public:
@@ -345,8 +343,8 @@ private:
     DBCIterator _iter;
 };
 
-#define ExpectLit(In, Lit) if (!ParseLit(In, Lit)) throw ParserError(In, "Expected ':'");
-#define ExpectCharLit(In, Lit) if (!ParseCharLit(In, Lit)) throw ParserError(In, "Expected ':'");
+#define ExpectLit(In, Lit) if (!ParseLit(In, Lit)) throw ParserError(In, "Expected '" + std::string(Lit) + "'");
+#define ExpectCharLit(In, Lit) if (!ParseCharLit(In, Lit)) throw ParserError(In, "Expected '" + std::string(1, Lit) + "'");
 #define Expect(In, Func, Var, Err) if (!Func(In, Var)) throw ParserError(In, Err);
 #define ParseCommaSeperatedCIdentifiers(in, Var)                                                        \
     {                                                                                                   \
@@ -375,6 +373,21 @@ private:
                 SkipSpace(in);                                                                                  \
                 Expect(in, ParseCIdentifier, identifier, "Expected C_identifier (" #Var ")"); SkipSpace(in);    \
                 Var.push_back(identifier);                                                                      \
+            }                                                                                                   \
+        }                                                                                                       \
+    }
+#define ParseCommaSeperatedCharStrings(in, Var)                                                                 \
+    {                                                                                                           \
+        std::string char_string;                                                                                \
+        if (ParseCharString(in, char_string))                                                                   \
+        {                                                                                                       \
+            Var.push_back(char_string);                                                                         \
+            Skip(in);                                                                                           \
+            while (ParseLit(in, ","))                                                                           \
+            {                                                                                                   \
+                SkipSpace(in);                                                                                  \
+                Expect(in, ParseCharString, char_string, "Expected CharString (" #Var ")"); Skip(in);           \
+                Var.push_back(char_string);                                                                     \
             }                                                                                                   \
         }                                                                                                       \
     }
@@ -472,7 +485,7 @@ public:
     static bool ParseLit(DBCIterator& in, std::string_view lit)
     {
         bool result = false;
-        if (std::strncmp(in, lit.data(), lit.size()) == 0 && NextIsSpace(DBCIterator(in + lit.size())))
+        if (std::strncmp(in, lit.data(), lit.size()) == 0 && (NextIsSpace(DBCIterator(in + lit.size())) || *(in + lit.size()) == ':'))
         {
             result = true;
             in += lit.size();
@@ -614,6 +627,7 @@ public:
         bool result = false;
         if (ParseLit(in, "BU_"))
         {
+            result = true;
             Skip(in);
             ExpectCharLit(in, ':'); SkipSpace(in);
             dbcppp::GNode node;
@@ -677,6 +691,7 @@ public:
         bool result = false;
         if (ParseLit(in, "NS_"))
         {
+            result = true;
             Skip(in);
             ExpectCharLit(in, ':'); Skip(in);
             while (ParseNewSymbol(in))
@@ -1005,5 +1020,247 @@ public:
             Skip(in);
         }
         return result = true;
+    }
+    static bool ParseAttributeDefinition(DBCIterator& in, dbcppp::GAttributeDefinition& attribute_definition)
+    {
+        bool result = false;
+        if (ParseLit(in, "BA_DEF_"))
+        {
+            result = true;
+            Skip(in);
+            if (ParseLit(in, "BU_"))
+            {
+                attribute_definition.object_type = "BU_";
+            }
+            else if (ParseLit(in, "BO_"))
+            {
+                attribute_definition.object_type = "BO_";
+            }
+            else if (ParseLit(in, "SG_"))
+            {
+                attribute_definition.object_type = "SG_";
+            }
+            else if (ParseLit(in, "EV_"))
+            {
+                attribute_definition.object_type = "EV_";
+            }
+            Skip(in);
+            Expect(in, ParseCharString, attribute_definition.name, "Expected CharString (attribute_definition.name)"); Skip(in);
+            if (ParseLit(in, "INT"))
+            {
+                Skip(in);
+                int64_t minimum, maximum;
+                Expect(in, ParseInt, minimum, "Expected Int (attribute_definition.value_type)"); Skip(in);
+                Expect(in, ParseInt, maximum, "Expected Int (attribute_definition.value_type)"); Skip(in);
+                attribute_definition.value_type.value = dbcppp::GAttributeValueTypeInt{minimum, maximum};
+            }
+            else if (ParseLit(in, "HEX"))
+            {
+                Skip(in);
+                int64_t minimum, maximum;
+                Expect(in, ParseInt, minimum, "Expected Int (attribute_definition.value_type)"); Skip(in);
+                Expect(in, ParseInt, maximum, "Expected Int (attribute_definition.value_type)"); Skip(in);
+                attribute_definition.value_type.value = dbcppp::GAttributeValueTypeHex{minimum, maximum};
+            }
+            else if (ParseLit(in, "FLOAT"))
+            {
+                Skip(in);
+                double minimum, maximum;
+                Expect(in, ParseDouble, minimum, "Expected Int (attribute_definition.value_type)"); Skip(in);
+                Expect(in, ParseDouble, maximum, "Expected Int (attribute_definition.value_type)"); Skip(in);
+                attribute_definition.value_type.value = dbcppp::GAttributeValueTypeFloat{minimum, maximum};
+            }
+            else if (ParseLit(in, "STRING"))
+            {
+                Skip(in);
+            }
+            else if (ParseLit(in, "ENUM"))
+            {
+                Skip(in);
+                std::vector<std::string> value_type_enum;
+                ParseCommaSeperatedCharStrings(in, value_type_enum); Skip(in);
+                attribute_definition.value_type.value = dbcppp::GAttributeValueTypeEnum{std::move(value_type_enum)};
+            }
+            else
+            {
+                throw ParserError(in, "Expected INT, HEX, FLOAT, STRING or ENUM (attribute_definition.value_type)");
+            }
+            ExpectCharLit(in, ';'); Skip(in);
+        }
+        return result;
+    }
+    static bool ParseAttributeDefinitions(DBCIterator& in, std::vector<dbcppp::GAttributeDefinition>& attribute_definitions)
+    {
+        bool result = false;
+        dbcppp::GAttributeDefinition attribute_definition;
+        while (ParseAttributeDefinition(in, attribute_definition))
+        {
+            result = true;
+            attribute_definitions.push_back(attribute_definition);
+            Skip(in);
+        }
+        return result;
+    }
+    static bool ParseAttributeValue(DBCIterator& in, dbcppp::variant_attr_value_t value)
+    {
+        bool result = false;
+        std::string str_attribute_value;
+        double d_attribute_value;
+        int64_t i_attribute_value;
+        if (ParseCharString(in, str_attribute_value))
+        {
+            result = true;
+            Skip(in);
+            value = str_attribute_value;
+        }
+        else if (ParseDouble(in, d_attribute_value))
+        {
+            result = true;
+            Skip(in);
+            value = d_attribute_value;
+        }
+        else if (ParseInt(in, i_attribute_value))
+        {
+            result = true;
+            Skip(in);
+            // Theoretically never reached, since every int also can be parsed as double.
+            // How to fix this???
+            value = i_attribute_value;
+        }
+        return result;
+    }
+    static bool ParseAttributeDefault(DBCIterator& in, dbcppp::GAttribute& attribute_default)
+    {
+        bool result = false;
+        if (ParseLit(in, "BA_DEF_DEF_REL_") || ParseLit(in, "BA_DEF_DEF_"))
+        {
+            result = true;
+            Skip(in);
+            Expect(in, ParseCharString, attribute_default.name, "Expected CharString (attribute_default.name)"); Skip(in);
+            Expect(in, ParseAttributeValue, attribute_default.value, "Expected attribute value (attribute_default.value)"); Skip(in);
+        }
+        return result;
+    }
+    static bool ParseAttributeDefaults(DBCIterator& in, std::vector<dbcppp::GAttribute>& attribute_defaults)
+    {
+        bool result = false;
+        dbcppp::GAttribute attribute;
+        while (ParseAttributeDefault(in, attribute))
+        {
+            result = true;
+            attribute_defaults.push_back(attribute);
+            Skip(in);
+        }
+        return result;
+    }
+    static bool ParseAttributeValue(DBCIterator& in, dbcppp::variant_attribute_t& attribute_value)
+    {
+        bool result = false;
+        if (ParseLit(in, "BA_"))
+        {
+            std::string attribute_name;
+            dbcppp::variant_attr_value_t value;
+            Expect(in, ParseCharString, attribute_name, "Expected attribute name");
+            if (ParseAttributeValue(in, value))
+            {
+                Skip(in);
+                dbcppp::GAttributeNetwork attr_net;
+                attr_net.value = value;
+                attr_net.attribute_name = attribute_name;
+                attribute_value = attr_net;
+            }
+            else if (ParseLit(in, "BU_"))
+            {
+                Skip(in);
+                dbcppp::GAttributeNode attr_node;
+                attr_node.attribute_name = attribute_name;
+                Expect(in, ParseCIdentifier, attr_node.node_name, "Expected C_Identifier (attr_node.node_name)"); Skip(in);
+                Expect(in, ParseAttributeValue, attr_node.value, "Expected attribute value") Skip(in);
+                attribute_value = attr_node;
+            }
+            else if (ParseLit(in, "BO_"))
+            {
+                Skip(in);
+                dbcppp::GAttributeMessage attr_msg;
+                attr_msg.attribute_name = attribute_name;
+                Expect(in, ParseUint, attr_msg.message_id, "Expected Uint (attr_msg.message_id)"); Skip(in);
+                Expect(in, ParseAttributeValue, attr_msg.value, "Expected attribute value"); Skip(in);
+                attribute_value = attr_msg;
+            }
+            else if (ParseLit(in, "SG_"))
+            {
+                Skip(in);
+                dbcppp::GAttributeSignal attr_sig;
+                attr_sig.attribute_name = attribute_name;
+                Expect(in, ParseUint, attr_sig.message_id, "Expected Uint (attr_sig.message_id)"); Skip(in);
+                Expect(in, ParseCIdentifier, attr_sig.signal_name, "Expected Uint (attr_sig.signal_name)"); Skip(in);
+                Expect(in, ParseAttributeValue, attr_sig.value, "Expected attribute value"); Skip(in);
+                attribute_value = attr_sig;
+            }
+            else if (ParseLit(in, "EV_"))
+            {
+                Skip(in);
+                dbcppp::GAttributeEnvVar attr_env;
+                attr_env.attribute_name = attribute_name;
+                Expect(in, ParseCIdentifier, attr_env.env_var_name, "Expected Uint (attr_env.env_var_name)"); Skip(in);
+                Expect(in, ParseAttributeValue, attr_env.value, "Expected attribute value"); Skip(in);
+                attribute_value = attr_env;
+            }
+            else
+            {
+                throw ParserError(in, "Expected attribute value, BU_, BO_, SG_ or EV_ (attribute_value)");
+            }
+        }
+        ExpectCharLit(in, ';');
+        return result;
+    }
+    static bool ParseAttributeValues(DBCIterator& in, std::vector<dbcppp::variant_attribute_t>& attribute_values)
+    {
+        bool result = false;
+        dbcppp::variant_attribute_t attribute;
+        while (ParseAttributeValue(in, attribute))
+        {
+            result = true;
+            attribute_values.push_back(attribute);
+            Skip(in);
+        }
+        return result;
+    }
+    static bool ParseValueDescription(DBCIterator& in, dbcppp::GValueDescription& value_description)
+    {
+        bool result = false;
+        return result;
+    }
+    static bool ParseValueDescriptions(DBCIterator& in, std::vector<dbcppp::GValueDescription>& value_descriptions)
+    {
+        bool result = false;
+        return result;
+    }
+    static bool ParseSignalExtendedValueType(DBCIterator& in, dbcppp::GSignalExtendedValueType& value_signal_extended_value_type)
+    {
+        bool result = false;
+        if (ParseLit(in, "SIG_VALTYPE_"))
+        {
+            result = true;
+            Skip(in);
+            Expect(in, ParseUint, value_signal_extended_value_type.message_id, "Expected Uint (value_signal_extended_value_type.message_id)"); Skip(in);
+            Expect(in, ParseCIdentifier, value_signal_extended_value_type.signal_name, "Expected C_Itendifier (value_signal_extended_value_type.signal_name)"); Skip(in);
+            ExpectCharLit(in, ':'); Skip(in);
+            Expect(in, ParseUint, value_signal_extended_value_type.value, "Expected Uint (value_signal_extended_value_type.value)"); Skip(in);
+            ExpectCharLit(in, ';'); Skip(in);
+        }
+        return result;
+    }
+    static bool ParseSignalExtendedValueTypes(DBCIterator& in, std::vector<dbcppp::GSignalExtendedValueType>& value_signal_extended_value_types)
+    {
+        bool result = false;
+        dbcppp::GSignalExtendedValueType value_signal_extended_value_type;
+        while (ParseSignalExtendedValueType(in, value_signal_extended_value_type))
+        {
+            result = true;
+            value_signal_extended_value_types.push_back(value_signal_extended_value_type);
+            Skip(in);
+        }
+        return result;
     }
 };

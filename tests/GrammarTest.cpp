@@ -18,23 +18,23 @@ BOOST_AUTO_TEST_CASE(DBCParserTest)
     const char* str_int = "0x1e10abcd";
     int64_t r_int;
     iter = DBCIterator(str_int);
-    DBCParser::ParseInt(iter, r_int);
+    BOOST_REQUIRE(DBCParser::ParseInt(iter, r_int));
 
     const char* str_new_sym = "BA_DEF_SGTYPE_ asdf";
     iter = DBCIterator(str_new_sym);
-    DBCParser::ParseNewSymbol(iter);
+    BOOST_REQUIRE(DBCParser::ParseNewSymbol(iter));
 
     const char* str_new_syms =
         "NS_: SG_MUL_VAL_ // A Comment\n"
         " /*another comment*/   ENVVAR_DATA_";
     iter = DBCIterator(str_new_syms);
-    DBCParser::ParseNewSymbols(iter);
+    BOOST_REQUIRE(DBCParser::ParseNewSymbols(iter));
 
     const char* str_nodes =
         "BU_: Bus0 Bus1 Bus2 Receiver";
     std::vector<dbcppp::GNode> nodes;
     iter = DBCIterator(str_nodes);
-    DBCParser::ParseNodes(iter, nodes);
+    BOOST_REQUIRE(DBCParser::ParseNodes(iter, nodes));
     
     const char* str_messages =
         "BO_ 1 test_msg_mux0: 8 VehicleBus\n"
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(DBCParserTest)
         " SG_ s4_18 m4 : 46|1@1+ (1,0) [0|0] \"\" Receiver\n";
     std::vector<dbcppp::GMessage> messages;
     iter = DBCIterator(str_messages);
-    DBCParser::ParseMessages(iter, messages);
+    BOOST_REQUIRE(DBCParser::ParseMessages(iter, messages));
 
     //// Set up the states, here a single std::string as that is
     //// what our action requires as additional function argument.
