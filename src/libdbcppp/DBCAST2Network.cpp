@@ -572,7 +572,8 @@ std::unique_ptr<Network> Network::loadDBCFromIs(std::istream& is)
     std::unique_ptr<Network> result;
     std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
     GNetwork gnet;
-    if (DBCParser::ParseNetwork(DBCIterator(str.c_str()), gnet))
+    DBCIterator iter(str.c_str());
+    if (DBCParser::ParseNetwork(iter, gnet))
     {
         result = DBCAST2Network(gnet);
     }
