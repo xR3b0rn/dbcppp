@@ -1333,7 +1333,7 @@ extern "C"
         const dbcppp_SignalType* result = nullptr;
         if (vti->getSignalType())
         {
-            result = reinterpret_cast<const dbcppp_SignalType*>(&*vti->getSignalType());
+            result = reinterpret_cast<const dbcppp_SignalType*>(&vti->getSignalType()->get());
         }
         return result;
     }
