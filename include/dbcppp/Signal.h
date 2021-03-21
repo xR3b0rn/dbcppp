@@ -91,6 +91,9 @@ namespace dbcppp
         virtual ExtendedValueType getExtendedValueType() const = 0;
         virtual bool getError(ErrorCode code) const = 0;
         
+        virtual bool operator==(const Signal& rhs) const = 0;
+        virtual bool operator!=(const Signal& rhs) const = 0;
+        
         /// \brief Extracts the raw value from a given n byte array
         ///
         /// This function uses a optimized method of reversing the byte order and extracting

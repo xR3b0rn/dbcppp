@@ -45,6 +45,9 @@ namespace dbcppp
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
         virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
         virtual const std::string& getComment() const override;
+        
+        virtual bool operator==(const EnvironmentVariable& rhs) const override;
+        virtual bool operator!=(const EnvironmentVariable& rhs) const override;
 
     private:
         std::string _name;

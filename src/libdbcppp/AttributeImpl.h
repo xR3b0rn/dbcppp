@@ -17,6 +17,9 @@ namespace dbcppp
         virtual const std::string& getName() const override;
         virtual AttributeDefinition::ObjectType getObjectType() const override;
         virtual const value_t& getValue() const override;
+        
+        virtual bool operator==(const Attribute& rhs) const override;
+        virtual bool operator!=(const Attribute& rhs) const override;
 
     private:
         std::string _name;

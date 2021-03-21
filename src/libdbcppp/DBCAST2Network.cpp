@@ -569,16 +569,6 @@ std::unique_ptr<Network> DBCAST2Network(const GNetwork& gnet)
 
 std::unique_ptr<Network> Network::loadDBCFromIs(std::istream& is)
 {
-    //std::unique_ptr<Network> result;
-    //std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-    //using Iter = std::string::iterator;
-    //Iter begin(str.begin()), end(str.end());
-    //GNetwork gnet;
-    //if (NetworkGrammar<Iter>::parse(begin, end, gnet))
-    //{
-    //    result = DBCAST2Network(gnet);
-    //}
-    //return result;
     std::unique_ptr<Network> result;
     std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
     GNetwork gnet;

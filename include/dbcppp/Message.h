@@ -49,6 +49,9 @@ namespace dbcppp
         virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
         virtual const std::string& getComment() const = 0;
         virtual const Signal* getMuxSignal() const = 0;
+        
+        virtual bool operator==(const Message& message) const = 0;
+        virtual bool operator!=(const Message& message) const = 0;
 
         virtual ErrorCode getError() const = 0;
     };

@@ -551,11 +551,18 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     os << "(" << s.getFactor() << "," << s.getOffset() << ") ";
     os << "[" << s.getMinimum() << "|" << s.getMaximum() << "] ";
     os << "\"" << s.getUnit() << "\"";
+    std::string receivers;
     s.forEachReceiver(
         [&](const std::string& n)
         {
-            os << " " << n;
+            receivers += n + ", ";
         });
+    if (receivers.size())
+    {
+        receivers.erase(receivers.end() - 1);
+        receivers.erase(receivers.end() - 1);
+    }
+    os << receivers;
     return os;
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const SignalType& st)

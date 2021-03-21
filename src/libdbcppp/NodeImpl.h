@@ -25,10 +25,12 @@ namespace dbcppp
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
         virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
+        
+        virtual bool operator==(const dbcppp::Node& rhs) const override;
+        virtual bool operator!=(const dbcppp::Node& rhs) const override;
 
         std::string _name;
         std::string _comment;
         std::vector<AttributeImpl> _attribute_values;
     };
-    bool operator==(const dbcppp::NodeImpl& lhs, const std::string& rhs);
 }

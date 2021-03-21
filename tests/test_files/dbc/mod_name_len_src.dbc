@@ -1,0 +1,83 @@
+/*
+ * The MIT License (MIT)
+ * 
+ * Copyright (c) 2015-2019 Erik Moqvist
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+VERSION ""
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: Node_will_be_shortened_456789_12
+
+
+BO_ 1 Msg_will_be_shortened_3456789_12: 8 Node_will_be_shortened_456789_12
+ SG_ Sig_will_be_shortened_3456789_12 : 1|8@1+ (1,0) [0|0] "" Vector__XXX
+
+
+
+
+CM_ BU_ Node_will_be_shortened_456789_12 "";
+BA_DEF_ BU_  "SystemNodeLongSymbol" STRING ;
+BA_DEF_ BO_  "SystemMessageLongSymbol" STRING ;
+BA_DEF_ SG_  "SystemSignalLongSymbol" STRING ;
+BA_DEF_DEF_  "SystemNodeLongSymbol" "";
+BA_DEF_DEF_  "SystemMessageLongSymbol" "";
+BA_DEF_DEF_  "SystemSignalLongSymbol" "";
+BA_ "SystemNodeLongSymbol" BU_ Node_will_be_shortened_456789_12 "Node_will_be_shortened_456789_12ZZZZ";
+BA_ "SystemMessageLongSymbol" BO_ 1 "Msg_will_be_shortened_3456789_12YYYY";
+BA_ "SystemSignalLongSymbol" SG_ 1 Sig_will_be_shortened_3456789_12 "Sig_will_be_shortened_3456789_12XXXX";
+
+
+
+
+

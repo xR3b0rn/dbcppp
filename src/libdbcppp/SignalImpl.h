@@ -61,6 +61,9 @@ namespace dbcppp
         virtual const std::string& getComment() const override;
         virtual ExtendedValueType getExtendedValueType() const override;
         virtual bool getError(ErrorCode code) const override;
+        
+        virtual bool operator==(const Signal& rhs) const override;
+        virtual bool operator!=(const Signal& rhs) const override;
 
     private:
         void setError(ErrorCode code);

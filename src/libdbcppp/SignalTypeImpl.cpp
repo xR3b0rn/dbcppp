@@ -104,3 +104,23 @@ const std::string& SignalTypeImpl::getValueTable() const
 {
     return _value_table;
 }
+
+bool SignalTypeImpl::operator==(const SignalType& rhs) const
+{
+    bool result = true;
+    result &= _name == rhs.getName();
+    result &= _signal_size == rhs.getSignalSize();
+    result &= _value_type == rhs.getValueType();
+    result &= _factor == rhs.getFactor();
+    result &= _offset == rhs.getOffset();
+    result &= _minimum == rhs.getMinimum();
+    result &= _maximum == rhs.getMaximum();
+    result &= _unit == rhs.getUnit();
+    result &= _default_value == rhs.getDefaultValue();
+    result &= _value_table == rhs.getValueTable();
+    return result;
+}
+bool SignalTypeImpl::operator!=(const SignalType& rhs) const
+{
+    return !(*this == rhs);
+}

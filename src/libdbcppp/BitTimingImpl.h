@@ -17,6 +17,9 @@ namespace dbcppp
         virtual uint64_t getBaudrate() const override;
         virtual uint64_t getBTR1() const override;
         virtual uint64_t getBTR2() const override;
+        
+        virtual bool operator==(const BitTiming& rhs) const override;
+        virtual bool operator!=(const BitTiming& rhs) const override;
 
     private:
         uint64_t _baudrate;

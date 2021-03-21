@@ -11,6 +11,7 @@
 #include <variant>
 #include <map>
 #include <cstring>
+#include <filesystem>
 
 namespace dbcppp
 {
@@ -298,6 +299,10 @@ public:
     {
         return *_cur;
     }
+    auto SetCur(const char* new_cur)
+    {
+        _cur = new_cur;
+    }
     auto Data() const
     {
         return _cur;
@@ -308,7 +313,7 @@ public:
     }
     Pos GetPos() const
     {
-        Pos result;
+        Pos result{1, 1};
         auto iter = _begin;
         while (iter != _cur)
         {
@@ -331,16 +336,14 @@ private:
     const char* _cur;
 };
 class ParserError
+    : public std::runtime_error
 {
 public:
     ParserError(DBCIterator iter, const std::string& what)
-        : _iter(iter)
-        , _what(what)
+        : std::runtime_error(
+            std::to_string(iter.GetPos().line) + ":" +
+            std::to_string(iter.GetPos().column) + ": " + what)
     {}
-
-private:
-    std::string _what;
-    DBCIterator _iter;
 };
 
 #define ExpectLit(In, Lit) if (!ParseLit(In, Lit)) throw ParserError(In, "Expected '" + std::string(Lit) + "'");
@@ -353,7 +356,7 @@ private:
         {                                                                                               \
             Var.push_back(identifier);                                                                  \
             Skip(in);                                                                                   \
-            while (ParseLit(in, ","))                                                                   \
+            while (ParseCharLit(in, ','))                                                               \
             {                                                                                           \
                 Skip(in);                                                                               \
                 Expect(in, ParseCIdentifier, identifier, "Expected C_identifier (" #Var ")"); Skip(in); \
@@ -368,7 +371,7 @@ private:
         {                                                                                                       \
             Var.push_back(identifier);                                                                          \
             SkipSpace(in);                                                                                      \
-            while (ParseLit(in, ","))                                                                           \
+            while (ParseCharLit(in, ','))                                                                       \
             {                                                                                                   \
                 SkipSpace(in);                                                                                  \
                 Expect(in, ParseCIdentifier, identifier, "Expected C_identifier (" #Var ")"); SkipSpace(in);    \
@@ -383,7 +386,7 @@ private:
         {                                                                                                       \
             Var.push_back(char_string);                                                                         \
             Skip(in);                                                                                           \
-            while (ParseLit(in, ","))                                                                           \
+            while (ParseCharLit(in, ','))                                                                       \
             {                                                                                                   \
                 SkipSpace(in);                                                                                  \
                 Expect(in, ParseCharString, char_string, "Expected CharString (" #Var ")"); Skip(in);           \
@@ -468,9 +471,9 @@ public:
         }
         return result;
     }
-    static bool NextIsSpace(const DBCIterator& in)
+    static bool IsSpace(const char c)
     {
-        return *in == ' ' || *in == '\t' || *in == '\n' || *in == '\r';
+        return c == ' ' || c == '\t' || c == '\n' || c == '\r';
     }
     static bool ParseCharLit(DBCIterator& in, char lit)
     {
@@ -486,7 +489,7 @@ public:
     {
         bool result = false;
         if (std::strncmp(in, lit.data(), lit.size()) == 0 &&
-            (NextIsSpace(DBCIterator(in + lit.size())) || *(in + lit.size()) == ':' || *(in + lit.size()) == ';'))
+            (IsSpace(*(in.Data() + lit.size())) || *(in + lit.size()) == ':' || *(in + lit.size()) == ';'))
         {
             result = true;
             in += lit.size();
@@ -501,7 +504,7 @@ public:
         if (in != end)
         {
             result = true;
-            in = end;
+            in.SetCur(end);
         }
         return result;
     }
@@ -513,7 +516,7 @@ public:
         if (in != end)
         {
             result = true;
-            in = end;
+            in.SetCur(end);
         }
         return result;
     }
@@ -525,7 +528,7 @@ public:
         if (in != end)
         {
             result = true;
-            in = end;
+            in.SetCur(end);
         }
         return result;
     }
@@ -539,7 +542,7 @@ public:
             if (in != end)
             {
                 result = true;
-                in = end;
+                in.SetCur(end);
             }
         }
         return result;
@@ -636,14 +639,15 @@ public:
             dbcppp::GNode node;
             while (ParseCIdentifier(in, node.name))
             {
-                nodes.push_back(node);
+                nodes.push_back(std::move(node));
                 SkipSpace(in);
+                node = {};
             }
             Skip(in);
         }
         return result;
     }
-    static bool ParseNewSymbol(DBCIterator& in)
+    static bool ParseNewSymbol(DBCIterator& in, std::string& new_symbol)
     {
         static constexpr std::string_view new_symbols[] =
             {
@@ -685,12 +689,13 @@ public:
             if (ParseLit(in, new_symbols[i]))
             {
                 result = true;
+                new_symbol = new_symbols[i];
                 break;
             }
         }
         return result;
     }
-    static bool ParseNewSymbols(DBCIterator& in)
+    static bool ParseNewSymbols(DBCIterator& in, std::vector<std::string>& new_symbols)
     {
         bool result = false;
         if (ParseLit(in, "NS_"))
@@ -698,9 +703,12 @@ public:
             result = true;
             Skip(in);
             ExpectCharLit(in, ':'); Skip(in);
-            while (ParseNewSymbol(in))
+            std::string new_symbol;
+            while (ParseNewSymbol(in, new_symbol))
             {
                 Skip(in);
+                new_symbols.push_back(std::move(new_symbol));
+                new_symbol = {};
             }
         }
         return result;
@@ -723,8 +731,9 @@ public:
         while (ParseValueEncodingDescription(in, ved))
         {
             result = true;
-            veds.push_back(ved);
+            veds.push_back(std::move(ved));
             Skip(in);
+            ved = {};
         }
         return result;
     }
@@ -749,8 +758,9 @@ public:
         while (ParseValueTable(in, value_table))
         {
             result = true;
-            value_tables.push_back(value_table);
+            value_tables.push_back(std::move(value_table));
             Skip(in);
+            value_table = {};
         }
         Skip(in);
         return result;
@@ -798,8 +808,9 @@ public:
         while (ParseSignal(in, signal))
         {
             result = true;
-            signals.push_back(signal);
+            signals.push_back(std::move(signal));
             Skip(in);
+            signal = {};
         }
         return result;
     }
@@ -826,8 +837,9 @@ public:
         while (ParseMessage(in, message))
         {
             result = true;
-            messages.push_back(message);
+            messages.push_back(std::move(message));
             Skip(in);
+            message = {};
         }
         return result;
     }
@@ -852,8 +864,9 @@ public:
         while (ParseMessageTransmitter(in, message_transmitter))
         {
             result = true;
-            message_transmitters.push_back(message_transmitter);
+            message_transmitters.push_back(std::move(message_transmitter));
             Skip(in);
+            message_transmitter = {};
         }
         return result;
     }
@@ -888,8 +901,9 @@ public:
         while (ParseEnvironmentVariable(in, environment_variable))
         {
             result = true;
-            environment_variables.push_back(environment_variable);
+            environment_variables.push_back(std::move(environment_variable));
             Skip(in);
+            environment_variable = {};
         }
         return result;
     }
@@ -914,8 +928,9 @@ public:
         while (ParseEnvironmentVariableData(in, environment_variable_data))
         {
             result = true;
-            environment_variable_datas.push_back(environment_variable_data);
+            environment_variable_datas.push_back(std::move(environment_variable_data));
             Skip(in);
+            environment_variable_data = {};
         }
         return result = true;
     }
@@ -957,8 +972,9 @@ public:
         while (ParseSignalType(in, signal_type))
         {
             result = true;
-            signal_types.push_back(signal_type);
+            signal_types.push_back(std::move(signal_type));
             Skip(in);
+            signal_type = {};
         }
         return result = true;
     }
@@ -1027,8 +1043,9 @@ public:
         while (ParseComment(in, comment))
         {
             result = true;
-            comments.push_back(comment);
+            comments.push_back(std::move(comment));
             Skip(in);
+            comment = {};
         }
         return result = true;
     }
@@ -1084,6 +1101,7 @@ public:
             else if (ParseLit(in, "STRING"))
             {
                 Skip(in);
+                attribute_definition.value_type.value = dbcppp::GAttributeValueTypeString();
             }
             else if (ParseLit(in, "ENUM"))
             {
@@ -1107,12 +1125,13 @@ public:
         while (ParseAttributeDefinition(in, attribute_definition))
         {
             result = true;
-            attribute_definitions.push_back(attribute_definition);
+            attribute_definitions.push_back(std::move(attribute_definition));
             Skip(in);
+            attribute_definition = {};
         }
         return result;
     }
-    static bool ParseAttributeValue(DBCIterator& in, dbcppp::variant_attr_value_t value)
+    static bool ParseAttributeValue(DBCIterator& in, dbcppp::variant_attr_value_t& value)
     {
         bool result = false;
         std::string str_attribute_value;
@@ -1134,7 +1153,7 @@ public:
         {
             result = true;
             Skip(in);
-            // Theoretically never reached, since every int also can be parsed as double.
+            // Theoretically this never can be reached, since every int also can be parsed as double.
             // How to fix this???
             value = i_attribute_value;
         }
@@ -1149,6 +1168,7 @@ public:
             Skip(in);
             Expect(in, ParseCharString, attribute_default.name, "Expected CharString (attribute_default.name)"); Skip(in);
             Expect(in, ParseAttributeValue, attribute_default.value, "Expected attribute value (attribute_default.value)"); Skip(in);
+            ExpectCharLit(in, ';'); Skip(in);
         }
         return result;
     }
@@ -1159,8 +1179,9 @@ public:
         while (ParseAttributeDefault(in, attribute))
         {
             result = true;
-            attribute_defaults.push_back(attribute);
+            attribute_defaults.push_back(std::move(attribute));
             Skip(in);
+            attribute = {};
         }
         return result;
     }
@@ -1169,9 +1190,11 @@ public:
         bool result = false;
         if (ParseLit(in, "BA_"))
         {
+            result = true;
+            Skip(in);
             std::string attribute_name;
             dbcppp::variant_attr_value_t value;
-            Expect(in, ParseCharString, attribute_name, "Expected attribute name");
+            Expect(in, ParseCharString, attribute_name, "Expected attribute name"); Skip(in);
             if (ParseAttributeValue(in, value))
             {
                 Skip(in);
@@ -1221,8 +1244,8 @@ public:
             {
                 throw ParserError(in, "Expected attribute value, BU_, BO_, SG_ or EV_ (attribute_value)");
             }
+            ExpectCharLit(in, ';'); Skip(in);
         }
-        ExpectCharLit(in, ';');
         return result;
     }
     static bool ParseAttributeValues(DBCIterator& in, std::vector<dbcppp::variant_attribute_t>& attribute_values)
@@ -1232,8 +1255,9 @@ public:
         while (ParseAttributeValue(in, attribute))
         {
             result = true;
-            attribute_values.push_back(attribute);
+            attribute_values.push_back(std::move(attribute));
             Skip(in);
+            attribute = {};
         }
         return result;
     }
@@ -1243,6 +1267,7 @@ public:
         if (ParseLit(in, "VAL_"))
         {
             result = true;
+            Skip(in);
             uint64_t message_id;
             std::string env_var_name;
             if (ParseUint(in, message_id))
@@ -1277,8 +1302,9 @@ public:
         while (ParseValueDescription(in, value_description))
         {
             result = true;
-            value_descriptions.push_back(value_description);
+            value_descriptions.push_back(std::move(value_description));
             Skip(in);
+            value_description = {};
         }
         return result;
     }
@@ -1304,8 +1330,9 @@ public:
         while (ParseSignalExtendedValueType(in, value_signal_extended_value_type))
         {
             result = true;
-            value_signal_extended_value_types.push_back(value_signal_extended_value_type);
+            value_signal_extended_value_types.push_back(std::move(value_signal_extended_value_type));
             Skip(in);
+            value_signal_extended_value_type = {};
         }
         return result;
     }
@@ -1313,7 +1340,7 @@ public:
     {
         Skip(in);
         ParseVersion(in, network.version);
-        ParseNewSymbols(in);
+        ParseNewSymbols(in, network.new_symbols);
         ParseBitTiming(in, network.bit_timing);
         ParseNodes(in, network.nodes);
         ParseValueTables(in, network.value_tables);
@@ -1328,6 +1355,10 @@ public:
         ParseAttributeValues(in, network.attribute_values);
         ParseValueDescriptions(in, network.value_descriptions);
         ParseSignalExtendedValueTypes(in, network.signal_extended_value_types);
+        if (*in.Data() != '\0')
+        {
+            throw ParserError(in, "Could not parse DBC file properly");
+        }
         return true;
     }
 };

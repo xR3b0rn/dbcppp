@@ -72,6 +72,9 @@ namespace dbcppp
         
         virtual const Message* findParentMessage(const Signal* sig) const = 0;
 
+        virtual bool operator==(const Network& rhs) const = 0;
+        virtual bool operator!=(const Network& rhs) const = 0;
+
         void merge(std::unique_ptr<Network>&& other);
     };
 }

@@ -34,13 +34,14 @@ const std::string& ValueTableImpl::getName() const
 {
     return _name;
 }
-boost::optional<const SignalType&> ValueTableImpl::getSignalType() const
+std::optional<std::reference_wrapper<const SignalType>> ValueTableImpl::getSignalType() const
 {
+    std::optional<std::reference_wrapper<const SignalType>> result;
     if (_signal_type)
     {
-        return *_signal_type;
+        result = *_signal_type;
     }
-    return boost::none;
+    return result;
 }
 const std::string* ValueTableImpl::getvalueEncodingDescriptionByValue(int64_t value) const
 {
@@ -59,4 +60,23 @@ void ValueTableImpl::forEachValueEncodingDescription(std::function<void(int64_t,
     {
         cb(std::get<0>(ved), std::get<1>(ved));
     }
+}
+
+bool ValueTableImpl::operator==(const ValueTable& rhs) const
+{
+    bool result = true;
+    result &= _name == rhs.getName();
+    result &= _signal_type == rhs.getSignalType();
+    rhs.forEachValueEncodingDescription(
+        [&](int64_t value, const std::string& desc)
+        {
+            auto beg = _value_encoding_descriptions.begin();
+            auto end = _value_encoding_descriptions.end();
+            result &= std::find(beg, end, std::make_tuple(value, desc)) != end;
+        });
+    return result;
+}
+bool ValueTableImpl::operator!=(const ValueTable& rhs) const
+{
+    return !(*this == rhs);
 }

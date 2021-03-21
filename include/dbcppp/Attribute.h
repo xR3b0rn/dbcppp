@@ -28,5 +28,8 @@ namespace dbcppp
         virtual const std::string& getName() const = 0;
         virtual AttributeDefinition::ObjectType getObjectType() const = 0;
         virtual const value_t& getValue() const = 0;
+
+        virtual bool operator==(const Attribute& rhs) const = 0;
+        virtual bool operator!=(const Attribute& rhs) const = 0;
     };
 }

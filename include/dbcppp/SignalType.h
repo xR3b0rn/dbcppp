@@ -40,5 +40,8 @@ namespace dbcppp
         virtual const std::string& getUnit() const = 0;
         virtual double getDefaultValue() const = 0;
         virtual const std::string& getValueTable() const = 0;
+        
+        virtual bool operator==(const SignalType& rhs) const = 0;
+        virtual bool operator!=(const SignalType& rhs) const = 0;
     };
 }
