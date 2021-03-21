@@ -1,8 +1,8 @@
 
+#include <fstream>
 #include <iomanip>
 #include "../../include/dbcppp/Network.h"
 #include "NetworkImpl.h"
-#include "DBC_Grammar.h"
 
 using namespace dbcppp;
 
@@ -497,20 +497,19 @@ bool NetworkImpl::operator!=(const Network& rhs) const
     return !(*this == rhs);
 }
 
-std::map<std::string, std::unique_ptr<Network>> Network::loadNetworkFromFile(const std::string& filename)
+std::map<std::string, std::unique_ptr<Network>> Network::loadNetworkFromFile(const std::filesystem::path& filename)
 {
     auto result = std::map<std::string, std::unique_ptr<Network>>();
-    auto ending = filename.substr(filename.size() - 3, 3);
     auto is = std::ifstream(filename);
     if (!is.is_open())
     {
         std::cout << "Error: Could not open file " << filename << "\n";
     }
-    else if (ending == "dbc")
+    else if (filename.extension() == ".dbc")
     {
         result.insert(std::make_pair("", loadDBCFromIs(is)));
     }
-    else if (ending == "kcd")
+    else if (filename.extension() == ".kcd")
     {
         result = loadKCDFromIs(is);
     }
