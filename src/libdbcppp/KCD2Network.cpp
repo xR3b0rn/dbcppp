@@ -4,6 +4,7 @@
 #include <vector>
 #include <optional>
 #include <sstream>
+#include <cstring>
 
 #include <libxmlmm.h>
 
