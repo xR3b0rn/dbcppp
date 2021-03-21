@@ -3,7 +3,7 @@
 
 #include <string>
 #include <cstddef>
-#include <boost/variant.hpp>
+#include <variant>
 
 #include "Export.h"
 #include "AttributeDefinition.h"
@@ -15,7 +15,7 @@ namespace dbcppp
     {
     public:
         using hex_value_t = int64_t;
-        using value_t = boost::variant<int64_t, double, std::string>;
+        using value_t = std::variant<int64_t, double, std::string>;
 
         static std::unique_ptr<Attribute> create(
               std::string&& name

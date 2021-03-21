@@ -61,11 +61,11 @@ extern "C"
     DBCPPP_API dbcppp_AttributeValueType dbcppp_AttributeGetValueType(const dbcppp_Attribute* attribute)
     {
         auto ai = reinterpret_cast<const AttributeImpl*>(attribute);
-        if (ai->getValue().type() == typeid(int64_t))
+        if (std::get_if<int64_t>(&ai->getValue()))
         {
             return dbcppp_AttributeValueType::dbcppp_AttributeValueType_Int;
         }
-        else if (ai->getValue().type() == typeid(double))
+        else if (std::get_if<double>(&ai->getValue()))
         {
             return dbcppp_AttributeValueType::dbcppp_AttributeValueType_Double;
         }
@@ -77,17 +77,17 @@ extern "C"
     DBCPPP_API int64_t dbcppp_AttributeGetValueAsInt(const dbcppp_Attribute* attribute)
     {
         auto ai = reinterpret_cast<const AttributeImpl*>(attribute);
-        return boost::get<int64_t>(ai->getValue());
+        return std::get<int64_t>(ai->getValue());
     }
     DBCPPP_API double dbcppp_AttributeGetValueAsDouble(const dbcppp_Attribute* attribute)
     {
         auto ai = reinterpret_cast<const AttributeImpl*>(attribute);
-        return boost::get<double>(ai->getValue());
+        return std::get<double>(ai->getValue());
     }
     DBCPPP_API const char* dbcppp_AttributeGetValueAsString(const dbcppp_Attribute* attribute)
     {
         auto ai = reinterpret_cast<const AttributeImpl*>(attribute);
-        return boost::get<std::string>(ai->getValue()).c_str();
+        return std::get<std::string>(ai->getValue()).c_str();
     }
     
     DBCPPP_API dbcppp_AttributeDefinition* dbcppp_AttributeDefinitionCreate(
@@ -177,19 +177,19 @@ extern "C"
     DBCPPP_API dbcppp_AttributeDefinitionValueType dbcppp_AttributeDefinitionGetValueType(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
-        if (ad->getValueType().type() == typeid(AttributeDefinition::ValueTypeInt))
+        if (std::get_if<AttributeDefinition::ValueTypeInt>(&ad->getValueType()))
         {
             return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeInt;
         }
-        else if (ad->getValueType().type() == typeid(AttributeDefinition::ValueTypeHex))
+        else if (std::get_if<AttributeDefinition::ValueTypeHex>(&ad->getValueType()))
         {
             return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeHex;
         }
-        else if (ad->getValueType().type() == typeid(AttributeDefinition::ValueTypeHex))
+        else if (std::get_if<AttributeDefinition::ValueTypeFloat>(&ad->getValueType()))
         {
             return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeFloat;
         }
-        else if (ad->getValueType().type() == typeid(AttributeDefinition::ValueTypeHex))
+        else if (std::get_if<AttributeDefinition::ValueTypeString>(&ad->getValueType()))
         {
             return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeString;
         }
@@ -201,32 +201,32 @@ extern "C"
     DBCPPP_API int64_t dbcppp_AttributeDefinitionGetValueTypeAsInt_Minimum(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
-        return boost::get<AttributeDefinition::ValueTypeInt>(ad->getValueType()).minimum;
+        return std::get<AttributeDefinition::ValueTypeInt>(ad->getValueType()).minimum;
     }
     DBCPPP_API int64_t dbcppp_AttributeDefinitionGetValueTypeAsInt_Maximum(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
-        return boost::get<AttributeDefinition::ValueTypeInt>(ad->getValueType()).maximum;
+        return std::get<AttributeDefinition::ValueTypeInt>(ad->getValueType()).maximum;
     }
     DBCPPP_API uint64_t dbcppp_AttributeDefinitionGetValueTypeAsHex_Minimum(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
-        return boost::get<AttributeDefinition::ValueTypeHex>(ad->getValueType()).minimum;
+        return std::get<AttributeDefinition::ValueTypeHex>(ad->getValueType()).minimum;
     }
     DBCPPP_API uint64_t dbcppp_AttributeDefinitionGetValueTypeAsHex_Maximum(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
-        return boost::get<AttributeDefinition::ValueTypeHex>(ad->getValueType()).maximum;
+        return std::get<AttributeDefinition::ValueTypeHex>(ad->getValueType()).maximum;
     }
     DBCPPP_API double dbcppp_AttributeDefinitionGetValueTypeAsFloat_Minimum(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
-        return boost::get<AttributeDefinition::ValueTypeFloat>(ad->getValueType()).minimum;
+        return std::get<AttributeDefinition::ValueTypeFloat>(ad->getValueType()).minimum;
     }
     DBCPPP_API double dbcppp_AttributeDefinitionGetValueTypeAsFloat_Maximum(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
-        return boost::get<AttributeDefinition::ValueTypeFloat>(ad->getValueType()).maximum;
+        return std::get<AttributeDefinition::ValueTypeFloat>(ad->getValueType()).maximum;
     }
     DBCPPP_API void dbcppp_AttributeDefinitionForEachValueTypeEnum(const dbcppp_AttributeDefinition* attribute_definition, void(*cb)(const char*, void*), void* data)
     {

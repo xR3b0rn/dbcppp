@@ -485,7 +485,8 @@ public:
     static bool ParseLit(DBCIterator& in, std::string_view lit)
     {
         bool result = false;
-        if (std::strncmp(in, lit.data(), lit.size()) == 0 && (NextIsSpace(DBCIterator(in + lit.size())) || *(in + lit.size()) == ':'))
+        if (std::strncmp(in, lit.data(), lit.size()) == 0 &&
+            (NextIsSpace(DBCIterator(in + lit.size())) || *(in + lit.size()) == ':' || *(in + lit.size()) == ';'))
         {
             result = true;
             in += lit.size();
@@ -599,11 +600,11 @@ public:
         {
             result = true;
             SkipSpace(in);
-            Expect(in, ParseCharString, version.version, "Expected char_string (version.version)");
+            Expect(in, ParseCharString, version.version, "Expected char_string (version.version)"); Skip(in);
         }
         return result;
     }
-    static bool ParseBitTiming(DBCIterator& in, dbcppp::GBitTiming& bit_timing)
+    static bool ParseBitTiming(DBCIterator& in, std::optional<dbcppp::GBitTiming>& opt_bit_timing)
     {
         bool result = false;
         if (ParseLit(in, "BS_"))
@@ -611,13 +612,15 @@ public:
             result = true;
             Skip(in);
             ExpectCharLit(in, ':') Skip(in);
+            dbcppp::GBitTiming bit_timing;
             if (ParseUint(in, bit_timing.baudrate))
             {
                 Skip(in);
                 ExpectCharLit(in, ':'); Skip(in);
                 Expect(in, ParseUint, bit_timing.BTR1, "Expected Uint (bit_timing.BTR1)"); Skip(in);
                 ExpectCharLit(in, ','); Skip(in);
-                Expect(in, ParseUint, bit_timing.BTR2, "Expected Uint (bit_timing.BTR2)")
+                Expect(in, ParseUint, bit_timing.BTR2, "Expected Uint (bit_timing.BTR2)"); Skip(in);
+                opt_bit_timing = bit_timing;
             }
         }
         return result;
@@ -636,6 +639,7 @@ public:
                 nodes.push_back(node);
                 SkipSpace(in);
             }
+            Skip(in);
         }
         return result;
     }
@@ -733,7 +737,8 @@ public:
             Skip(in);
             Expect(in, ParseCIdentifier, value_table.name, "Error: Expected VAL_TABLE_ name (C_Identifier)");
             Skip(in);
-            ParseValueEncodingDescriptions(in, value_table.value_encoding_descriptions);
+            ParseValueEncodingDescriptions(in, value_table.value_encoding_descriptions); Skip(in);
+            ExpectCharLit(in, ';'); Skip(in);
         }
         return result;
     }
@@ -747,6 +752,7 @@ public:
             value_tables.push_back(value_table);
             Skip(in);
         }
+        Skip(in);
         return result;
     }
     static bool ParseSignal(DBCIterator& in, dbcppp::GSignal& signal)
@@ -849,7 +855,7 @@ public:
             message_transmitters.push_back(message_transmitter);
             Skip(in);
         }
-        return result = true;
+        return result;
     }
     static bool ParseEnvironmentVariable(DBCIterator& in, dbcppp::GEnvironmentVariable& environment_variable)
     {
@@ -869,7 +875,7 @@ public:
             Expect(in, ParseCharString, environment_variable.unit, "Expected CharString (environment_variable.unit)"); Skip(in);
             Expect(in, ParseDouble, environment_variable.initial_value, "Expected Double (environment_variable.initial_value)"); Skip(in);
             Expect(in, ParseUint, environment_variable.id, "Expected Uint (environment_variable.id)"); Skip(in);
-            Expect(in, ParseCharString, environment_variable.access_type, "Expected Uint (environment_variable.access_type)"); Skip(in);
+            Expect(in, ParseCIdentifier, environment_variable.access_type, "Expected C_Identifier (environment_variable.access_type)"); Skip(in);
             ParseCommaSeperatedCIdentifiers(in, environment_variable.access_nodes); Skip(in);
             ExpectCharLit(in, ';');
         }
@@ -885,7 +891,7 @@ public:
             environment_variables.push_back(environment_variable);
             Skip(in);
         }
-        return result = true;
+        return result;
     }
     static bool ParseEnvironmentVariableData(DBCIterator& in, dbcppp::GEnvironmentVariableData& environment_variable_data)
     {
@@ -956,7 +962,7 @@ public:
         }
         return result = true;
     }
-    static bool ParseComment(DBCIterator& in, dbcppp::GComment& comment)
+    static bool ParseComment(DBCIterator& in, dbcppp::variant_comment_t& comment)
     {
         bool result = false;
         if (ParseLit(in, "CM_"))
@@ -965,54 +971,59 @@ public:
             Skip(in);
             if (std::string com; ParseCharString(in, com))
             {
-                comment.comment = dbcppp::GCommentNetwork{com};
+                Skip(in);
+                comment = dbcppp::GCommentNetwork{com};
             }
             else if (ParseLit(in, "BU_"))
             {
+                Skip(in);
                 std::string node_name;
                 std::string com;
                 Expect(in, ParseCIdentifier, node_name, "Expected C_identifier (node_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = dbcppp::GCommentNode{node_name, com};
+                comment = dbcppp::GCommentNode{node_name, com};
             }
             else if (ParseLit(in, "BO_"))
             {
+                Skip(in);
                 uint64_t message_id;
                 std::string com;
                 Expect(in, ParseUint, message_id, "Expected Uint (message_id)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = dbcppp::GCommentMessage{message_id, com};
+                comment = dbcppp::GCommentMessage{message_id, com};
             }
             else if (ParseLit(in, "SG_"))
             {
+                Skip(in);
                 uint64_t message_id;
                 std::string signal_name;
                 std::string com;
                 Expect(in, ParseUint, message_id, "Expected Uint (message_id)"); Skip(in);
                 Expect(in, ParseCIdentifier, signal_name, "Expect C_identifier (signal_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = dbcppp::GCommentSignal{message_id, signal_name, com};
+                comment = dbcppp::GCommentSignal{message_id, signal_name, com};
             }
             else if (ParseLit(in, "EV_"))
             {
+                Skip(in);
                 std::string env_var_name;
                 std::string com;
                 Expect(in, ParseCIdentifier, env_var_name, "Expected C_identifier (env_var_name)"); Skip(in);
                 Expect(in, ParseCharString, com, "Expect Uint (comment)"); Skip(in);
-                comment.comment = dbcppp::GCommentEnvVar{env_var_name, com};
+                comment = dbcppp::GCommentEnvVar{env_var_name, com};
             }
             else
             {
                 throw ParserError(in, "Expected BU_, BO_, SG_, EV_ or CharString (comment)");
             }
-            ExpectCharLit(in, ';');
+            ExpectCharLit(in, ';'); Skip(in);
         }
         return result;
     }
-    static bool ParseComments(DBCIterator& in, std::vector<dbcppp::GComment>& comments)
+    static bool ParseComments(DBCIterator& in, std::vector<dbcppp::variant_comment_t>& comments)
     {
         bool result = false;
-        dbcppp::GComment comment;
+        dbcppp::variant_comment_t comment;
         while (ParseComment(in, comment))
         {
             result = true;
@@ -1229,11 +1240,46 @@ public:
     static bool ParseValueDescription(DBCIterator& in, dbcppp::GValueDescription& value_description)
     {
         bool result = false;
+        if (ParseLit(in, "VAL_"))
+        {
+            result = true;
+            uint64_t message_id;
+            std::string env_var_name;
+            if (ParseUint(in, message_id))
+            {
+                Skip(in);
+                dbcppp::GValueDescriptionSignal value_description_signal;
+                value_description_signal.message_id = message_id;
+                Expect(in, ParseCIdentifier, value_description_signal.signal_name, "Expected C_Identifier (value_description_signal.message_id)"); Skip(in);
+                ParseValueEncodingDescriptions(in, value_description_signal.value_descriptions); Skip(in);
+                value_description.description = value_description_signal;
+            }
+            else if (ParseCIdentifier(in, env_var_name))
+            {
+                Skip(in);
+                dbcppp::GValueDescriptionEnvVar value_description_env_var;
+                value_description_env_var.env_var_name = env_var_name;
+                ParseValueEncodingDescriptions(in, value_description_env_var.value_descriptions); Skip(in);
+                value_description.description = value_description_env_var;
+            }
+            else
+            {
+                throw ParserError(in, "Expected Uint or C_Itendifier (value_description)");
+            }
+            ExpectCharLit(in, ';'); Skip(in);
+        }
         return result;
     }
     static bool ParseValueDescriptions(DBCIterator& in, std::vector<dbcppp::GValueDescription>& value_descriptions)
     {
         bool result = false;
+        dbcppp::GValueDescription value_description;
+        while (ParseValueDescription(in, value_description))
+        {
+            result = true;
+            value_descriptions.push_back(value_description);
+            Skip(in);
+        }
         return result;
     }
     static bool ParseSignalExtendedValueType(DBCIterator& in, dbcppp::GSignalExtendedValueType& value_signal_extended_value_type)
@@ -1262,5 +1308,26 @@ public:
             Skip(in);
         }
         return result;
+    }
+    static bool ParseNetwork(DBCIterator& in, dbcppp::GNetwork& network)
+    {
+        Skip(in);
+        ParseVersion(in, network.version);
+        ParseNewSymbols(in);
+        ParseBitTiming(in, network.bit_timing);
+        ParseNodes(in, network.nodes);
+        ParseValueTables(in, network.value_tables);
+        ParseMessages(in, network.messages);
+        ParseMessageTransmitters(in, network.message_transmitters);
+        ParseEnvironmentVariables(in, network.environment_variables);
+        ParseEnvironmentVariableDatas(in, network.environment_variable_datas);
+        ParseSignalTypes(in, network.signal_types);
+        ParseComments(in, network.comments);
+        ParseAttributeDefinitions(in, network.attribute_definitions);
+        ParseAttributeDefaults(in, network.attribute_defaults);
+        ParseAttributeValues(in, network.attribute_values);
+        ParseValueDescriptions(in, network.value_descriptions);
+        ParseSignalExtendedValueTypes(in, network.signal_extended_value_types);
+        return true;
     }
 };

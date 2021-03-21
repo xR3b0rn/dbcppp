@@ -90,7 +90,7 @@ public:
         std::string name = var->get_attribute("name");
         Attribute::value_t value = var->get_attribute("Value");
         std::stringstream ss;
-        ss << value;
+        std::visit([&](auto v) { ss << v; }, value);
         {
             int64_t i64value;
             ss >> i64value;
