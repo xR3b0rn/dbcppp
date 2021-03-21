@@ -16,6 +16,7 @@ BOOST_AUTO_TEST_CASE(DBCParserTest)
     std::size_t i = 0;
     for (const auto& dbc_file : std::filesystem::directory_iterator(std::filesystem::path(TEST_FILES_PATH) / "dbc"))
     {
+        BOOST_TEST_CHECKPOINT("DBCParserTest: Testing file '" + dbc_file.path().string() + "'");
         if (dbc_file.path().extension() != ".dbc")
         {
             continue;
@@ -24,7 +25,7 @@ BOOST_AUTO_TEST_CASE(DBCParserTest)
         std::unique_ptr<dbcppp::Network> spec;
         std::unique_ptr<dbcppp::Network> test;
         {
-            std::ifstream dbc(dbc_file);
+            std::ifstream dbc(dbc_file.path());
             spec = dbcppp::Network::loadDBCFromIs(dbc);
             std::ofstream tmp_dbc(dbc_file_tmp);
             bool open = tmp_dbc.is_open();
