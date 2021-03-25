@@ -11,6 +11,7 @@
 #include "Export.h"
 #include "Node.h"
 #include "Attribute.h"
+#include "SignalMultiplexerValue.h"
 
 
 namespace dbcppp
@@ -62,7 +63,8 @@ namespace dbcppp
             , std::vector<std::unique_ptr<Attribute>>&& attribute_values
             , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
             , std::string&& comment
-            , ExtendedValueType extended_value_type);
+            , ExtendedValueType extended_value_type
+            , std::vector<std::unique_ptr<SignalMultiplexerValue>>&& signal_multiplexer_values);
             
         virtual std::unique_ptr<Signal> clone() const = 0;
 
@@ -89,6 +91,7 @@ namespace dbcppp
         virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
         virtual const std::string& getComment() const = 0;
         virtual ExtendedValueType getExtendedValueType() const = 0;
+        virtual void forEachSignalMultiplexerValue(std::function<void(const SignalMultiplexerValue&)> cb) const = 0;
         virtual bool getError(ErrorCode code) const = 0;
         
         virtual bool operator==(const Signal& rhs) const = 0;

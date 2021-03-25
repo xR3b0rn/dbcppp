@@ -184,6 +184,29 @@ static auto getSignalExtendedValueType(const GNetwork& gnet, const GMessage& m, 
     }
     return result;
 }
+static auto getSignalMultiplexerValues(const GNetwork& gnet, const GMessage& m, const GSignal& s)
+{
+    std::vector<std::unique_ptr<SignalMultiplexerValue>> result;
+    for (const auto& gsmv : gnet.signal_multiplexer_values)
+    {
+        if (gsmv.message_id == m.id && gsmv.signal_name == s.name)
+        {
+            auto message_id = gsmv.message_id;
+            auto signal_name = gsmv.signal_name;
+            auto switch_name = gsmv.switch_name;
+            std::vector<SignalMultiplexerValue::Range> value_ranges;
+            for (auto grange : gsmv.value_ranges)
+            {
+                value_ranges.push_back({grange.from, grange.to});
+            }
+            auto smv = SignalMultiplexerValue::create(
+                std::move(switch_name),
+                std::move(value_ranges));
+            result.emplace_back(std::move(smv));
+        }
+    }
+    return result;
+}
 static auto getSignals(const GNetwork& gnet, const GMessage& m)
 {
     std::vector<std::unique_ptr<Signal>> result;
@@ -195,6 +218,7 @@ static auto getSignals(const GNetwork& gnet, const GMessage& m)
         auto extended_value_type = getSignalExtendedValueType(gnet, m, s);
         auto multiplexer_indicator = Signal::Multiplexer::NoMux;
         auto comment = getComment(gnet, m, s);
+        auto signal_multiplexer_values = getSignalMultiplexerValues(gnet, m, s);
         uint64_t multiplexer_switch_value = 0;
         if (s.multiplexer_indicator)
         {
@@ -232,7 +256,8 @@ static auto getSignals(const GNetwork& gnet, const GMessage& m)
             , std::move(attribute_values)
             , std::move(value_descriptions)
             , std::move(comment)
-            , extended_value_type);
+            , extended_value_type
+            , std::move(signal_multiplexer_values));
         if (ns->getError(Signal::ErrorCode::SignalExceedsMessageSize))
         {
             std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"

@@ -82,6 +82,7 @@ extern "C"
     typedef struct {} dbcppp_Attribute;
     typedef struct {} dbcppp_SignalType;
     typedef struct {} dbcppp_Signal;
+    typedef struct {} dbcppp_SignalMultiplexerValue;
     
     DBCPPP_API const dbcppp_Attribute* dbcppp_AttributeCreate(
         const char* name,
@@ -243,7 +244,8 @@ extern "C"
         , dbcppp_Attribute** attribute_values
         , dbcppp_ValueDescriptionPair** value_descriptions
         , const char* comment
-        , dbcppp_SignalExtendedValueType extended_value_type);
+        , dbcppp_SignalExtendedValueType extended_value_type
+        , dbcppp_SignalMultiplexerValue** signal_multiplexer_values);
     DBCPPP_API const char* dbcppp_SignalGetName(const dbcppp_Signal* sig);
     DBCPPP_API dbcppp_SignalMultiplexer dbcppp_SignalGetMultiplexerIndicator(const dbcppp_Signal* sig);
     DBCPPP_API uint64_t dbcppp_SignalGetMultiplexerSwitchValue(const dbcppp_Signal* sig);

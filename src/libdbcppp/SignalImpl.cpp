@@ -284,7 +284,8 @@ std::unique_ptr<Signal> Signal::create(
     , std::vector<std::unique_ptr<Attribute>>&& attribute_values
     , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
     , std::string&& comment
-    , Signal::ExtendedValueType extended_value_type)
+    , Signal::ExtendedValueType extended_value_type
+    , std::vector<std::unique_ptr<SignalMultiplexerValue>>&& signal_multiplexer_values)
 {
     std::unique_ptr<SignalImpl> result;
     std::vector<AttributeImpl> avs;
@@ -297,6 +298,11 @@ std::unique_ptr<Signal> Signal::create(
     for (auto&& vd : value_descriptions)
     {
         vds.push_back(std::move(vd));
+    }
+    std::vector<SignalMultiplexerValueImpl> smvs;
+    for (auto& smv : signal_multiplexer_values)
+    {
+        smvs.push_back(std::move(static_cast<SignalMultiplexerValueImpl&>(*smv)));
     }
     result = std::make_unique<SignalImpl>(
           message_size
@@ -316,7 +322,8 @@ std::unique_ptr<Signal> Signal::create(
         , std::move(avs)
         , std::move(vds)
         , std::move(comment)
-        , extended_value_type);
+        , extended_value_type
+        , std::move(smvs));
     return result;
 }
 
@@ -339,7 +346,8 @@ SignalImpl::SignalImpl(
     , std::vector<AttributeImpl>&& attribute_values
     , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
     , std::string&& comment
-    , ExtendedValueType extended_value_type)
+    , ExtendedValueType extended_value_type
+    , std::vector<SignalMultiplexerValueImpl>&& signal_multiplexer_values)
     
     : _name(std::move(name))
     , _multiplexer_indicator(std::move(multiplexer_indicator))
@@ -358,6 +366,7 @@ SignalImpl::SignalImpl(
     , _value_descriptions(std::move(value_descriptions))
     , _comment(std::move(comment))
     , _extended_value_type(std::move(extended_value_type))
+    , _signal_multiplexer_values(std::move(signal_multiplexer_values))
     , _error(Signal::ErrorCode::NoError)
 {
     message_size = message_size < 8 ? 8 : message_size;
@@ -624,6 +633,13 @@ const std::string& SignalImpl::getComment() const
 Signal::ExtendedValueType SignalImpl::getExtendedValueType() const
 {
     return _extended_value_type;
+}
+void SignalImpl::forEachSignalMultiplexerValue(std::function<void(const SignalMultiplexerValue&)> cb) const
+{
+    for (const auto& smv : _signal_multiplexer_values)
+    {
+        cb(smv);
+    }
 }
 bool SignalImpl::getError(ErrorCode code) const
 {

@@ -522,6 +522,32 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                     }
                 });
         });
+    // SIG_MUL_VAL_
+    net.forEachMessage(
+        [&](const Message& m)
+        {
+            m.forEachSignal(
+                [&](const Signal& s)
+                {
+                    s.forEachSignalMultiplexerValue(
+                        [&](const SignalMultiplexerValue& smv)
+                        {
+                            os << "\nSG_MUL_VAL_ " << m.getId() << " " << s.getName() << " " << smv.getSwitchName() << " ";
+                            bool first = true;
+                            smv.forEachValueRange(
+                                [&](const SignalMultiplexerValue::Range& r)
+                                {
+                                    if (!first)
+                                    {
+                                        os << ", ";
+                                    }
+                                    first = false;
+                                    os << r.from << "-" << r.to;
+                                });
+                            os << ";";
+                        });
+                });
+        });
     return os;
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const Node& n)

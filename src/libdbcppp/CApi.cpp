@@ -964,7 +964,8 @@ extern "C"
         , dbcppp_Attribute** attribute_values
         , dbcppp_ValueDescriptionPair** value_descriptions
         , const char* comment
-        , dbcppp_SignalExtendedValueType extended_value_type)
+        , dbcppp_SignalExtendedValueType extended_value_type
+        , dbcppp_SignalMultiplexerValue** signal_multiplexer_values)
     {
         Signal::Multiplexer m;
         Signal::ByteOrder bo;
@@ -972,6 +973,7 @@ extern "C"
         std::vector<std::string> rs;
         std::vector<std::unique_ptr<Attribute>> avs;
         std::vector<std::tuple<int64_t, std::string>> vds;
+        std::vector<std::unique_ptr<SignalMultiplexerValue>> smvs;
         Signal::ExtendedValueType evt;
         switch (multiplexer_indicator)
         {
@@ -1005,6 +1007,12 @@ extern "C"
             vds.push_back(std::make_tuple((*value_descriptions)->value, (*value_descriptions)->description));
             *value_descriptions = nullptr;
         }
+        for (; *signal_multiplexer_values; signal_multiplexer_values++)
+        {
+            auto smv = reinterpret_cast<SignalMultiplexerValue*>(*signal_multiplexer_values);
+            smvs.push_back(std::unique_ptr<SignalMultiplexerValue>(smv));
+            *signal_multiplexer_values = nullptr;
+        }
         switch (extended_value_type)
         {
         case dbcppp_SignalExtendedValueType::dbcppp_SignalExtendedValueTypeInteger: evt = Signal::ExtendedValueType::Integer; break;
@@ -1029,7 +1037,8 @@ extern "C"
             , std::move(avs)
             , std::move(vds)
             , std::string(comment)
-            , evt);
+            , evt
+            , std::move(smvs));
         return reinterpret_cast<const dbcppp_Signal*>(result.release());
     }
     DBCPPP_API const char* dbcppp_SignalGetName(const dbcppp_Signal* sig)

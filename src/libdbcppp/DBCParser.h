@@ -223,6 +223,18 @@ namespace dbcppp
         std::string signal_name;
         uint64_t value;
     };
+    struct GRange
+    {
+        uint64_t from;
+        uint64_t to;
+    };
+    struct  GSignalMultiplexerValue
+    {
+        uint64_t message_id;
+        std::string signal_name;
+        std::string switch_name;
+        std::vector<GRange> value_ranges;
+    };
     struct GNetwork
     {
         GVersion version;
@@ -241,6 +253,7 @@ namespace dbcppp
         std::vector<variant_attribute_t> attribute_values;
         std::vector<GValueDescription> value_descriptions;
         std::vector<GSignalExtendedValueType> signal_extended_value_types;
+        std::vector<GSignalMultiplexerValue> signal_multiplexer_values;
     };
 }
 class DBCIterator
@@ -391,6 +404,25 @@ public:
                 SkipSpace(in);                                                                                  \
                 Expect(in, ParseCharString, char_string, "Expected CharString (" #Var ")"); Skip(in);           \
                 Var.push_back(char_string);                                                                     \
+            }                                                                                                   \
+        }                                                                                                       \
+    }
+#define ParseCommaSeperatedRanges(In, Var)                                                                      \
+    {                                                                                                           \
+        dbcppp::GRange range;                                                                                   \
+        if (ParseUint(In, range.from))                                                                          \
+        {                                                                                                       \
+            SkipSpace(In);                                                                                      \
+            ExpectCharLit(In, '-'); SkipSpace(In);                                                              \
+            Expect(In, ParseUint, range.to, "Expected Uint (range.to)"); Skip(In);                              \
+            Var.push_back(range);                                                                               \
+            while (ParseCharLit(In, ','))                                                                       \
+            {                                                                                                   \
+                SkipSpace(In);                                                                                  \
+                Expect(In, ParseUint, range.from, "Expected Uint (range.from)"); Skip(In);                      \
+                ExpectCharLit(In, '-'); SkipSpace(In);                                                          \
+                Expect(In, ParseUint, range.to, "Expected Uint (range.to)"); Skip(In);                          \
+                Var.push_back(range);                                                                           \
             }                                                                                                   \
         }                                                                                                       \
     }
@@ -1336,6 +1368,35 @@ public:
         }
         return result;
     }
+    static bool ParseSignalMultiplexerValue(DBCIterator& in, dbcppp::GSignalMultiplexerValue& signal_multiplexer_value)
+    {
+        bool result = false;
+        if (ParseLit(in, "SG_MUL_VAL_"))
+        {
+            result = true;
+            Skip(in);
+            Expect(in, ParseUint, signal_multiplexer_value.message_id, "Expected Uint (signal_multiplexer_value.message_id)"); Skip(in);
+            Expect(in, ParseCIdentifier, signal_multiplexer_value.signal_name, "Expected C_Identifier (signal_multiplexer_value.signal_name)"); Skip(in);
+            Expect(in, ParseCIdentifier, signal_multiplexer_value.switch_name, "Expected C_Identifier (signal_multiplexer_value.switch_name)"); Skip(in);
+            ParseCommaSeperatedRanges(in, signal_multiplexer_value.value_ranges); Skip(in);
+            ExpectCharLit(in, ';'); Skip(in);
+        }
+        return result;
+    }
+    static bool ParseSignalMultiplexerValues(DBCIterator& in, std::vector<dbcppp::GSignalMultiplexerValue>& signal_multiplexer_values)
+    {
+        bool result = false;
+        dbcppp::GSignalMultiplexerValue signal_multiplexer_value;
+        while (ParseSignalMultiplexerValue(in, signal_multiplexer_value))
+        {
+            result = true;
+            signal_multiplexer_values.push_back(std::move(signal_multiplexer_value));
+            Skip(in);
+            signal_multiplexer_value = {};
+        }
+        return result;
+    }
+
     static bool ParseNetwork(DBCIterator& in, dbcppp::GNetwork& network)
     {
         Skip(in);
@@ -1355,9 +1416,10 @@ public:
         ParseAttributeValues(in, network.attribute_values);
         ParseValueDescriptions(in, network.value_descriptions);
         ParseSignalExtendedValueTypes(in, network.signal_extended_value_types);
+        ParseSignalMultiplexerValues(in, network.signal_multiplexer_values);
         if (*in.Data() != '\0')
         {
-            throw ParserError(in, "Could not parse DBC file properly");
+            throw ParserError(in, "Unexpected token");
         }
         return true;
     }
