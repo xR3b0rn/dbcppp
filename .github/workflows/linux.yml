@@ -24,11 +24,6 @@ jobs:
         done
         git submodule sync
         git submodule update --init --recursive
-    - name: CacheBoost
-      uses: actions/cache@v2.1.4
-      with:
-        path: boost_1_72_0_installation
-        key: ${{ runner.os }}-boost_1_72_0_installation
         
     - name: CacheCMake
       uses: actions/cache@v2.1.4
@@ -49,24 +44,6 @@ jobs:
         sudo rm /usr/bin/g++;
         sudo ln -s /usr/bin/gcc-10 /usr/bin/gcc;
         sudo ln -s /usr/bin/g++-10 /usr/bin/g++;
-        if ! test -d boost_1_72_0_installation; then
-            echo "Downloading boost"
-            wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.gz;
-            echo "Unpacking boost"
-            tar -xf boost_1_72_0.tar.gz;
-            cd boost_1_72_0;
-            echo "Bootstraping boost"
-            mkdir -p ../boost_1_72_0_installation
-            sudo ./bootstrap.sh --prefix=../boost_1_72_0_installation --with-libraries=all;
-            echo "Building and installing boost"
-            sudo ./b2 -j16 install;
-            cd ..;
-        else
-            echo "Found boost in cache!"
-        fi;
-        sudo cp -r boost_1_72_0_installation/* /usr/local/.;
-        sudo /bin/bash -c 'echo "/usr/local/lib" > /etc/ld.so.conf.d/boost.conf';
-        sudo ldconfig;
         if ! test -d cmake-3.20.0-rc3_installation; then
             wget https://github.com/Kitware/CMake/releases/download/v3.20.0-rc3/cmake-3.20.0-rc3.tar.gz;
             tar -xf cmake-3.20.0-rc3.tar.gz;
