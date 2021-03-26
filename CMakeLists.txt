@@ -7,33 +7,15 @@ set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-if (!${Boost_USE_STATIC_LIBS})
-	add_definitions(-DBOOST_LOG_DYN_LINK)
-endif()
-
-find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options)
-#find_package(LLVM REQUIRED CONFIG)
-
-#message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-#message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
-#add_definitions(${LLVM_DEFINITIONS})
-# Find the libraries that correspond to the LLVM components
-# that we wish to use
-#llvm_map_components_to_libnames(llvm_libs support core irreader mcjit jitlink native nativecodegen orcjit)
-
-if (Boost_FOUND)
-	include_directories(${Boost_INCLUDE_DIRS})
-	link_directories(${Boost_LIBRARY_DIRS})
-endif()
-
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 	add_definitions("/bigobj")
 endif()
 
 include_directories("include")
-include_directories("third_party/PEGTL/include")
 include_directories("third_party/libxml2/include")
 include_directories("third_party/libxmlmm/include")
+include_directories("third_party/cxxopts/include")
+include_directories("third_party/Catch2/include")
 include_directories("${CMAKE_BINARY_DIR}/third_party/libxml2")
 
 set(LIBXML2_WITH_ICONV OFF)

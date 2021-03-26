@@ -1,5 +1,4 @@
 
-#include <boost/variant.hpp>
 #include "AttributeImpl.h"
 #include "../../include/dbcppp/Network.h"
 

@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 #include <cstddef>
-#include <boost/optional.hpp>
 
 #include "Export.h"
 #include "Node.h"

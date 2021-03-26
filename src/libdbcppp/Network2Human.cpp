@@ -1,5 +1,4 @@
 
-#include <boost/format.hpp>
 #include "../../include/dbcppp/Network2Functions.h"
 
 using namespace dbcppp;
@@ -91,11 +90,11 @@ std::set<uint64_t> get_mux_values(const Message& msg)
 
 DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, const Message& msg)
 {
-    os << boost::format("  %-12s%s\n") % "Name:" % msg.getName();
-    os << boost::format("  %-12s0x%X\n") % "ID:" % msg.getId();
-    os << boost::format("  %-12s0x%X\n") % "Length:" % msg.getMessageSize();
-    os << boost::format("  %-12s%s\n") % "Sender:" % msg.getTransmitter();
-    os << boost::format("  Layout:\n");
+    //os << boost::format("  %-12s%s\n") % "Name:" % msg.getName();
+    //os << boost::format("  %-12s0x%X\n") % "ID:" % msg.getId();
+    //os << boost::format("  %-12s0x%X\n") % "Length:" % msg.getMessageSize();
+    //os << boost::format("  %-12s%s\n") % "Sender:" % msg.getTransmitter();
+    os << "  Layout:\n";
     
     auto mux_values = get_mux_values(msg);
     const Signal* mux_sig = get_mux_signal(msg);
@@ -113,21 +112,21 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
     auto print_ident =
         [&]()
         {
-            os << boost::format("         ");
+            os << "         ";
         };
     auto print_bar =
         [&]()
         {
             print_ident();
-            os << boost::format("  +---+---+---+---+---+---+---+---+\n");
+            os << "  +---+---+---+---+---+---+---+---+\n";
         };
     auto print_signal_header =
         [&]()
         {
             print_ident();
-            os << boost::format("                 Bit\n");
+            os << "                 Bit\n";
             print_ident();
-            os << boost::format("    7   6   5   4   3   2   1   0\n");
+            os << "    7   6   5   4   3   2   1   0\n";
         };
     bool print_last_line = false;
     auto print_signal =
@@ -135,7 +134,7 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
         {
             print_bar();
             print_ident();
-            os << boost::format("%d |") % (i_bit / 8);
+            os << (i_bit / 8) << " |";
             auto find_cur_sig =
                 [&]()
                 {
@@ -153,51 +152,51 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
                 {
                     if (is_start_bit(*sig, i_bit) && is_end_bit(*sig, i_bit))
                     {
-                        os << boost::format("<-x|");
+                        os << "<-x|";
                         depth++;
                     }
                     else if (is_start_bit(*sig, i_bit))
                     {
-                        os << boost::format("--x|");
+                        os << "--x|";
                         depth++;
                     }
                     else if (is_end_bit(*sig, i_bit))
                     {
-                        os << boost::format("<--");
+                        os << "<--";
                         if (i_bit % 8 == 0)
                         {
-                            os << boost::format("|");
+                            os << "|";
                         }
                         else
                         {
-                            os << boost::format("-");
+                            os << "-";
                         }
                     }
                     else
                     {
-                        os << boost::format("---");
+                        os << "---";
                         if (i_bit % 8 == 0)
                         {
-                            os << boost::format("|");
+                            os << "|";
                         }
                         else
                         {
-                            os << boost::format("-");
+                            os << "-";
                         }
                     }
                 }
                 else
                 {
-                    os << boost::format("   |");
+                    os << "   |";
                 }
                 i_bit--;
             }
-            os << boost::format("\n");
+            os << "\n";
             if (depth)
             {
                 print_last_line = false;
                 print_ident();
-                os << boost::format("  +---+---+---+---+---+---+---+---+\n");
+                os << "  +---+---+---+---+---+---+---+---+\n";
             }
             else
             {
@@ -207,7 +206,7 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
             if (depth)
             {
                 print_ident();
-                os << boost::format("   ");
+                os << "   ";
                 std::size_t n_sigs = 1;
                 for (; 0 < depth; depth--)
                 {
@@ -219,7 +218,7 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
                         {
                             while (i_bit > sig->getStartBit() && i < 8)
                             {
-                                os << boost::format("    ");
+                                os << "    ";
                                 i_bit--;
                                 i++;
                             }
@@ -229,26 +228,26 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
                             }
                             if (depth - 1 == n_sigs)
                             {
-                                os << boost::format(" +-- %s") % sig->getName();
+                                os << " +-- " << sig->getName();
                             }
                             else if (n_sigs < std::size_t(depth - 1))
                             {
-                                os << boost::format(" |  ");
+                                os << " |  ";
                             }
                             n_sigs++;
                         }
                         else
                         {
-                            os << boost::format("    ");
+                            os << "    ";
                         }
                         i_bit--;
                     }
                     i_bit += 8;
-                    os << boost::format("\n");
+                    os << "\n";
                     if (depth != 1)
                     {
                         print_ident();
-                        os << boost::format("   ");
+                        os << "   ";
                     }
                 }
             }
@@ -258,7 +257,7 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
         [&](uint64_t mux_value)
         {
             print_ident();
-            os << boost::format("               %s: %d\n") % mux_sig->getName()  % mux_value;
+            os << "               " << mux_sig->getName() << ": " << mux_value << "\n";
         };
 
     if (mux_values.size() == 0)
@@ -272,7 +271,7 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
         if (print_last_line)
         {
             print_ident();
-            os << boost::format("  +---+---+---+---+---+---+---+---+\n");
+            os << "  +---+---+---+---+---+---+---+---+\n";
         }
     }
     else
@@ -289,23 +288,23 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
             if (print_last_line)
             {
                 print_ident();
-                os << boost::format("  +---+---+---+---+---+---+---+---+\n");
+                os << "  +---+---+---+---+---+---+---+---+\n";
             }
         }
     }
-    os << boost::format("\n");
+    os << "\n";
     auto print_signal_tree =
         [&]()
         {
-            os << boost::format("  Signal tree:\n\n");
-            os << boost::format("    -- {root}\n");
+            os << "  Signal tree:\n\n";
+            os << "    -- {root}\n";
             if (mux_sig)
             {
-                os << boost::format("       +-- %s\n") % mux_sig->getName();
+                os << "       +-- " << mux_sig->getName() << "\n";
                 std::size_t i_mux = mux_values.size();
                 for (uint64_t mux_value : mux_values)
                 {
-                    os << boost::format("       |   +--%d\n") % mux_value;
+                    os << "       |   +--" << mux_value << "\n";
                     msg.forEachSignal(
                         [&](const Signal& sig)
                         {
@@ -314,11 +313,11 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
                             {
                                 if (i_mux > 1)
                                 {
-                                    os << boost::format("       |   |  +-- %s\n") % sig.getName();
+                                    os << "       |   |  +-- " << sig.getName() << "%s\n";
                                 }
                                 else
                                 {
-                                    os << boost::format("       |      +-- %s\n") % sig.getName();
+                                    os << "       |      +-- " << sig.getName() << "\n";
                                 }
                             }
                         });
@@ -330,16 +329,16 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
                 {
                     if (sig.getMultiplexerIndicator() == Signal::Multiplexer::NoMux)
                     {
-                        os << boost::format("       +-- %s\n") % sig.getName();
+                        os << "       +-- " << sig.getName() << "\n";
                     }
                 });
         };
     print_signal_tree();
-    os << boost::format("\n");
+    os << "\n";
     auto print_value_tables =
         [&]()
         {
-            os << boost::format("  Signal choices:\n\n");
+            os << "  Signal choices:\n\n";
             msg.forEachSignal(
                 [&](const Signal& sig)
                 {
@@ -349,14 +348,14 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
                         {
                             if (first)
                             {
-                                os << boost::format("    %s\n") % sig.getName();
+                                os << "    " << sig.getName() << "\n";
                                 first = false;
                             }
-                            os << boost::format("        %d %s\n") % value % name;
+                            os << "        " << value << " " << name << "\n";
                         });
                     if (!first)
                     {
-                        os << boost::format("\n");
+                        os << "\n";
                     }
                 });
         };
@@ -365,12 +364,12 @@ DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, con
 }
 DBCPPP_API std::ostream& dbcppp::Network2Human::operator<<(std::ostream& os, const Network& net)
 {
-    os << boost::format("================================= Messages =================================\n");
+    os << "================================= Messages =================================\n";
     net.forEachMessage(
         [&](const Message& msg)
         {
             os << msg;
-            os << boost::format("  ------------------------------------------------------------------------\n");
+            os << "  ------------------------------------------------------------------------\n";
         });
     return os;
 }

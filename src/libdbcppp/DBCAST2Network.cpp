@@ -1,7 +1,4 @@
 
-#include <boost/spirit/home/x3.hpp>
-
-#include <boost/log/trivial.hpp>
 #include <iterator>
 #include <regex>
 #include <fstream>

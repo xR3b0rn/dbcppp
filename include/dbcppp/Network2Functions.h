@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include <boost/format.hpp>
 #include <ostream>
 #include <tuple>
 #include <ostream>

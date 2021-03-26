@@ -8,15 +8,14 @@
 
 #include "Config.h"
 
-#include <boost/test/unit_test.hpp>
-namespace utf = boost::unit_test;
+#include "Catch2.h"
 
-BOOST_AUTO_TEST_CASE(DBCParserTest)
+TEST_CASE("DBCParserTest", "[]")
 {
     std::size_t i = 0;
     for (const auto& dbc_file : std::filesystem::directory_iterator(std::filesystem::path(TEST_FILES_PATH) / "dbc"))
     {
-        BOOST_TEST_CHECKPOINT("DBCParserTest: Testing file '" + dbc_file.path().string() + "'");
+        //BOOST_TEST_CHECKPOINT("DBCParserTest: Testing file '" + dbc_file.path().string() + "'");
         if (dbc_file.path().extension() != ".dbc")
         {
             continue;
@@ -38,7 +37,7 @@ BOOST_AUTO_TEST_CASE(DBCParserTest)
             test = dbcppp::Network::loadDBCFromIs(dbc);
         }
         auto error_msg = "Failed for " + std::to_string(i) + "th file ('" + dbc_file.path().string() + "')";
-        BOOST_REQUIRE_MESSAGE(*spec == *test, error_msg);
+        REQUIRE(*spec == *test);
         std::filesystem::remove(dbc_file_tmp);
         i++;
     }

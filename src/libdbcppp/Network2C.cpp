@@ -37,7 +37,7 @@ static const char* header =
         
 DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const Network& net)
 {
-    os << boost::format(header);
+    os << header;
     net.forEachMessage(
         [&](const Message& msg)
         {
@@ -45,12 +45,10 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                 [&](const Signal& sig)
                 {
                     const SignalImpl& sigi = static_cast<const SignalImpl&>(sig);
-                    os << boost::format(
-                        "uint64_t dbcppp_decode_%s(const void* nbytes)\n"
-                        "{\n"
-                        "    uint64_t data;\n")
-                        % (msg.getName() + "_" + std::to_string(msg.getId()) + "_" + sig.getName());
-                            
+                    os << "uint64_t dbcppp_decode_" << msg.getName() << "_" << std::to_string(msg.getId()) <<
+                        "_" << sig.getName() << "(const void* nbytes)\n"
+                        "{\n" <<
+                        "    uint64_t data;\n";
                     uint64_t nbytes;
                     if (sigi.getByteOrder() == Signal::ByteOrder::LittleEndian)
                     {
@@ -66,116 +64,101 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const N
                         // Alignment::signal_exceeds_64_bit_size_but_signal_fits_into_64_bit;
                         if (sigi._byte_pos + nbytes <= 8)
                         {
-                            os << boost::format("    data = *reinterpret_cast<const uint64_t*>(nbytes);\n");
+                            os << "    data = *reinterpret_cast<const uint64_t*>(nbytes);\n";
                         }
                         else
                         {
-                            os << boost::format(
-                                "data = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[%1%]);\n")
-                                % sigi._byte_pos;
+                            os << "data = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[" <<
+                                sigi._byte_pos << "]);\n";
                         }
                         if (sig.getByteOrder() == Signal::ByteOrder::BigEndian)
                         {
-                            os << boost::format("    data = dbcppp_native_to_big(data);\n");
+                            os << "    data = dbcppp_native_to_big(data);\n";
                         }
                         else
                         {
-                            os << boost::format("    data = dbcppp_native_to_little(data);\n");
+                            os << "    data = dbcppp_native_to_little(data);\n";
                         }
                         if (sig.getExtendedValueType() == Signal::ExtendedValueType::Double)
                         {
-                            os << boost::format("    return data;\n");
+                            os << "    return data;\n";
                         }
                         else
                         {
-                            os << boost::format("    data >>= %1%ull;\n")
-                                % sigi._fixed_start_bit_0;
+                            os << "    data >>= " << sigi._fixed_start_bit_0 << "ull;\n";
                             if (sig.getExtendedValueType() != Signal::ExtendedValueType::Float)
                             {
-                                os << boost::format("    data &= %1%ull;\n") % sigi._mask;
+                                os << "    data &= " << sigi._mask << "ull;\n";
                                 if (sig.getValueType() == Signal::ValueType::Signed)
                                 {
-                                    os << boost::format(
-                                        "    if (data & %1%ull)\n"
+                                    os << 
+                                        "    if (data & " << sigi._mask_signed << "ull)\n"
                                         "    {\n"
-                                        "        data |= %1%ull;\n"
+                                        "        data |= " << sigi._mask_signed << "ull;\n"
                                         "    }\n"
-                                        "    return data;\n")
-                                        % sigi._mask_signed;
+                                        "    return data;\n";
                                 }
                             }
-                            os << boost::format("    return data;\n");
+                            os << "    return data;\n";
                         }
                     }
                     else
                     {
                         // Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit;
-                        os << boost::format(
-                            "    hack.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[%1%]);\n")
-                            % sigi._byte_pos;
-                        os << boost::format(
-                            "    uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[%1% + 8];\n")
-                            % sigi._byte_pos;
+                        os << "    hack.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[" <<
+                            sigi._byte_pos << "]);\n";
+                        os << "    uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[" << sigi._byte_pos << " + 8];\n";
                         if (sig.getByteOrder() == Signal::ByteOrder::BigEndian)
                         {
-                            os << boost::format(
+                            os <<
                                 "    data = dbcppp_native_to_big(data);\n"
-                                "    data &= %1%ull;\n"
-                                "    data <<= %2%ull;\n"
-                                "    data1 >>= %3%ull;\n"
-                                "    data |= data1;\n")
-                                % sigi._mask
-                                % sigi._fixed_start_bit_0
-                                % sigi._fixed_start_bit_1;
+                                "    data &= " << sigi._mask << "ull;\n"
+                                "    data <<= " << sigi._fixed_start_bit_0 << "ull;\n"
+                                "    data1 >>= " << sigi._fixed_start_bit_1 << "ull;\n"
+                                "    data |= data1;\n";
                         }
                         else
                         {
-                            os << boost::format(
+                            os <<
                                 "    data = dbcppp_native_to_little(data);\n"
-                                "    data >>= %1%ull;\n"
-                                "    data1 &= %2%ull;\n"
-                                "    data1 <<= %3%ull;\n"
-                                "    data |= data1;)\n")
-                                % sigi._fixed_start_bit_0
-                                % sigi._mask
-                                % sigi._fixed_start_bit_1;
+                                "    data >>= " << sigi._fixed_start_bit_0 << "ull;\n"
+                                "    data1 &= " << sigi._mask << "ull;\n"
+                                "    data1 <<= " << sigi._fixed_start_bit_1 << "ull;\n"
+                                "    data |= data1;)\n";
                         }
                         switch (sig.getExtendedValueType())
                         {
                         case Signal::ExtendedValueType::Integer:
                             if (sig.getValueType() == Signal::ValueType::Signed)
                             {
-                                os << boost::format(
-                                    "    if (data & %1%ull)\n"
+                                os <<
+                                    "    if (data & " << sigi._mask_signed << "ull)\n"
                                     "    {\n"
-                                    "        data |= %1%ull;\n"
+                                    "        data |= " << sigi._mask_signed << "ull;\n"
                                     "    }\n"
-                                    "    return data;\n")
-                                    % sigi._mask_signed;
-                                os << boost::format("    return data;\n");
+                                    "    return data;\n";
+                                os << "    return data;\n";
                             }
                             else
                             {
-                                os << boost::format("    return data;\n");
+                                os << "    return data;\n";
                             }
                             break;
                         case Signal::ExtendedValueType::Float:
-                            os << boost::format("    return data;\n");
+                            os << "    return data;\n";
                             break;
                         case Signal::ExtendedValueType::Double:
-                            os << boost::format("    return data;\n");
+                            os << "    return data;\n";
                             break;
                         }
                     }
-                    os << boost::format("}\n");
-                    os << boost::format(
-                        "double dbcppp_rawToPhys_%1%(uint64_t value)\n"
+                    os << "}\n";
+                    os <<
+                        "double dbcppp_rawToPhys_" << msg.getName() << "_" << std::to_string(msg.getId()) <<
+                        "_" + sig.getName() << "(uint64_t value)\n"
                         "{\n"
-                        "    return value * %2% + %3%;\n"
-                        "}\n")
-                        % (msg.getName() + "_" + std::to_string(msg.getId()) + "_" + sig.getName())
-                        % sig.getFactor()
-                        % sig.getOffset();
+                        "    return value * " << sig.getFactor() << "+" << sig.getOffset() << ";\n"
+                        "}\n";
                 });
 
         });

@@ -1,17 +1,27 @@
 
 include(GNUInstallDirs)
+include (TestBigEndian)
 
 add_library(${PROJECT_NAME} SHARED "")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} libxmlmm LibXml2)
+target_link_libraries(${PROJECT_NAME} libxmlmm LibXml2)
 
 add_compile_definitions(DBCPPP_EXPORT)
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_BINARY_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/libdbcppp
+    ${CMAKE_BINARY_DIR}/src/libdbcppp
 )
+
+test_big_endian(is_big_endian)
+if (is_big_endian)
+    set(BYTE_ORDER Big)
+else ()
+    set(BYTE_ORDER Little)
+endif ()
+
+configure_file(Config.h.in EndianConfig.h @ONLY)
 
 file(GLOB header
     "*.h"

@@ -1,5 +1,4 @@
 
-#include <boost/move/unique_ptr.hpp>
 #include "MessageImpl.h"
 
 using namespace dbcppp;

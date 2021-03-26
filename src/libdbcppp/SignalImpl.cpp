@@ -1,6 +1,6 @@
 
 #include <limits>
-#include <boost/endian/conversion.hpp>
+#include "Helper.h"
 #include "SignalImpl.h"
 
 using namespace dbcppp;
@@ -23,7 +23,7 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos + 8];
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
-            boost::endian::native_to_big_inplace(data);
+            native_to_big_inplace(data);
             data &= sigi->_mask;
             data <<= sigi->_fixed_start_bit_0;
             data1 >>= sigi->_fixed_start_bit_1;
@@ -31,7 +31,7 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         }
         else
         {
-            boost::endian::native_to_little_inplace(data);
+            native_to_little_inplace(data);
             data >>= sigi->_fixed_start_bit_0;
             data1 &= sigi->_mask;
             data1 <<= sigi->_fixed_start_bit_1;
@@ -63,11 +63,11 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         }
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
-            boost::endian::native_to_big_inplace(data);
+            native_to_big_inplace(data);
         }
         else
         {
-            boost::endian::native_to_little_inplace(data);
+            native_to_little_inplace(data);
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
         {
