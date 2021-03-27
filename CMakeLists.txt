@@ -37,9 +37,13 @@ include_directories("third_party")
 include_directories("include")
 include_directories("third_party/libxmlmm/include")
 
-add_subdirectory(src)
-add_subdirectory(tests)
-add_subdirectory(examples)
+#add_subdirectory(src) dbcppp fails due to gcc version, so build only the library, btw, isn't the main better suited as an example?
+add_subdirectory(src/libdbcppp)
+
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+    add_subdirectory(examples)
+endif()
 
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
