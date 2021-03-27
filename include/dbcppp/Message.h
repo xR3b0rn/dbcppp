@@ -28,7 +28,7 @@ namespace dbcppp
             , uint64_t message_size
             , std::string&& transmitter
             , std::set<std::string>&& message_transmitters
-            , std::map<std::string, std::unique_ptr<Signal>>&& signals
+            , std::map<std::string, std::unique_ptr<Signal>>&& signals_
             , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
             , std::string&& comment);
 
