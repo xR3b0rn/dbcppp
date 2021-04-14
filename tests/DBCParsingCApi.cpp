@@ -8,8 +8,8 @@
 #include <random>
 #include <string>
 
-#include "../../include/dbcppp/CApi.h"
-#include "../../include/dbcppp/Network.h"
+#include "../include/dbcppp/CApi.h"
+#include "../include/dbcppp/Network.h"
 #include "Config.h"
 
 #include <boost/test/unit_test.hpp>
