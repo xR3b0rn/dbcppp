@@ -9,9 +9,9 @@
 #include <string>
 #include <iomanip>
 
-#include "../../include/dbcppp/Network2Functions.h"
-#include "../../include/dbcppp/CApi.h"
-#include "../../include/dbcppp/Network.h"
+#include "../include/dbcppp/Network2Functions.h"
+#include "../include/dbcppp/CApi.h"
+#include "../include/dbcppp/Network.h"
 
 #include <boost/test/unit_test.hpp>
 namespace utf = boost::unit_test;
