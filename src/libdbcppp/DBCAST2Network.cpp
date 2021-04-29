@@ -99,7 +99,7 @@ auto boost_variant_to_std_variant(const boost::variant<Args...>& old)
 {
     using var_t = std::variant<Args...>;
     var_t new_;
-    Visitor<var_t> visitor(new_)
+    Visitor<var_t> visitor(new_);
     old.apply_visitor(visitor);
     return new_;
 }
