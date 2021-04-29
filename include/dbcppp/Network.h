@@ -1,8 +1,5 @@
-
 #pragma once
 
-#include <map>
-#include <set>
 #include <memory>
 #include <iostream>
 #include <string>
@@ -10,6 +7,7 @@
 #include <istream>
 #include <functional>
 #include <unordered_map>
+#include <filesystem>
 
 #include "Export.h"
 #include "BitTiming.h"
@@ -28,17 +26,17 @@ namespace dbcppp
     public:
         static std::unique_ptr<Network> create(
               std::string&& version
-            , std::set<std::string>&& new_symbols
+            , std::vector<std::string>&& new_symbols
             , std::unique_ptr<BitTiming>&& bit_timing
-            , std::map<std::string, std::unique_ptr<Node>>&& nodes
-            , std::map<std::string, std::unique_ptr<ValueTable>>&& value_tables
-            , std::unordered_map<uint64_t, std::unique_ptr<Message>>&& messages
-            , std::map<std::string, std::unique_ptr<EnvironmentVariable>>&& environment_variables
-            , std::map<std::string, std::unique_ptr<AttributeDefinition>>&& attribute_definitions
-            , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_defaults
-            , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+            , std::vector<std::unique_ptr<Node>>&& nodes
+            , std::vector<std::unique_ptr<ValueTable>>&& value_tables
+            , std::vector<std::unique_ptr<Message>>&& messages
+            , std::vector<std::unique_ptr<EnvironmentVariable>>&& environment_variables
+            , std::vector<std::unique_ptr<AttributeDefinition>>&& attribute_definitions
+            , std::vector<std::unique_ptr<Attribute>>&& attribute_defaults
+            , std::vector<std::unique_ptr<Attribute>>&& attribute_values
             , std::string&& comment);
-        static std::map<std::string, std::unique_ptr<Network>> loadNetworkFromFile(const std::string& filename);
+        static std::map<std::string, std::unique_ptr<Network>> loadNetworkFromFile(const std::filesystem::path& filename);
         static std::unique_ptr<Network> loadDBCFromIs(std::istream& is);
         static std::map<std::string, std::unique_ptr<Network>> loadKCDFromIs(std::istream& is);
         

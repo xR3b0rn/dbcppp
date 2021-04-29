@@ -1,4 +1,3 @@
-
 #include "EnvironmentVariableImpl.h"
 
 using namespace dbcppp;
@@ -12,22 +11,17 @@ std::unique_ptr<EnvironmentVariable> EnvironmentVariable::create(
     , double initial_value
     , uint64_t ev_id
     , AccessType access_type
-    , std::set<std::string>&& access_nodes
-    , std::unordered_map<int64_t, std::string>&& value_descriptions
+    , std::vector<std::string>&& access_nodes
+    , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
     , uint64_t data_size
-    , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+    , std::vector<std::unique_ptr<Attribute>>&& attribute_values
     , std::string&& comment)
 {
-    std::map<std::string, AttributeImpl> avs;
+    std::vector<AttributeImpl> avs;
     for (auto& av : attribute_values)
     {
-        avs.insert(std::make_pair(av.first, std::move(static_cast<AttributeImpl&>(*av.second))));
-        av.second.reset(nullptr);
-    }
-    tsl::robin_map<int64_t, std::string> ads;
-    for (auto&& ad : value_descriptions)
-    {
-        ads.insert(std::move(ad));
+        avs.push_back(std::move(static_cast<AttributeImpl&>(*av)));
+        av.reset(nullptr);
     }
     return std::make_unique<EnvironmentVariableImpl>(
           std::move(name)
@@ -39,7 +33,7 @@ std::unique_ptr<EnvironmentVariable> EnvironmentVariable::create(
         , ev_id
         , access_type
         , std::move(access_nodes)
-        , std::move(ads)
+        , std::move(value_descriptions)
         , data_size
         , std::move(avs)
         , std::move(comment));
@@ -54,10 +48,10 @@ EnvironmentVariableImpl::EnvironmentVariableImpl(
     , double initial_value
     , uint64_t ev_id
     , AccessType access_type
-    , std::set<std::string>&& access_nodes
-    , tsl::robin_map<int64_t, std::string>&& value_descriptions
+    , std::vector<std::string>&& access_nodes
+    , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
     , uint64_t data_size
-    , std::map<std::string, AttributeImpl>&& attribute_values
+    , std::vector<AttributeImpl>&& attribute_values
     , std::string&& comment)
     
     : _name(std::move(name))
@@ -112,7 +106,8 @@ EnvironmentVariable::AccessType EnvironmentVariableImpl::getAccessType() const
 }
 bool EnvironmentVariableImpl::hasAccessNode(const std::string& name) const
 {
-    return _access_nodes.find(name) != _access_nodes.end();
+    auto iter = std::find(_access_nodes.begin(), _access_nodes.end(), name);
+    return iter != _access_nodes.end();
 }
 void EnvironmentVariableImpl::forEachAccessNode(std::function<void(const std::string&)>&& cb) const
 {
@@ -124,10 +119,11 @@ void EnvironmentVariableImpl::forEachAccessNode(std::function<void(const std::st
 const std::string* EnvironmentVariableImpl::getValueDescriptionByValue(int64_t value) const
 {
     const std::string* result = nullptr;
-    auto iter = _value_descriptions.find(value);
+    auto iter = std::find_if(_value_descriptions.begin(), _value_descriptions.end(),
+      [&](const auto& vd) { return std::get<0>(vd) == value;});
     if (iter != _value_descriptions.end())
     {
-        result = &iter->second;
+        result = &std::get<1>(*iter);
     }
     return result;
 }
@@ -135,7 +131,7 @@ void EnvironmentVariableImpl::forEachValueDescription(std::function<void(int64_t
 {
     for (const auto& vd : _value_descriptions)
     {
-        cb(vd.first, vd.second);
+        cb(std::get<0>(vd), std::get<1>(vd));
     }
 }
 uint64_t EnvironmentVariableImpl::getDataSize() const
@@ -145,23 +141,21 @@ uint64_t EnvironmentVariableImpl::getDataSize() const
 const Attribute* EnvironmentVariableImpl::getAttributeValueByName(const std::string& name) const
 {
     const Attribute* result = nullptr;
-    auto iter = _attribute_values.find(name);
+    auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(),
+        [&](const AttributeImpl& av) { return av.getName() == name; });
     if (iter != _attribute_values.end())
     {
-        result = &iter->second;
+        result = &*iter;
     }
     return result;
 }
 const Attribute* EnvironmentVariableImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
 {
     const Attribute* result = nullptr;
-    for (const auto& av : _attribute_values)
+    auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(), pred);
+    if (iter != _attribute_values.end())
     {
-        if (pred(av.second))
-        {
-            result = &av.second;
-            break;
-        }
+        result = &*iter;
     }
     return result;
 }
@@ -169,7 +163,7 @@ void EnvironmentVariableImpl::forEachAttributeValue(std::function<void(const Att
 {
     for (const auto& av : _attribute_values)
     {
-        cb(av.second);
+        cb(av);
     }
 }
 const std::string& EnvironmentVariableImpl::getComment() const

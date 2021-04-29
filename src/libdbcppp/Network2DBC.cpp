@@ -1,4 +1,3 @@
-
 #include "../../include/dbcppp/Network2Functions.h"
 #include "NetworkImpl.h"
 
@@ -39,7 +38,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     {
     case AttributeDefinition::ObjectType::Network:
     {
-        boost::apply_visitor(Visitor(os), a.getValue());
+        std::visit(Visitor(os), a.getValue());
         break;
     }
     case AttributeDefinition::ObjectType::Node:
@@ -60,7 +59,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                 return n ? n->getName() : "";
             };
         os << " BU_ " << find_node_name();
-        boost::apply_visitor(Visitor(os), a.getValue());
+        std::visit(Visitor(os), a.getValue());
         break;
     }
     case AttributeDefinition::ObjectType::Message:
@@ -81,7 +80,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                 return m ? m->getId() : uint64_t(-1);
             };
         os << " BO_ " << find_message_id();
-        boost::apply_visitor(Visitor(os), a.getValue());
+        std::visit(Visitor(os), a.getValue());
         break;
     }
     case AttributeDefinition::ObjectType::Signal:
@@ -114,7 +113,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         const Signal* sig = find_signal();
         os << " SG_ " << net.findParentMessage(sig)->getId();
         os << " " << sig->getName();
-        boost::apply_visitor(Visitor(os), a.getValue());
+        std::visit(Visitor(os), a.getValue());
         break;
     }
     case AttributeDefinition::ObjectType::EnvironmentVariable:
@@ -136,7 +135,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
 
             };
         os << " EV_ " << find_environment_variable_name();
-        boost::apply_visitor(Visitor(os), a.getValue());
+        std::visit(Visitor(os), a.getValue());
         break;
     }
     }
@@ -200,7 +199,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         os << object_type << " ";
     }
     os << "\"" << ad.getName() << "\"";
-    boost::apply_visitor(VisitorValueType(os), ad.getValueType());
+    std::visit(VisitorValueType(os), ad.getValueType());
     os << ";";
     return os;
 }
@@ -551,11 +550,18 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     os << "(" << s.getFactor() << "," << s.getOffset() << ") ";
     os << "[" << s.getMinimum() << "|" << s.getMaximum() << "] ";
     os << "\"" << s.getUnit() << "\"";
+    std::string receivers;
     s.forEachReceiver(
         [&](const std::string& n)
         {
-            os << " " << n;
+            receivers += n + ", ";
         });
+    if (receivers.size())
+    {
+        receivers.erase(receivers.end() - 1);
+        receivers.erase(receivers.end() - 1);
+    }
+    os << receivers;
     return os;
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const SignalType& st)

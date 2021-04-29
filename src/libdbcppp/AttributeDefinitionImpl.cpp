@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include "AttributeDefinitionImpl.h"
 
@@ -38,7 +37,7 @@ const AttributeDefinition::value_type_t& AttributeDefinitionImpl::getValueType()
 }
 void AttributeDefinitionImpl::forEachValueTypeEnum(std::function<void(const std::string&)>&& cb) const
 {
-    for (const auto& v : boost::get<ValueTypeEnum>(getValueType()).values)
+    for (const auto& v : std::get<ValueTypeEnum>(getValueType()).values)
     {
         cb(v);
     }
@@ -46,8 +45,8 @@ void AttributeDefinitionImpl::forEachValueTypeEnum(std::function<void(const std:
 const std::string* AttributeDefinitionImpl::findValueTypeEnum(std::function<bool(const std::string&)>&& pred) const
 {
     const std::string* result = nullptr;
-    auto begin = boost::get<ValueTypeEnum>(getValueType()).values.cbegin();
-    auto end = boost::get<ValueTypeEnum>(getValueType()).values.cend();
+    auto begin = std::get<ValueTypeEnum>(getValueType()).values.cbegin();
+    auto end = std::get<ValueTypeEnum>(getValueType()).values.cend();
     auto iter = std::find_if(begin, end, pred);
     if (iter != end)
     {

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <map>
@@ -17,7 +16,7 @@ namespace dbcppp
         static std::unique_ptr<Node> create(
             std::string&& name,
             std::string&& comment,
-            std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values);
+            std::vector<std::unique_ptr<Attribute>>&& attribute_values);
             
         virtual std::unique_ptr<Node> clone() const = 0;
 
