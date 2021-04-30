@@ -13,7 +13,6 @@ if (!${Boost_USE_STATIC_LIBS})
 endif()
 
 find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options)
-find_package(LibXml2 REQUIRED)
 
 if (Boost_FOUND)
 	include_directories(${Boost_INCLUDE_DIRS})
@@ -27,7 +26,7 @@ endif()
 include_directories(${LIBXML2_INCLUDE_DIR})
 include_directories(${LLVM_INCLUDE_DIRS})
 include_directories("include")
-include_directories("third-party/libxmlmm/include")
+include_directories("third-party/libxmlmm/libxmlmm")
 
 set(LIBXML2_WITH_ICONV OFF)
 set(LIBXML2_WITH_LZMA OFF)
