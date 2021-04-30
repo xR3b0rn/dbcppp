@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "../../include/dbcppp/AttributeDefinition.h"

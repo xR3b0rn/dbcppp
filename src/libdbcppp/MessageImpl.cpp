@@ -1,5 +1,3 @@
-
-#include <boost/move/unique_ptr.hpp>
 #include "MessageImpl.h"
 
 using namespace dbcppp;
@@ -10,22 +8,22 @@ std::unique_ptr<Message> Message::create(
     , std::string&& name
     , uint64_t message_size
     , std::string&& transmitter
-    , std::set<std::string>&& message_transmitters
-    , std::map<std::string, std::unique_ptr<Signal>>&& signals
-    , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+    , std::vector<std::string>&& message_transmitters
+    , std::vector<std::unique_ptr<Signal>>&& signals
+    , std::vector<std::unique_ptr<Attribute>>&& attribute_values
     , std::string&& comment)
 {
-    std::map<std::string, SignalImpl> ss;
-    std::map<std::string, AttributeImpl> avs;
+    std::vector<SignalImpl> ss;
+    std::vector<AttributeImpl> avs;
     for (auto& s : signals)
     {
-        ss.insert(std::make_pair(s.first, std::move(static_cast<SignalImpl&>(*s.second))));
-        s.second.reset(nullptr);
+        ss.push_back(std::move(static_cast<SignalImpl&>(*s)));
+        s.reset(nullptr);
     }
     for (auto& av : attribute_values)
     {
-        avs.insert(std::make_pair(av.first, std::move(static_cast<AttributeImpl&>(*av.second))));
-        av.second.reset(nullptr);
+        avs.push_back(std::move(static_cast<AttributeImpl&>(*av)));
+        av.reset(nullptr);
     }
     return std::make_unique<MessageImpl>(
           id
@@ -42,9 +40,9 @@ MessageImpl::MessageImpl(
     , std::string&& name
     , uint64_t message_size
     , std::string&& transmitter
-    , std::set<std::string>&& message_transmitters
-    , std::map<std::string, SignalImpl>&& signals
-    , std::map<std::string, AttributeImpl>&& attribute_values
+    , std::vector<std::string>&& message_transmitters
+    , std::vector<SignalImpl>&& signals
+    , std::vector<AttributeImpl>&& attribute_values
     , std::string&& comment)
     
     : _id(std::move(id))
@@ -61,13 +59,13 @@ MessageImpl::MessageImpl(
     bool have_mux_value = false;
     for (const auto& sig : _signals)
     {
-        switch (sig.second.getMultiplexerIndicator())
+        switch (sig.getMultiplexerIndicator())
         {
         case Signal::Multiplexer::MuxValue:
             have_mux_value = true;
             break;
         case Signal::Multiplexer::MuxSwitch:
-            _mux_signal = &sig.second;
+            _mux_signal = &sig;
             break;
         }
     }
@@ -89,10 +87,10 @@ MessageImpl::MessageImpl(const MessageImpl& other)
     _mux_signal = nullptr;
     for (const auto& sig : _signals)
     {
-        switch (sig.second.getMultiplexerIndicator())
+        switch (sig.getMultiplexerIndicator())
         {
         case Signal::Multiplexer::MuxSwitch:
-            _mux_signal = &sig.second;
+            _mux_signal = &sig;
             break;
         }
     }
@@ -111,10 +109,10 @@ MessageImpl& MessageImpl::operator=(const MessageImpl& other)
     _mux_signal = nullptr;
     for (const auto& sig : _signals)
     {
-        switch (sig.second.getMultiplexerIndicator())
+        switch (sig.getMultiplexerIndicator())
         {
         case Signal::Multiplexer::MuxSwitch:
-            _mux_signal = &sig.second;
+            _mux_signal = &sig;
             break;
         }
     }
@@ -143,7 +141,9 @@ const std::string& MessageImpl::getTransmitter() const
 }
 bool MessageImpl::hasMessageTransmitter(const std::string& name) const
 {
-    return _message_transmitters.find(name) != _message_transmitters.end();
+    auto iter = std::find_if(_message_transmitters.begin(), _message_transmitters.end(),
+      [&](const auto& other) { return name == other; });
+    return iter != _message_transmitters.end();
 }
 void MessageImpl::forEachMessageTransmitter(std::function<void(const std::string&)>&& cb) const
 {
@@ -155,23 +155,21 @@ void MessageImpl::forEachMessageTransmitter(std::function<void(const std::string
 const Signal* MessageImpl::getSignalByName(const std::string& name) const
 {
     const Signal* result = nullptr;
-    auto iter = _signals.find(name);
+    auto iter = std::find_if(_signals.begin(), _signals.end(),
+        [&](const SignalImpl& sig) { return sig.getName() == name; });
     if (iter != _signals.end())
     {
-        result = &iter->second;
+        result = &*iter;
     }
     return result;
 }
 const Signal* MessageImpl::findSignal(std::function<bool(const Signal&)>&& pred) const
 {
     const Signal* result = nullptr;
-    for (const auto& s : _signals)
+    auto iter = std::find_if(_signals.begin(), _signals.end(), pred);
+    if (iter != _signals.end())
     {
-        if (pred(s.second))
-        {
-            result = &s.second;
-            break;
-        }
+      result = &*iter;
     }
     return result;
 }
@@ -179,29 +177,27 @@ void MessageImpl::forEachSignal(std::function<void(const Signal&)>&& cb) const
 {
     for (const auto& s : _signals)
     {
-        cb(s.second);
+        cb(s);
     }
 }
 const Attribute* MessageImpl::getAttributeValueByName(const std::string& name) const
 {
     const Attribute* result = nullptr;
-    auto iter = _attribute_values.find(name);
+    auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(),
+        [&](const AttributeImpl& av) { return av.getName() == name; });
     if (iter != _attribute_values.end())
     {
-        result = &iter->second;
+        result = &*iter;
     }
     return result;
 }
 const Attribute* MessageImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
 {
     const Attribute* result = nullptr;
-    for (const auto& av : _attribute_values)
+    auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(), pred);
+    if (iter != _attribute_values.end())
     {
-        if (pred(av.second))
-        {
-            result = &av.second;
-            break;
-        }
+        result = &*iter;
     }
     return result;
 }
@@ -209,7 +205,7 @@ void MessageImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& 
 {
     for (const auto& av : _attribute_values)
     {
-        cb(av.second);
+        cb(av);
     }
 }
 const std::string& MessageImpl::getComment() const
@@ -225,7 +221,7 @@ MessageImpl::ErrorCode MessageImpl::getError() const
     return _error;
 }
 
-const std::map<std::string, SignalImpl>& MessageImpl::signals() const
+const std::vector<SignalImpl>& MessageImpl::signals() const
 {
     return _signals;
 }
