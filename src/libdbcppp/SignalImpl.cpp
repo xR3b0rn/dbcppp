@@ -1,6 +1,5 @@
-
 #include <limits>
-#include <boost/endian/conversion.hpp>
+#include "Helper.h"
 #include "SignalImpl.h"
 
 using namespace dbcppp;
@@ -23,7 +22,7 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos + 8];
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
-            boost::endian::native_to_big_inplace(data);
+            native_to_big_inplace(data);
             data &= sigi->_mask;
             data <<= sigi->_fixed_start_bit_0;
             data1 >>= sigi->_fixed_start_bit_1;
@@ -31,7 +30,7 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         }
         else
         {
-            boost::endian::native_to_little_inplace(data);
+            native_to_little_inplace(data);
             data >>= sigi->_fixed_start_bit_0;
             data1 &= sigi->_mask;
             data1 <<= sigi->_fixed_start_bit_1;
@@ -63,11 +62,11 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         }
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
-            boost::endian::native_to_big_inplace(data);
+            native_to_big_inplace(data);
         }
         else
         {
-            boost::endian::native_to_little_inplace(data);
+            native_to_little_inplace(data);
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
         {
@@ -280,23 +279,23 @@ std::unique_ptr<Signal> Signal::create(
     , double minimum
     , double maximum
     , std::string&& unit
-    , std::set<std::string>&& receivers
-    , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
-    , std::unordered_map<int64_t, std::string>&& value_descriptions
+    , std::vector<std::string>&& receivers
+    , std::vector<std::unique_ptr<Attribute>>&& attribute_values
+    , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
     , std::string&& comment
     , Signal::ExtendedValueType extended_value_type)
 {
     std::unique_ptr<SignalImpl> result;
-    std::map<std::string, AttributeImpl> avs;
+    std::vector<AttributeImpl> avs;
     for (auto& av : attribute_values)
     {
-        avs.insert(std::make_pair(av.first, std::move(*static_cast<AttributeImpl*>(av.second.get()))));
-        av.second.reset(nullptr);
+        avs.push_back(std::move(static_cast<AttributeImpl&>(*av)));
+        av.reset(nullptr);
     }
-    tsl::robin_map<int64_t, std::string> vds;
+    std::vector<std::tuple<int64_t, std::string>> vds;
     for (auto&& vd : value_descriptions)
     {
-        vds.insert(std::move(vd));
+        vds.push_back(std::move(vd));
     }
     result = std::make_unique<SignalImpl>(
           message_size
@@ -335,9 +334,9 @@ SignalImpl::SignalImpl(
     , double minimum
     , double maximum
     , std::string&& unit
-    , std::set<std::string>&& receivers
-    , std::map<std::string, AttributeImpl>&& attribute_values
-    , tsl::robin_map<int64_t, std::string>&& value_descriptions
+    , std::vector<std::string>&& receivers
+    , std::vector<AttributeImpl>&& attribute_values
+    , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
     , std::string&& comment
     , ExtendedValueType extended_value_type)
     
@@ -557,7 +556,8 @@ std::string SignalImpl::getUnit() const
 }
 bool SignalImpl::hasReceiver(const std::string& name) const
 {
-    return _receivers.find(name) != _receivers.end();
+    auto iter = std::find(_receivers.begin(), _receivers.end(), name);
+    return iter != _receivers.end();
 }
 void SignalImpl::forEachReceiver(std::function<void(const std::string&)>&& cb) const
 {
@@ -569,10 +569,11 @@ void SignalImpl::forEachReceiver(std::function<void(const std::string&)>&& cb) c
 const std::string* SignalImpl::getValueDescriptionByValue(int64_t value) const
 {
     const std::string* result = nullptr;
-    auto iter = _value_descriptions.find(value);
+    auto iter = std::find_if(_value_descriptions.begin(), _value_descriptions.end(),
+        [&](const auto& vd) { return std::get<0>(vd) == value; });
     if (iter != _value_descriptions.end())
     {
-        result = &iter->second;
+        result = &std::get<1>(*iter);
     }
     return result;
 }
@@ -580,17 +581,18 @@ void SignalImpl::forEachValueDescription(std::function<void(int64_t, const std::
 {
     for (auto& av : _value_descriptions)
     {
-        cb(av.first, av.second);
+        cb(std::get<0>(av), std::get<1>(av));
     }
 }
 
 const Attribute* SignalImpl::getAttributeValueByName(const std::string& name) const
 {
     const Attribute* result = nullptr;
-    auto iter = _attribute_values.find(name);
+    auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(),
+        [&](const AttributeImpl& attr) { return attr.getName() == name; });
     if (iter != _attribute_values.end())
     {
-        result = &iter->second;
+        result = &*iter;
     }
     return result;
 }
@@ -599,9 +601,9 @@ const Attribute* SignalImpl::findAttributeValue(std::function<bool(const Attribu
     const Attribute* result = nullptr;
     for (const auto& av : _attribute_values)
     {
-        if (pred(av.second))
+        if (pred(av))
         {
-            result = &av.second;
+            result = &av;
             break;
         }
     }
@@ -611,7 +613,7 @@ const void SignalImpl::forEachAttributeValue(std::function<void(const Attribute&
 {
     for (const auto& av : _attribute_values)
     {
-        cb(av.second);
+        cb(av);
     }
 }
 const std::string& SignalImpl::getComment() const

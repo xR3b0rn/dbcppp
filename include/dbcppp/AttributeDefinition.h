@@ -1,11 +1,10 @@
-
 #pragma once
 
 #include <cstddef>
 #include <string>
 #include <vector>
 #include <functional>
-#include <boost/variant.hpp>
+#include <variant>
 #include <memory>
 
 #include "Export.h"
@@ -46,7 +45,7 @@ namespace dbcppp
         {
             std::vector<std::string> values;
         };
-        using value_type_t = boost::variant<ValueTypeInt, ValueTypeHex, ValueTypeFloat, ValueTypeString, ValueTypeEnum>;
+        using value_type_t = std::variant<ValueTypeInt, ValueTypeHex, ValueTypeFloat, ValueTypeString, ValueTypeEnum>;
         
         static std::unique_ptr<AttributeDefinition> create(
               std::string&& name

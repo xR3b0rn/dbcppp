@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <cstddef>
@@ -27,9 +26,9 @@ namespace dbcppp
             , std::string&& name
             , uint64_t message_size
             , std::string&& transmitter
-            , std::set<std::string>&& message_transmitters
-            , std::map<std::string, std::unique_ptr<Signal>>&& signals
-            , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+            , std::vector<std::string>&& message_transmitters
+            , std::vector<std::unique_ptr<Signal>>&& signals
+            , std::vector<std::unique_ptr<Attribute>>&& attribute_values
             , std::string&& comment);
 
         virtual std::unique_ptr<Message> clone() const = 0;

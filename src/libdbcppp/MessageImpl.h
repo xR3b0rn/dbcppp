@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "../../include/dbcppp/Message.h"
@@ -17,9 +16,9 @@ namespace dbcppp
             , std::string&& name
             , uint64_t message_size
             , std::string&& transmitter
-            , std::set<std::string>&& message_transmitters
-            , std::map<std::string, SignalImpl>&& signals
-            , std::map<std::string, AttributeImpl>&& attribute_values
+            , std::vector<std::string>&& message_transmitters
+            , std::vector<SignalImpl>&& signals
+            , std::vector<AttributeImpl>&& attribute_values
             , std::string&& comment);
         MessageImpl(const MessageImpl& other);
         MessageImpl(MessageImpl&& other) = default;
@@ -45,16 +44,16 @@ namespace dbcppp
         
         virtual ErrorCode getError() const override;
         
-        const std::map<std::string, SignalImpl>& signals() const;
+        const std::vector<SignalImpl>& signals() const;
         
     private:
         uint64_t _id;
         std::string _name;
         uint64_t _message_size;
         std::string _transmitter;
-        std::set<std::string> _message_transmitters;
-        std::map<std::string, SignalImpl> _signals;
-        std::map<std::string, AttributeImpl> _attribute_values;
+        std::vector<std::string> _message_transmitters;
+        std::vector<SignalImpl> _signals;
+        std::vector<AttributeImpl> _attribute_values;
         std::string _comment;
 
         const Signal* _mux_signal;
