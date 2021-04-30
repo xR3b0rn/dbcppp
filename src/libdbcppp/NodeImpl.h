@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <vector>
@@ -16,7 +15,7 @@ namespace dbcppp
         NodeImpl(
               std::string&& name
             , std::string&& comment
-            , std::map<std::string, AttributeImpl>&& attribute_values);
+            , std::vector<AttributeImpl>&& attribute_values);
             
         virtual std::unique_ptr<Node> clone() const override;
 
@@ -28,7 +27,6 @@ namespace dbcppp
 
         std::string _name;
         std::string _comment;
-        std::map<std::string, AttributeImpl> _attribute_values;
+        std::vector<AttributeImpl> _attribute_values;
     };
-    bool operator==(const dbcppp::NodeImpl& lhs, const std::string& rhs);
 }
