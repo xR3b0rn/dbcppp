@@ -14,6 +14,8 @@
 #include "../../include/dbcppp/Network.h"
 #include "Config.h"
 
+#include "../../src/libdbcppp/DBCX3.h"
+
 #include <boost/test/unit_test.hpp>
 namespace utf = boost::unit_test;
 
@@ -31,6 +33,15 @@ std::vector<std::string> dbc_to_vec(std::istream& is)
     return result;
 }
 
+BOOST_AUTO_TEST_CASE(ParsingCppApiX3)
+{
+    //const char* test_str = "VERSION \"1.0.0\"";
+    const char* test_str = "Name";
+    auto len = strlen(test_str);
+    auto begin = test_str;
+    auto end = test_str + len;
+    auto gnet = dbcppp::DBCX3::ParseFromMemory(begin, end);
+}
 BOOST_AUTO_TEST_CASE(ParsingCppApi)
 {
     std::string dbc_file(TEST_DBC);
