@@ -32,10 +32,15 @@ namespace dbcppp
             {
                 std::string name;
             };
+            struct G_ValueEncodingDescription
+            {
+                int64_t value;
+                std::string description;
+            };
             struct G_ValueTable
             {
                 std::string name;
-                std::vector<std::tuple<int64_t, std::string>> value_encoding_descriptions;
+                std::vector<G_ValueEncodingDescription> value_encoding_descriptions;
             };
             struct G_Signal
             {
@@ -198,19 +203,24 @@ namespace dbcppp
                 std::string env_var_name;
                 variant_attr_value_t value;
             };
+            struct G_ValueDescription
+            {
+                int64_t value;
+                std::string description;
+            };
             using variant_attribute_t = boost::variant<G_AttributeNetwork, G_AttributeNode, G_AttributeMessage, G_AttributeSignal, G_AttributeEnvVar>;
             struct G_ValueDescriptionSignal
             {
                 uint64_t message_id;
                 std::string signal_name;
-                std::vector<std::tuple<int64_t, std::string>> value_descriptions;
+                std::vector<G_ValueDescription> value_descriptions;
             };
             struct G_ValueDescriptionEnvVar
             {;
                 std::string env_var_name;
-                std::vector<std::tuple<int64_t, std::string>> value_descriptions;
+                std::vector<G_ValueDescription> value_descriptions;
             };
-            struct G_ValueDescription
+            struct G_ValueDescriptionSigEnvVar
             {
                 boost::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar> description;
             };
@@ -232,11 +242,11 @@ namespace dbcppp
                 std::vector<G_EnvironmentVariable> environment_variables;
                 std::vector<G_EnvironmentVariableData> environment_variable_datas;
                 std::vector<G_SignalType> signal_types;
-                std::vector<variant_comment_t> comments;
+                std::vector<G_Comment> comments;
                 std::vector<G_AttributeDefinition> attribute_definitions;
                 std::vector<G_Attribute> attribute_defaults;
                 std::vector<variant_attribute_t> attribute_values;
-                std::vector<G_ValueDescription> value_descriptions;
+                std::vector<G_ValueDescriptionSigEnvVar> value_descriptions_sig_env_var;
                 std::vector<G_SignalExtendedValueType> signal_extended_value_types;
             };
         }
