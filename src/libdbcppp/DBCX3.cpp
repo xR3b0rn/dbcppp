@@ -356,5 +356,5 @@ std::optional<dbcppp::DBCX3::AST::G_Network> dbcppp::DBCX3::ParseFromMemory(cons
     {
         throw std::runtime_error("Could not parse DBC (begin != end)");
     }
-        throw std::runtime_error("Could not parse DBC");
+    throw std::runtime_error("Could not parse DBC");
 }
