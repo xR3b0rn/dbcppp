@@ -14,8 +14,6 @@ namespace dbcppp::DBCX3::Grammar
     using namespace dbcppp::DBCX3::AST;
     using namespace boost::spirit::x3;
     
-    struct G_Test {};
-
     static const rule<class BlockComment> block_comment("BlockComment");
     static const rule<class CharString, std::string> quoted_string("CharString");
     static const rule<class CIdentifier, std::string> C_identifier("C_Identifier");
