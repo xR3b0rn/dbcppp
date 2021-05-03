@@ -113,8 +113,8 @@ namespace dbcppp::DBCX3::Grammar
         > *signal_extended_value_type
         ;
 
-    static const auto unsigned_int = ulong_long;
-    static const auto signed_int= long_long;
+    static const auto unsigned_int = uint64;
+    static const auto signed_int= int64;
 
     static const auto single_line_comment = "//" >> *(char_ - eol) >> (eol | eoi);
     static const auto block_comment_def   = ("/*" >> *(block_comment | char_ - "*/")) > "*/";
