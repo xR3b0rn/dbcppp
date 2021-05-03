@@ -9,9 +9,9 @@
 #include <string>
 #include <iomanip>
 
-#include "../../include/dbcppp/Network2Functions.h"
-#include "../../include/dbcppp/CApi.h"
-#include "../../include/dbcppp/Network.h"
+#include "../include/dbcppp/Network2Functions.h"
+#include "../include/dbcppp/CApi.h"
+#include "../include/dbcppp/Network.h"
 #include "Config.h"
 
 #include "../../src/libdbcppp/DBCX3.h"

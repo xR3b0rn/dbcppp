@@ -9,9 +9,9 @@
 #include <string>
 #include <iomanip>
 
-#include "../../include/dbcppp/Network2Functions.h"
-#include "../../include/dbcppp/CApi.h"
-#include "../../include/dbcppp/Network.h"
+#include "../include/dbcppp/Network2Functions.h"
+#include "../include/dbcppp/CApi.h"
+#include "../include/dbcppp/Network.h"
 
 #include <boost/test/unit_test.hpp>
 namespace utf = boost::unit_test;
@@ -181,6 +181,10 @@ BOOST_AUTO_TEST_CASE(Decoding)
         }
         // since nan != nan we reintepret_cast to uint64_t before we compare
         BOOST_CHECK_MESSAGE(*reinterpret_cast<uint64_t*>(&dec_easy) == *reinterpret_cast<uint64_t*>(&dec_sig), "No. " + std::to_string(i) + ":\t\"dec_easy == dec_sig\" failed for Signal: " << ss.str());
+        if (*reinterpret_cast<uint64_t*>(&dec_easy) != *reinterpret_cast<uint64_t*>(&dec_sig))
+        {
+            std::cout << "fail" << std::endl;
+        }
     }
     BOOST_TEST_MESSAGE("Done!");
 }
