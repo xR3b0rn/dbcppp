@@ -350,9 +350,13 @@ namespace dbcppp::DBCX3::Grammar
 std::optional<dbcppp::DBCX3::AST::G_Network> dbcppp::DBCX3::ParseFromMemory(const char* begin, const char* end)
 {
     dbcppp::DBCX3::AST::G_Network gnet;
-    if (phrase_parse(begin, end, Grammar::network, Grammar::skipper, gnet))
+    if (phrase_parse(begin, end, Grammar::network, Grammar::skipper, gnet) && begin == end)
     {
         return gnet;
     }
-    return std::nullopt;
+    if (begin != end)
+    {
+        throw std::runtime_error("Could not parse DBC (begin != end)");
+    }
+        throw std::runtime_error("Could not parse DBC");
 }
