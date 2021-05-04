@@ -58,6 +58,9 @@ namespace dbcppp
         virtual const std::string& getComment() const override;
 
         virtual const Message* findParentMessage(const Signal* sig) const override;
+        
+        virtual bool operator==(const Network& rhs) const override;
+        virtual bool operator!=(const Network& rhs) const override;
 
         std::string& version();
         std::vector<std::string>& newSymbols();

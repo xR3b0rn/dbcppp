@@ -33,3 +33,15 @@ uint64_t BitTimingImpl::getBTR2() const
 {
     return _BTR2;
 }
+bool BitTimingImpl::operator==(const BitTiming& rhs) const
+{
+    bool result = true;
+    result &= _baudrate == rhs.getBaudrate();
+    result &= _BTR1 == rhs.getBTR1();
+    result &= _BTR2 == rhs.getBTR2();
+    return result;
+}
+bool BitTimingImpl::operator!=(const BitTiming& rhs) const
+{
+    return !(*this == rhs);
+}

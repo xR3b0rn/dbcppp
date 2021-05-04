@@ -46,6 +46,9 @@ namespace dbcppp
         
         const std::vector<SignalImpl>& signals() const;
         
+        virtual bool operator==(const Message& rhs) const override;
+        virtual bool operator!=(const Message& rhs) const override;
+        
     private:
         uint64_t _id;
         std::string _name;
