@@ -170,3 +170,42 @@ const std::string& EnvironmentVariableImpl::getComment() const
 {
     return _comment;
 }
+bool EnvironmentVariableImpl::operator==(const EnvironmentVariable& rhs) const
+{
+    bool result = true;
+    result &= _name == rhs.getName();
+    result &= _var_type == rhs.getVarType();
+    result &= _minimum == rhs.getMinimum();
+    result &= _unit == rhs.getUnit();
+    result &= _initial_value == rhs.getInitialValue();
+    result &= _ev_id == rhs.getEvId();
+    result &= _access_type == rhs.getAccessType();
+    rhs.forEachAccessNode(
+        [&](const std::string& node)
+        {
+            auto beg = _access_nodes.begin();
+            auto end = _access_nodes.end();
+            result &= std::find(beg, end, node) != end;
+        });
+    rhs.forEachValueDescription(
+        [&](int64_t value, const std::string& desc)
+        {
+            auto beg = _value_descriptions.begin();
+            auto end = _value_descriptions.end();
+            result &= std::find(beg, end, std::make_tuple(value, desc)) != end;
+        });
+    result &= _data_size == rhs.getDataSize();
+    rhs.forEachAttributeValue(
+        [&](const dbcppp::Attribute& attr)
+        {
+            auto beg = _attribute_values.begin();
+            auto end = _attribute_values.end();
+            result &= std::find(beg, end, attr) != end;
+        });
+    result &= _comment == rhs.getComment();
+    return result;
+}
+bool EnvironmentVariableImpl::operator!=(const EnvironmentVariable& rhs) const
+{
+    return !(*this == rhs);
+}

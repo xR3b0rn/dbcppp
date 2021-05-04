@@ -63,3 +63,21 @@ void NodeImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb)
         cb(av);
     }
 }
+bool NodeImpl::operator==(const dbcppp::Node& rhs) const
+{
+    bool result = true;
+    result &= _name == rhs.getName();
+    result &= _comment == rhs.getComment();
+    rhs.forEachAttributeValue(
+        [&](const Attribute& attr)
+        {
+            auto beg = _attribute_values.begin();
+            auto end = _attribute_values.end();
+            result &= std::find(beg, end, attr) != end;
+        });
+    return result;
+}
+bool NodeImpl::operator!=(const dbcppp::Node& rhs) const
+{
+    return !(*this == rhs);
+}

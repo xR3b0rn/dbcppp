@@ -225,3 +225,31 @@ const std::vector<SignalImpl>& MessageImpl::signals() const
 {
     return _signals;
 }
+bool MessageImpl::operator==(const Message& rhs) const
+{
+    bool result = true;
+    result &= _id == rhs.getId();
+    result &= _name == rhs.getName();
+    result &= _transmitter == rhs.getTransmitter();
+    rhs.forEachMessageTransmitter(
+        [&](const std::string& msg_trans)
+        {
+            result &= std::find(_message_transmitters.begin(), _message_transmitters.end(), msg_trans) != _message_transmitters.end();
+        });
+    rhs.forEachSignal(
+        [&](const dbcppp::Signal& sig)
+        {
+            result &= std::find(_signals.begin(), _signals.end(), sig) != _signals.end();
+        });
+    rhs.forEachAttributeValue(
+        [&](const dbcppp::Attribute& attr)
+        {
+            result &= std::find(_attribute_values.begin(), _attribute_values.end(), attr) != _attribute_values.end();
+        });
+    result &= _comment == rhs.getComment();
+    return result;
+}
+bool MessageImpl::operator!=(const Message& rhs) const
+{
+    return !(*this == rhs);
+}

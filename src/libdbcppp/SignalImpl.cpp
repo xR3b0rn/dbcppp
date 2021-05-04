@@ -632,3 +632,47 @@ void SignalImpl::setError(ErrorCode code)
 {
     _error = ErrorCode(uint64_t(_error) | uint64_t(code));
 }
+bool SignalImpl::operator==(const Signal& rhs) const
+{
+    bool result = true;
+    result &= _name == rhs.getName();
+    result &= _multiplexer_indicator == rhs.getMultiplexerIndicator();
+    result &= _multiplexer_switch_value == rhs.getMultiplexerSwitchValue();
+    result &= _start_bit == rhs.getStartBit();
+    result &= _bit_size == rhs.getBitSize();
+    result &= _byte_order == rhs.getByteOrder();
+    result &= _value_type == rhs.getValueType();
+    result &= _factor == rhs.getFactor();
+    result &= _offset == rhs.getOffset();
+    result &= _minimum == rhs.getMinimum();
+    result &= _maximum == rhs.getMaximum();
+    result &= _unit == rhs.getUnit();
+    rhs.forEachReceiver(
+        [&](const std::string& receiver)
+        {
+            auto beg = _receivers.begin();
+            auto end = _receivers.end();
+            result &= std::find(beg, end, receiver) != end;
+        });
+    rhs.forEachAttributeValue(
+        [&](const Attribute& attr)
+        {
+            auto beg = _attribute_values.begin();
+            auto end = _attribute_values.end();
+            result &= std::find(beg, end, attr) != end;
+        });
+    rhs.forEachValueDescription(
+        [&](int64_t value, const std::string& desc)
+        {
+            auto beg = _value_descriptions.begin();
+            auto end = _value_descriptions.end();
+            result &= std::find(beg, end, std::make_tuple(value, desc)) != end;
+        });
+    result &= _comment == rhs.getComment();
+    result &= _extended_value_type == rhs.getExtendedValueType();
+    return result;
+}
+bool SignalImpl::operator!=(const Signal& rhs) const
+{
+    return !(*this == rhs);
+}

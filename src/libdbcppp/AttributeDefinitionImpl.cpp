@@ -54,3 +54,15 @@ const std::string* AttributeDefinitionImpl::findValueTypeEnum(std::function<bool
     }
     return result;
 }
+bool AttributeDefinitionImpl::operator==(const AttributeDefinition& rhs) const
+{
+    bool result = true;
+    result &= _name == rhs.getName();
+    result &= _object_type == rhs.getObjectType();
+    //result &= _value_type == rhs.getValueType();
+    return result;
+}
+bool AttributeDefinitionImpl::operator!=(const AttributeDefinition& rhs) const
+{
+    return !(*this == rhs);
+}
