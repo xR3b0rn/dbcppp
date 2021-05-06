@@ -20,4 +20,4 @@ set_property(TARGET ${PROJECT_NAME}_Test PROPERTY CXX_STANDARD 17)
 add_dependencies(${PROJECT_NAME}_Test ${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME}_Test ${PROJECT_NAME} ${Boost_LIBRARIES} ${llvm_libs})
 
-add_custom_target(RunTests COMMAND $<TARGET_FILE:${PROJECT_NAME}_Test> "--log_level=message" DEPENDS ${PROJECT_NAME}_Test)
+add_custom_target(RunTests COMMAND $<TARGET_FILE:${PROJECT_NAME}_Test> "" DEPENDS ${PROJECT_NAME}_Test)
