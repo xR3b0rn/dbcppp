@@ -1,3 +1,3 @@
 #define TEST_DBC "@CMAKE_CURRENT_SOURCE_DIR@/Test.dbc"
+constexpr const char* TEST_FILES_PATH = "@CMAKE_CURRENT_SOURCE_DIR@/test_files";
 #define TEST_DBC_WITH_SINGLE_COMMENTS "@CMAKE_CURRENT_SOURCE_DIR@/Test_single_comments.dbc"
-
