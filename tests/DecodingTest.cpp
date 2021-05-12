@@ -13,6 +13,8 @@
 #include "../include/dbcppp/CApi.h"
 #include "../include/dbcppp/Network.h"
 
+#include "Catch2.h"
+
 auto generate_random_signal(
       std::size_t max_msg_byte_size
     , std::default_random_engine& rng)
@@ -144,7 +146,7 @@ TEST_CASE("Decoding")
 {
     using namespace dbcppp;
 
-    std::size_t n_tests = 1000;
+    std::size_t n_tests = 10000;
     std::size_t max_msg_byte_size = 64;
 
     //BOOST_TEST_MESSAGE("Testing decode-function with " << n_tests << " randomly generated tests...");
