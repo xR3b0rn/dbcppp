@@ -442,6 +442,58 @@ void Network::merge(std::unique_ptr<Network>&& other)
     }
     other.reset(nullptr);
 }
+bool NetworkImpl::operator==(const Network& rhs) const
+{
+    bool result = true;
+    result &= _version == rhs.getVersion();
+    rhs.forEachNewSymbol(
+        [&](const std::string& new_symbol)
+        {
+            result &= std::find(_new_symbols.begin(), _new_symbols.end(), new_symbol) != _new_symbols.end();
+        });
+    result &= _bit_timing == rhs.getBitTiming();
+    rhs.forEachNode(
+        [&](const dbcppp::Node& node)
+        {
+            result &= std::find(_nodes.begin(), _nodes.end(), node) != _nodes.end();
+        });
+    rhs.forEachValueTable(
+        [&](const dbcppp::ValueTable& value_table)
+        {
+            result &= std::find(_value_tables.begin(), _value_tables.end(), value_table) != _value_tables.end();
+        });
+    rhs.forEachMessage(
+        [&](const dbcppp::Message& message)
+        {
+            result &= std::find(_messages.begin(), _messages.end(), message) != _messages.end();
+        });
+    rhs.forEachEnvironmentVariable(
+        [&](const dbcppp::EnvironmentVariable& env_var)
+        {
+            result &= std::find(_environment_variables.begin(), _environment_variables.end(), env_var) != _environment_variables.end();
+        });
+    rhs.forEachAttributeDefinition(
+        [&](const dbcppp::AttributeDefinition& attr_def)
+        {
+            result &= std::find(_attribute_definitions.begin(), _attribute_definitions.end(), attr_def) != _attribute_definitions.end();
+        });
+    rhs.forEachAttributeDefault(
+        [&](const dbcppp::Attribute& attr)
+        {
+            result &= std::find(_attribute_defaults.begin(), _attribute_defaults.end(), attr) != _attribute_defaults.end();
+        });
+    rhs.forEachAttributeValue(
+        [&](const dbcppp::Attribute& attr)
+        {
+            result &= std::find(_attribute_values.begin(), _attribute_values.end(), attr) != _attribute_values.end();
+        });
+    result &= _comment == rhs.getComment();
+    return result;
+}
+bool NetworkImpl::operator!=(const Network& rhs) const
+{
+    return !(*this == rhs);
+}
 
 std::map<std::string, std::unique_ptr<Network>> Network::loadNetworkFromFile(const std::filesystem::path& filename)
 {

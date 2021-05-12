@@ -19,5 +19,8 @@ namespace dbcppp
         virtual uint64_t getBaudrate() const = 0;
         virtual uint64_t getBTR1() const = 0;
         virtual uint64_t getBTR2() const = 0;
+        
+        virtual bool operator==(const BitTiming& rhs) const = 0;
+        virtual bool operator!=(const BitTiming& rhs) const = 0;
     };
 }

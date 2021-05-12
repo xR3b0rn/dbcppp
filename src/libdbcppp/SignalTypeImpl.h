@@ -36,6 +36,9 @@ namespace dbcppp
         virtual const std::string& getUnit() const override;
         virtual double getDefaultValue() const override;
         virtual const std::string& getValueTable() const override;
+        
+        virtual bool operator==(const SignalType& rhs) const override;
+        virtual bool operator!=(const SignalType& rhs) const override;
 
     private:
         std::string _name;

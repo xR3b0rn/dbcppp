@@ -32,3 +32,4 @@ output
 /out/build/WSL-GCC-Debug/.cmake/api/v1/reply/cache-v2-d9cb139d9bb704e464ba.json
 /out/build/WSL-GCC-Debug/.cmake/api/v1/reply
 /out/build/WSL-GCC-Debug/.cmake/api/v1/query/client-MicrosoftVS/query.json
+/tests/Config.h
