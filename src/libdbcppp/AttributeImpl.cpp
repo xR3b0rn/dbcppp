@@ -35,3 +35,15 @@ const Attribute::value_t& AttributeImpl::getValue() const
 {
     return _value;
 }
+bool AttributeImpl::operator==(const Attribute& rhs) const
+{
+    bool result = true;
+    result &= _name == rhs.getName();
+    result &= _object_type == rhs.getObjectType();
+    result &= _value == rhs.getValue();
+    return result;
+}
+bool AttributeImpl::operator!=(const Attribute& rhs) const
+{
+    return !(*this == rhs);
+}

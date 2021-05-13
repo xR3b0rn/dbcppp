@@ -17,6 +17,9 @@ namespace dbcppp
         virtual const value_type_t& getValueType() const override;
         virtual void forEachValueTypeEnum(std::function<void(const std::string&)>&& cb) const override;
         virtual const std::string* findValueTypeEnum(std::function<bool(const std::string&)>&& pred) const override;
+        
+        virtual bool operator==(const AttributeDefinition& rhs) const override;
+        virtual bool operator!=(const AttributeDefinition& rhs) const override;
 
     private:
         std::string _name;

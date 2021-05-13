@@ -22,7 +22,8 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[sigi->_byte_pos + 8];
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
-            native_to_big_inplace(data);
+            //native_to_big_inplace(data);
+            boost::endian::native_to_big_inplace(data);
             data &= sigi->_mask;
             data <<= sigi->_fixed_start_bit_0;
             data1 >>= sigi->_fixed_start_bit_1;
@@ -30,7 +31,8 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         }
         else
         {
-            native_to_little_inplace(data);
+            //native_to_little_inplace(data);
+            boost::endian::native_to_little_inplace(data);
             data >>= sigi->_fixed_start_bit_0;
             data1 &= sigi->_mask;
             data1 <<= sigi->_fixed_start_bit_1;
@@ -62,11 +64,13 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         }
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
-            native_to_big_inplace(data);
+            //native_to_big_inplace(data);
+            boost::endian::native_to_big_inplace(data);
         }
         else
         {
-            native_to_little_inplace(data);
+            //native_to_little_inplace(data);
+            boost::endian::native_to_little_inplace(data);
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
         {
@@ -631,4 +635,48 @@ bool SignalImpl::getError(ErrorCode code) const
 void SignalImpl::setError(ErrorCode code)
 {
     _error = ErrorCode(uint64_t(_error) | uint64_t(code));
+}
+bool SignalImpl::operator==(const Signal& rhs) const
+{
+    bool result = true;
+    result &= _name == rhs.getName();
+    result &= _multiplexer_indicator == rhs.getMultiplexerIndicator();
+    result &= _multiplexer_switch_value == rhs.getMultiplexerSwitchValue();
+    result &= _start_bit == rhs.getStartBit();
+    result &= _bit_size == rhs.getBitSize();
+    result &= _byte_order == rhs.getByteOrder();
+    result &= _value_type == rhs.getValueType();
+    result &= _factor == rhs.getFactor();
+    result &= _offset == rhs.getOffset();
+    result &= _minimum == rhs.getMinimum();
+    result &= _maximum == rhs.getMaximum();
+    result &= _unit == rhs.getUnit();
+    rhs.forEachReceiver(
+        [&](const std::string& receiver)
+        {
+            auto beg = _receivers.begin();
+            auto end = _receivers.end();
+            result &= std::find(beg, end, receiver) != end;
+        });
+    rhs.forEachAttributeValue(
+        [&](const Attribute& attr)
+        {
+            auto beg = _attribute_values.begin();
+            auto end = _attribute_values.end();
+            result &= std::find(beg, end, attr) != end;
+        });
+    rhs.forEachValueDescription(
+        [&](int64_t value, const std::string& desc)
+        {
+            auto beg = _value_descriptions.begin();
+            auto end = _value_descriptions.end();
+            result &= std::find(beg, end, std::make_tuple(value, desc)) != end;
+        });
+    result &= _comment == rhs.getComment();
+    result &= _extended_value_type == rhs.getExtendedValueType();
+    return result;
+}
+bool SignalImpl::operator!=(const Signal& rhs) const
+{
+    return !(*this == rhs);
 }
