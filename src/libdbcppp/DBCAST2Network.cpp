@@ -1,15 +1,17 @@
 #include <iterator>
 #include <regex>
 #include <fstream>
+#include <variant>
 
-#include <boost/hof/apply.hpp>
+#include <boost/variant.hpp>
 
 #include "../../include/dbcppp/Network.h"
 #include "../../include/dbcppp/CApi.h"
 
-#include "DBC_Grammar.h"
+#include "DBCX3.h"
 
 using namespace dbcppp;
+using namespace dbcppp::DBCX3::AST;
 
 static auto getVersion(const G_Network& gnet)
 {
@@ -56,7 +58,11 @@ static auto getValueTables(const G_Network& gnet)
     for (const auto& vt : gnet.value_tables)
     {
         auto sig_type = getSignalType(gnet, vt);
-        auto copy_ved = vt.value_encoding_descriptions;
+        std::vector<std::tuple<int64_t, std::string>> copy_ved;
+        for (const auto& ved : vt.value_encoding_descriptions)
+        {
+            copy_ved.push_back({ved.value, ved.description});
+        }
         auto nvt = ValueTable::create(std::string(vt.name), std::move(sig_type), std::move(copy_ved));
         result.push_back(std::move(nvt));
     }
@@ -124,15 +130,15 @@ static auto getComment(const G_Network& gnet, const G_Node& n)
 {
     std::string result;
     auto iter_comment = std::find_if(gnet.comments.begin(), gnet.comments.end(),
-        [&](const variant_comment_t& c)
+        [&](const auto& c)
         {
-            auto c_ = boost_variant_to_std_variant(c);
+            auto c_ = boost_variant_to_std_variant(c.comment);
             auto pcn = std::get_if<G_CommentNode>(&c_);
             return pcn && pcn->node_name == n.name;
         });
     if (iter_comment != gnet.comments.end())
     {
-        auto comment_ = boost_variant_to_std_variant(*iter_comment);
+        auto comment_ = boost_variant_to_std_variant(iter_comment->comment);
         result = std::get<G_CommentNode>(comment_).comment;
     }
     return result;
@@ -170,25 +176,29 @@ static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const 
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
-    std::vector<std::tuple<int64_t, std::string>> result;
-    for (const auto& vds : gnet.value_descriptions)
+    std::vector<std::tuple<int64_t, std::string>> value_descriptions;
+    for (const auto& vds : gnet.value_descriptions_sig_env_var)
     {
         auto vds_description_ = boost_variant_to_std_variant(vds.description);
         if (auto pvds = std::get_if<G_ValueDescriptionSignal>(&vds_description_);
             pvds && pvds->message_id == m.id && pvds->signal_name == s.name)
         {
-            result = std::get<G_ValueDescriptionSignal>(vds_description_).value_descriptions;
+            auto vds = std::get<G_ValueDescriptionSignal>(vds_description_).value_descriptions;
+            for (const auto& vd : vds)
+            {
+                value_descriptions.push_back({vd.value, vd.description});
+            }
             break;
         }
     }
-    return result;
+    return value_descriptions;
 }
 static auto getComment(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
     std::string result;
     for (const auto& c : gnet.comments)
     {
-        auto c_ = boost_variant_to_std_variant(c);
+        auto c_ = boost_variant_to_std_variant(c.comment);
         if (auto pcs = std::get_if<G_CommentSignal>(&c_);
             pcs && pcs->message_id == m.id && pcs->signal_name == s.name)
         {
@@ -330,7 +340,7 @@ static auto getComment(const G_Network& gnet, const G_Message& m)
     std::string result;
     for (const auto& c : gnet.comments)
     {
-        auto c_ = boost_variant_to_std_variant(c);
+        auto c_ = boost_variant_to_std_variant(c.comment);
         if (auto pcm = std::get_if<G_CommentMessage>(&c_);
             pcm && pcm->message_id == m.id)
         {
@@ -369,13 +379,17 @@ static auto getMessages(const G_Network& gnet)
 static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVariable& ev)
 {
     std::vector<std::tuple<int64_t, std::string>> value_descriptions;
-    for (const auto& vds : gnet.value_descriptions)
+    for (const auto& vds : gnet.value_descriptions_sig_env_var)
     {
         auto vds_description = boost_variant_to_std_variant(vds.description);
         if (auto pvde = std::get_if<G_ValueDescriptionEnvVar>(&vds_description);
             pvde && pvde->env_var_name == ev.name)
         {
-            value_descriptions = std::get<G_ValueDescriptionEnvVar>(vds_description).value_descriptions;
+            auto vds = std::get<G_ValueDescriptionEnvVar>(vds_description).value_descriptions;
+            for (const auto& vd : vds)
+            {
+                value_descriptions.push_back({vd.value, vd.description});
+            }
             break;
         }
     }
@@ -405,7 +419,7 @@ static auto getComment(const G_Network& gnet, const G_EnvironmentVariable& ev)
     std::string result;
     for (const auto& c : gnet.comments)
     {
-        auto c_ = boost_variant_to_std_variant(c);
+        auto c_ = boost_variant_to_std_variant(c.comment);
         if (auto pce = std::get_if<G_CommentEnvVar>(&c_);
             pce && pce->env_var_name == ev.name)
         {
@@ -583,7 +597,7 @@ static auto getComment(const G_Network& gnet)
     std::string result;
     for (const auto& c : gnet.comments)
     {
-        auto c_ = boost_variant_to_std_variant(c);
+        auto c_ = boost_variant_to_std_variant(c.comment);
         if (auto pcn = std::get_if<G_CommentNetwork>(&c_))
         {
             result = pcn->comment;
@@ -612,11 +626,10 @@ std::unique_ptr<Network> DBCAST2Network(const G_Network& gnet)
 std::unique_ptr<Network> Network::loadDBCFromIs(std::istream& is)
 {
     std::string str((std::istreambuf_iterator<char>(is)), std::istreambuf_iterator<char>());
-    G_Network gnetwork;
     std::unique_ptr<dbcppp::Network> network;
-    if (dbcppp::NetworkGrammar<std::string::iterator>::parse(str.begin(), str.end(), gnetwork))
+    if (auto gnet = dbcppp::DBCX3::ParseFromMemory(str.c_str(), str.c_str() + str.size()))
     {
-        network = DBCAST2Network(gnetwork);
+        network = DBCAST2Network(*gnet);
     }
     return network;
 }
