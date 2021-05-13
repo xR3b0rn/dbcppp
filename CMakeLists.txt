@@ -8,17 +8,6 @@ set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-if (!${Boost_USE_STATIC_LIBS})
-	add_definitions(-DBOOST_LOG_DYN_LINK)
-endif()
-
-find_package(Boost 1.72.0 REQUIRED COMPONENTS program_options)
-
-if (Boost_FOUND)
-	include_directories(${Boost_INCLUDE_DIRS})
-	link_directories(${Boost_LIBRARY_DIRS})
-endif()
-
 if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 	add_definitions("/bigobj")
 endif()
@@ -26,6 +15,7 @@ endif()
 include_directories("include")
 include_directories("third-party/libxml2/include")
 include_directories("third-party/libxmlmm/libxmlmm")
+include_directories("third-party/boost")
 
 set(LIBXML2_WITH_ICONV OFF)
 set(LIBXML2_WITH_LZMA OFF)
