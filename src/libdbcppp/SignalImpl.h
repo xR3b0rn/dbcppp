@@ -55,7 +55,7 @@ namespace dbcppp
     
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
         virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
-        virtual const void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
+        virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
         virtual const std::string& getComment() const override;
         virtual ExtendedValueType getExtendedValueType() const override;
         virtual bool getError(ErrorCode code) const override;
