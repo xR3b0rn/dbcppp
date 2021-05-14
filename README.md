@@ -9,6 +9,20 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 * decode functionality for frames of arbitrarily byte length
 * [cantools](https://github.com/eerimoq/cantools) like decoding
 * [KCD](https://github.com/julietkilo/kcd) file format support
+
+## Build & Install
+```
+git clone --recurse-submodules https://github.com/xR3b0rn/dbcppp.git
+cd dbcppp
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+make -j
+make RunTests
+make install
+ldconfig # on Unix-systems only
+```
+
 ## DBC data types
 ### Supported
 * version
@@ -35,18 +49,7 @@ A C/C++ DBC file parser based on `boost.spirit`. This library is designed for de
 ## Dependencies
 * boost
 * libxml2
-## Build & Install
-```
-git clone https://github.com/xR3b0rn/dbcppp.git
-cd dbcppp
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make -j
-make RunTests
-make install
-ldconfig # on Unix-systems only
-```
+
 # Usage example
 ## Command line tool
 ### dbc2
