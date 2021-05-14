@@ -16,6 +16,7 @@ include_directories("include")
 include_directories("third-party/libxml2/include")
 include_directories("third-party/libxmlmm/libxmlmm")
 include_directories("third-party/boost")
+include_directories("third-party/cxxopts/include")
 
 set(LIBXML2_WITH_ICONV OFF)
 set(LIBXML2_WITH_LZMA OFF)
