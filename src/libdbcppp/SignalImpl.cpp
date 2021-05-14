@@ -613,7 +613,7 @@ const Attribute* SignalImpl::findAttributeValue(std::function<bool(const Attribu
     }
     return result;
 }
-const void SignalImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+void SignalImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
 {
     for (const auto& av : _attribute_values)
     {
