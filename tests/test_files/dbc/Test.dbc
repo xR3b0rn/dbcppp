@@ -1,0 +1,144 @@
+VERSION "1.0.0"
+
+NS_:
+ NS_DESC_
+ CM_
+ BA_DEF_
+ BA_
+ VAL_
+ CAT_DEF_
+ CAT_
+ FILTER
+ BA_DEF_DEF_
+ EV_DATA_
+ ENVVAR_DATA_
+ SGTYPE_
+ SGTYPE_VAL_
+ BA_DEF_SGTYPE_
+ BA_SGTYPE_
+ SIG_TYPE_REF_
+ VAL_TABLE_
+ SIG_GROUP_
+ SIG_VALTYPE_
+ SIGTYPE_VALTYPE_
+ BO_TX_BU_
+ BA_DEF_REL_
+ BA_REL_
+ BA_DEF_DEF_REL_
+ BU_SG_REL_
+ BU_EV_REL_
+ BU_BO_REL_
+ SG_MUL_VAL_
+
+BS_: 1 : 2, 2
+
+BU_: Bus0 Bus1 Bus2 Receiver
+
+VAL_TABLE_ ValueTable0 1 "second" 0 "first" 2 "third";
+
+BO_ 0 test_msg0: 8 Vector__XXX
+ SG_ s0 : 0|16@1- (1,0) [-3276|3276] "RPM" Vector__XXX
+ SG_ s1 : 0|32@1+ (1,0) [0|25.5] "Volts" Vector__XXX
+ SG_ s2 : 0|64@1+ (1,0) [0|25.5] "Volts" Vector__XXX
+
+BO_ 1 test_msg_mux0: 8 VehicleBus
+ SG_ mux_switch_value M : 0|3@1+ (1,0) [0|7] "" Receiver
+ SG_ s0_0 m0 : 3|10@1+ (10,0) [0|10230] "unit" Receiver
+ SG_ s0_1 m0 : 13|10@1+ (10,0) [0|4294967295] "unit" Receiver
+ SG_ s0_2 m0 : 23|10@1+ (10,0) [0|0] "unit" Receiver
+ SG_ s0_3 m0 : 33|10@1+ (10,0) [0|0] "unit" Receiver
+ SG_ s0_4 m0 : 43|7@1+ (2,0) [0|0] "V" Receiver
+ SG_ s0_5 m0 : 50|7@1+ (2,0) [0|0] "V" Receiver
+ SG_ s0_6 m0 : 57|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s0_7 m0 : 58|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s0_8 m0 : 59|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s0_9 m0 : 60|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s0_10 m0 : 61|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s0_11 m0 : 62|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s0_12 m0 : 63|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s1_0 m1 : 8|7@1+ (2,0) [0|0] "V" Receiver
+ SG_ s1_1 m1 : 16|10@1+ (10,0) [0|0] "rpm" Receiver
+ SG_ s1_2 m1 : 26|10@1+ (10,0) [0|0] "rpm" Receiver
+ SG_ s1_3 m1 : 36|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s1_4 m1 : 37|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s1_5 m1 : 38|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s1_6 m1 : 40|8@1+ (0.5,-25) [0|0] "A" Receiver
+ SG_ s2_0 m2 : 3|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s2_1 m2 : 4|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s2_2 m2 : 5|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s2_3 m2 : 6|10@1+ (0.25,-70) [0|0] "deg" Receiver
+ SG_ s2_4 m2 : 16|10@1+ (0.25,-10) [0|0] "deg" Receiver
+ SG_ s2_5 m2 : 26|7@1+ (1,0) [0|0] "%" Receiver
+ SG_ s2_6 m2 : 33|2@1+ (1,0) [0|0] "" Receiver
+ SG_ s2_7 m2 : 35|8@1- (1,0) [0|0] "%" Receiver
+ SG_ s2_8 m2 : 43|10@1+ (5,0) [0|0] "deg" Receiver
+ SG_ s2_9 m2 : 53|6@1+ (1,0) [0|0] "A" Receiver
+ SG_ s3_0 m3 : 8|8@1+ (1,-40) [0|0] "C" Receiver
+ SG_ s3_1 m3 : 16|11@1+ (0.5,1) [0|0] "C" Receiver
+ SG_ s3_2 m3 : 27|10@1+ (1,-20) [0|0] "C" Receiver
+ SG_ s3_3 m3 : 37|10@1+ (1,0) [0|0] "C" Receiver
+ SG_ s3_4 m3 : 47|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s3_5 m3 : 48|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s3_6 m3 : 49|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s3_7 m3 : 50|11@1+ (0.125,-40) [0|0] "C" Receiver
+ SG_ s3_8 m3 : 61|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s3_9 m3 : 62|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s3_10 m3 : 63|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_0 m4 : 3|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_1 m4 : 8|7@1+ (1,0) [0|0] "%" Receiver
+ SG_ s4_2 m4 : 16|7@1+ (1,0) [0|0] "%" Receiver
+ SG_ s4_3 m4 : 24|2@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_4 m4 : 26|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_5 m4 : 27|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_6 m4 : 28|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_7 m4 : 29|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_8 m4 : 30|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_9 m4 : 31|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_10 m4 : 32|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_11 m4 : 33|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_12 m4 : 34|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_13 m4 : 35|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_14 m4 : 36|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_15 m4 : 37|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_16 m4 : 38|1@1+ (1,0) [0|0] "" Receiver
+ SG_ s4_17 m4 : 40|6@1+ (1,0) [0|0] "%/s" Receiver
+ SG_ s4_18 m4 : 46|1@1+ (1,0) [0|0] "" Receiver
+
+BO_TX_BU_ 0 : Bus0, Bus2;
+
+EV_ EnvVar0: 0 [0|1] "unit" 0.5 0 DUMMY_NODE_VECTOR0 Bus0, Bus1, Bus2;
+
+ENVVAR_DATA_ EnvVar0 : 8;
+
+
+CM_ "Network comment";
+CM_ BU_ Bus0 "Node comment";
+CM_ BO_ 0 "Message comment";
+CM_ SG_ 0 s0 "Signal comment";
+CM_ EV_ EnvVar0 "EnvVar comment";
+
+BA_DEF_ "Network attribute definition 0" INT -1 1;
+BA_DEF_ "Network attribute definition 1" HEX -1 1;
+BA_DEF_ "Network attribute definition 2" FLOAT -1 1;
+BA_DEF_ "Network attribute definition 3" STRING;
+BA_DEF_ "Network attribute definition 4" ENUM "enum0", "enum1";
+BA_DEF_ BU_ "Node attribute definition" STRING;
+BA_DEF_ BO_ "Message attribute definition" STRING;
+BA_DEF_ SG_ "Signal attribute definition" STRING;
+BA_DEF_ EV_ "EnvVar attribute definition" STRING;
+
+BA_DEF_DEF_ "Network attribute definition 3" "value";
+BA_DEF_DEF_ "Network attribute definition 0" 0;
+BA_DEF_DEF_ "Network attribute definition 2" 2.5;
+
+BA_ "Network attribute definition 0" 1;
+BA_ "Node attribute definition" BU_ Bus0 "value1";
+BA_ "Message attribute definition" BO_ 1 "value1";
+BA_ "Signal attribute definition" SG_ 0 s1 "value1";
+BA_ "EnvVar attribute definition" EV_ EnvVar0 "value1";
+
+VAL_ 0 s0 1 "VAL_1" 2 "VAL_2";
+VAL_ EnvVar0 1 "VAL_1" 2 "VAL_3";
+
+SIG_VALTYPE_ 0 s1 : 1;
+SIG_VALTYPE_ 0 s2 : 2;

@@ -1,0 +1,64 @@
+VERSION "VER"
+
+
+NS_ : 
+	NS_DESC_
+	CM_
+	BA_DEF_
+	BA_
+	VAL_
+	CAT_DEF_
+	CAT_
+	FILTER
+	BA_DEF_DEF_
+	EV_DATA_
+	ENVVAR_DATA_
+	SGTYPE_
+	SGTYPE_VAL_
+	BA_DEF_SGTYPE_
+	BA_SGTYPE_
+	SIG_TYPE_REF_
+	VAL_TABLE_
+	SIG_GROUP_
+	SIG_VALTYPE_
+	SIGTYPE_VALTYPE_
+	BO_TX_BU_
+	BA_DEF_REL_
+	BA_REL_
+	BA_DEF_DEF_REL_
+	BU_SG_REL_
+	BU_EV_REL_
+	BU_BO_REL_
+	SG_MUL_VAL_
+
+BS_:
+
+BU_: E1
+
+
+BO_ 1 MSG0: 8 E1
+ SG_ A : 6|15@0+ (1,0) [0|32767] ""  E1
+ SG_ B : 7|1@0+ (1,0) [0|1] ""  E1
+ SG_ C : 38|15@0+ (1,0) [0|32767] ""  E1
+ SG_ D : 39|1@0+ (1,0) [0|1] ""  E1
+
+BO_ 2 MSG1: 8 E1
+ SG_ E : 0|1@1+ (1,0) [0|1] ""  E1
+ SG_ F : 1|15@1+ (1,0) [0|32767] ""  E1
+ SG_ G : 32|1@1+ (1,0) [0|1] ""  E1
+ SG_ H : 33|15@1+ (1,0) [0|32767] ""  E1
+
+BO_ 3 MSG2: 8 E1
+ SG_ I : 0|4@1+ (1,0) [0|15] ""  E1
+ SG_ J : 4|4@1+ (1,0) [0|15] ""  E1
+ SG_ K : 8|4@1+ (1,0) [0|15] ""  E1
+
+BO_ 4 MSG3: 8 E1
+ SG_ L : 7|64@0+ (1,0) [0|18446744073709551615] ""  E1
+
+BO_ 5 MSG4: 8 E1
+ SG_ M : 0|64@1+ (1,0) [0|18446744073709551615] ""  E1
+
+
+
+
