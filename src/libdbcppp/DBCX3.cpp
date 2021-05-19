@@ -24,7 +24,6 @@ namespace dbcppp::DBCX3::Grammar
         {
             auto& error_handler = get<error_handler_tag>(context).get();
             std::string message = "Error! Expecting: " + x.which() + " here:";
-            std::cout << x.where() << message << std::endl;
             error_handler(x.where(), message);
             return error_handler_result::fail;
         }
@@ -451,9 +450,5 @@ std::optional<dbcppp::DBCX3::AST::G_Network> dbcppp::DBCX3::ParseFromMemory(cons
     {
         return gnet;
     }
-    if (begin != end)
-    {
-        throw std::runtime_error("Could not parse DBC (begin != end)");
-    }
-    throw std::runtime_error("Could not parse DBC");
+    return std::nullopt;
 }
