@@ -1,6 +1,9 @@
 
 #include <boost/spirit/home/x3.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
+#include <boost/spirit/home/x3/support/utility/error_reporting.hpp>
+#include <boost/spirit/home/x3/support/utility/annotate_on_success.hpp>
+#include <boost/fusion/include/io.hpp>
 
 #include "NetworkImpl.h"
 #include "DBCX3.h"
@@ -12,86 +15,101 @@ namespace dbcppp::DBCX3::Grammar
     using namespace dbcppp::DBCX3::AST;
     using namespace boost::spirit::x3;
     
-    static const rule<class BlockComment> block_comment("BlockComment");
-    static const rule<class CharString, std::string> quoted_string("CharString");
-    static const rule<class CIdentifier, std::string> C_identifier("C_Identifier");
-    static const rule<class StartBit, uint64_t> start_bit("StartBit");
-    static const rule<class SignalSize, uint64_t> signal_size("SignalSize");
-    static const rule<class Factor, double> factor("Factor");
-    static const rule<class Offset, double> offset("Offset");
-    static const rule<class Minimum, double> minimum("Minimum");
-    static const rule<class Maximum, double> maximum("Maximum");
-    static const rule<class ByteOrder, char> byte_order("ByteOrder");
-    static const rule<class ValueType, char> value_type("ValueType");
-    static const rule<class Version, std::string> version("Version");
-    static const rule<class NewSymbols, std::vector<std::string>> new_symbols("NewSymbols");
-    static const rule<class NewSymbol, std::string> new_symbol("NewSymbol");
-    static const rule<class BitTiming, G_BitTiming> bit_timing("BitTiming");
-    static const rule<class Baudrate, uint64_t> baudrate("baudrate");
-    static const rule<class BTR1, uint64_t> btr1("BTR1");
-    static const rule<class BTR2, uint64_t> btr2("BTR2");
-    static const rule<class Node, G_Node> node("Node");
-    static const rule<class Node, std::vector<G_Node>> nodes("Nodes");
-    static const rule<class NodeName, std::string> node_name("NodeName");
-    static const rule<class ValueTable, G_ValueTable> value_table("ValueTable");
-    static const rule<class ValueTableName, std::string> value_table_name("ValueTableName");
-    static const rule<class ValueEncodingDescription, G_ValueEncodingDescription> value_encoding_description("ValueEncodingDescription");
-    static const rule<class Message, G_Message> message("Message");
-    static const rule<class MessageId, uint64_t> message_id("MessageID");
-    static const rule<class MessageName, std::string> message_name("MessageName");
-    static const rule<class MessageSize, uint64_t> message_size("MessageSize");
-    static const rule<class Transmitter, std::string> transmitter("Transmitter");
-    static const rule<class Signal, G_Signal> signal("Signal");
-    static const rule<class SignalName, std::string> signal_name("SignalName");
-    static const rule<class MultiplexerIndicator, boost::optional<std::string>> multiplexer_indicator("MultiplexerIndicator");
-    static const rule<class Unit, std::string> unit("Unit");
-    static const rule<class Receiver, std::string> receiver("Receiver");
-    static const rule<class MessageTransmitter, G_MessageTransmitter> message_transmitter("MessageTransmitter");
-    static const rule<class EnvironmentVariable, G_EnvironmentVariable> environment_variable("EnvironmentVariable");
-    static const rule<class EnvVarName, std::string> env_var_name("EnvVarName");
-    static const rule<class EnvVarType, uint64_t> env_var_type("EnvVarType");
-    static const rule<class InitialValue, double> initial_value("InitialValue");
-    static const rule<class EvId, uint64_t> ev_id("EvId");
-    static const rule<class AccessType, std::string> access_type("AccessType");
-    static const rule<class AccessNodes, std::vector<std::string>> access_nodes("AccessNodes");
-    static const rule<class EnvironmentVariableData, G_EnvironmentVariableData> environment_variable_data("EnvironmentVariableData");
-    static const rule<class DataSize, uint64_t> data_size("DataSize");
-    static const rule<class SignalType, G_SignalType> signal_type("SignalType");
-    static const rule<class SignalTypeName, std::string> signal_type_name("SignalTypeName");
-    static const rule<class DefaultValue, double> default_value("DefaultValue");
-    static const rule<class Comment, G_Comment> comment("Comment");
-    static const rule<class CommentNetwork, G_CommentNetwork> comment_network("CommentNetwork");
-    static const rule<class CommentNode, G_CommentNode> comment_node("CommentNode");
-    static const rule<class CommentMessage, G_CommentMessage> comment_message("CommentMessage");
-    static const rule<class CommentSignal, G_CommentSignal> comment_signal("CommentSignal");
-    static const rule<class CommentEnvVar, G_CommentEnvVar> comment_env_var("CommentEnvVar");
-    static const rule<class AttributeDefinition, G_AttributeDefinition> attribute_definition("AttributeDefinition");
-    static const rule<class ObjectType, boost::optional<std::string>> object_type("ObjectType");
-    static const rule<class AttributeName, std::string> attribute_name("AttributeName");
-    static const rule<class AttributeValueType, G_AttributeValue> attribute_value_type("AttributeValueType");
-    static const rule<class AttributeValueTypeInt, G_AttributeValueTypeInt> attribute_value_type_int("AttributeValueTypeInt");
-    static const rule<class AttributeValueTypeHex, G_AttributeValueTypeHex> attribute_value_type_hex("AttributeValueTypeHex");
-    static const rule<class AttributeValueTypeFloat, G_AttributeValueTypeFloat> attribute_value_type_float("AttributeValueTypeFloat");
-    static const rule<class AttributeValueTypeString, G_AttributeValueTypeString> attribute_value_type_string("AttributeValueTypeString");
-    static const rule<class AttributeValueTypeEnum, G_AttributeValueTypeEnum> attribute_value_type_enum("AttributeValueTypeEnum");
-    static const rule<class AttributeDefault, G_Attribute> attribute_default("AttributeDefault");
-    static const rule<class AttributeValue, variant_attr_value_t> attribute_value("AttributeValue");
-    static const rule<class AttributeValueEnt, variant_attribute_t> attribute_value_ent("AttributeValueEnt");
-    static const rule<class AttributeValueEntNetwork, G_AttributeNetwork> attribute_value_ent_network("AttributeValueEntNetwork");
-    static const rule<class AttributeValueEntNode, G_AttributeNode> attribute_value_ent_node("AttributeValueEntNode");
-    static const rule<class AttributeValueEntMessage, G_AttributeMessage> attribute_value_ent_message("AttributeValueEntMessage");
-    static const rule<class AttributeValueEntSignal, G_AttributeSignal> attribute_value_ent_signal("AttributeValueEntSignal");
-    static const rule<class AttributeValueEntEnvVar, G_AttributeEnvVar> attribute_value_ent_env_var("AttributeValueEntEnvVar");
-    static const rule<class ValueDescriptionSigEnvVar, G_ValueDescriptionSigEnvVar> value_description_sig_env_var("ValueDescription");
-    static const rule<class ValueDescriptionSignal, G_ValueDescriptionSignal> value_description_signal("ValueDescriptionSignal");
-    static const rule<class ValueDescriptionEnvVar, G_ValueDescriptionEnvVar> value_description_env_var("ValueDescriptionEnvVar");
-    static const rule<class SignalExtendedValueType, G_SignalExtendedValueType> signal_extended_value_type("SignalExtendedValueType");
-        
-    static const rule<class Network, G_Network> network("Network");
+    struct error_handler
+    {
+        template <typename Iterator, typename Exception, typename Context>
+        error_handler_result on_error(
+              Iterator& first, const Iterator& last
+            , const Exception& x, const Context& context)
+        {
+            auto& error_handler = get<error_handler_tag>(context).get();
+            std::string message = "Error! Expecting: " + x.which() + " here:";
+            std::cout << x.where() << message << std::endl;
+            error_handler(x.where(), message);
+            return error_handler_result::fail;
+        }
+    };
+
+    static const rule<struct TagBlockComment> block_comment("BlockComment");
+    static const rule<struct TagCharString, std::string> quoted_string("CharString");
+    static const rule<struct TagCIdentifier, std::string> C_identifier("C_Identifier");
+    static const rule<struct TagStartBit, uint64_t> start_bit("StartBit");
+    static const rule<struct TagSignalSize, uint64_t> signal_size("SignalSize");
+    static const rule<struct TagFactor, double> factor("Factor");
+    static const rule<struct TagOffset, double> offset("Offset");
+    static const rule<struct TagMinimum, double> minimum("Minimum");
+    static const rule<struct TagMaximum, double> maximum("Maximum");
+    static const rule<struct TagByteOrder, char> byte_order("ByteOrder");
+    static const rule<struct TagValueType, char> value_type("ValueType");
+    static const rule<struct TagVersion, std::string> version("Version");
+    static const rule<struct TagNewSymbols, std::vector<std::string>> new_symbols("NewSymbols");
+    static const rule<struct TagNewSymbol, std::string> new_symbol("NewSymbol");
+    static const rule<struct TagBitTiming, G_BitTiming> bit_timing("BitTiming");
+    static const rule<struct TagBaudrate, uint64_t> baudrate("baudrate");
+    static const rule<struct TagBTR1, uint64_t> btr1("BTR1");
+    static const rule<struct TagBTR2, uint64_t> btr2("BTR2");
+    static const rule<struct TagNode, G_Node> node("Node");
+    static const rule<struct TagNode, std::vector<G_Node>> nodes("Nodes");
+    static const rule<struct TagNodeName, std::string> node_name("NodeName");
+    static const rule<struct TagValueTable, G_ValueTable> value_table("ValueTable");
+    static const rule<struct TagValueTableName, std::string> value_table_name("ValueTableName");
+    static const rule<struct TagValueEncodingDescription, G_ValueEncodingDescription> value_encoding_description("ValueEncodingDescription");
+    static const rule<struct TagMessage, G_Message> message("Message");
+    static const rule<struct TagMessageId, uint64_t> message_id("MessageID");
+    static const rule<struct TagMessageName, std::string> message_name("MessageName");
+    static const rule<struct TagMessageSize, uint64_t> message_size("MessageSize");
+    static const rule<struct TagTransmitter, std::string> transmitter("Transmitter");
+    static const rule<struct TagSignal, G_Signal> signal("Signal");
+    static const rule<struct TagSignalName, std::string> signal_name("SignalName");
+    static const rule<struct TagMultiplexerIndicator, boost::optional<std::string>> multiplexer_indicator("MultiplexerIndicator");
+    static const rule<struct TagUnit, std::string> unit("Unit");
+    static const rule<struct TagReceiver, std::string> receiver("Receiver");
+    static const rule<struct TagMessageTransmitter, G_MessageTransmitter> message_transmitter("MessageTransmitter");
+    static const rule<struct TagEnvironmentVariable, G_EnvironmentVariable> environment_variable("EnvironmentVariable");
+    static const rule<struct TagEnvVarName, std::string> env_var_name("EnvVarName");
+    static const rule<struct TagEnvVarType, uint64_t> env_var_type("EnvVarType");
+    static const rule<struct TagInitialValue, double> initial_value("InitialValue");
+    static const rule<struct TagEvId, uint64_t> ev_id("EvId");
+    static const rule<struct TagAccessType, std::string> access_type("AccessType");
+    static const rule<struct TagAccessNodes, std::vector<std::string>> access_nodes("AccessNodes");
+    static const rule<struct TagEnvironmentVariableData, G_EnvironmentVariableData> environment_variable_data("EnvironmentVariableData");
+    static const rule<struct TagDataSize, uint64_t> data_size("DataSize");
+    static const rule<struct TagSignalType, G_SignalType> signal_type("SignalType");
+    static const rule<struct TagSignalTypeName, std::string> signal_type_name("SignalTypeName");
+    static const rule<struct TagDefaultValue, double> default_value("DefaultValue");
+    static const rule<struct TagComment, G_Comment> comment("Comment");
+    static const rule<struct TagCommentNetwork, G_CommentNetwork> comment_network("CommentNetwork");
+    static const rule<struct TagCommentNode, G_CommentNode> comment_node("CommentNode");
+    static const rule<struct TagCommentMessage, G_CommentMessage> comment_message("CommentMessage");
+    static const rule<struct TagCommentSignal, G_CommentSignal> comment_signal("CommentSignal");
+    static const rule<struct TagCommentEnvVar, G_CommentEnvVar> comment_env_var("CommentEnvVar");
+    static const rule<struct TagAttributeDefinition, G_AttributeDefinition> attribute_definition("AttributeDefinition");
+    static const rule<struct TagObjectType, boost::optional<std::string>> object_type("ObjectType");
+    static const rule<struct TagAttributeName, std::string> attribute_name("AttributeName");
+    static const rule<struct TagAttributeValueType, G_AttributeValue> attribute_value_type("AttributeValueType");
+    static const rule<struct TagAttributeValueTypeInt, G_AttributeValueTypeInt> attribute_value_type_int("AttributeValueTypeInt");
+    static const rule<struct TagAttributeValueTypeHex, G_AttributeValueTypeHex> attribute_value_type_hex("AttributeValueTypeHex");
+    static const rule<struct TagAttributeValueTypeFloat, G_AttributeValueTypeFloat> attribute_value_type_float("AttributeValueTypeFloat");
+    static const rule<struct TagAttributeValueTypeString, G_AttributeValueTypeString> attribute_value_type_string("AttributeValueTypeString");
+    static const rule<struct TagAttributeValueTypeEnum, G_AttributeValueTypeEnum> attribute_value_type_enum("AttributeValueTypeEnum");
+    static const rule<struct TagAttributeDefault, G_Attribute> attribute_default("AttributeDefault");
+    static const rule<struct TagAttributeValue, variant_attr_value_t> attribute_value("AttributeValue");
+    static const rule<struct TagAttributeValueEnt, variant_attribute_t> attribute_value_ent("AttributeValueEnt");
+    static const rule<struct TagAttributeValueEntNetwork, G_AttributeNetwork> attribute_value_ent_network("AttributeValueEntNetwork");
+    static const rule<struct TagAttributeValueEntNode, G_AttributeNode> attribute_value_ent_node("AttributeValueEntNode");
+    static const rule<struct TagAttributeValueEntMessage, G_AttributeMessage> attribute_value_ent_message("AttributeValueEntMessage");
+    static const rule<struct TagAttributeValueEntSignal, G_AttributeSignal> attribute_value_ent_signal("AttributeValueEntSignal");
+    static const rule<struct TagAttributeValueEntEnvVar, G_AttributeEnvVar> attribute_value_ent_env_var("AttributeValueEntEnvVar");
+    static const rule<struct TagValueDescriptionSigEnvVar, G_ValueDescriptionSigEnvVar> value_description_sig_env_var("ValueDescription");
+    static const rule<struct TagValueDescriptionSignal, G_ValueDescriptionSignal> value_description_signal("ValueDescriptionSignal");
+    static const rule<struct TagValueDescriptionEnvVar, G_ValueDescriptionEnvVar> value_description_env_var("ValueDescriptionEnvVar");
+    static const rule<struct TagSignalExtendedValueType, G_SignalExtendedValueType> signal_extended_value_type("SignalExtendedValueType");
+    
+    static const rule<struct TagNetwork, G_Network> network("Network");
 
     static const auto network_def =
           version
-        > new_symbols
+        > -new_symbols
         > bit_timing
         > nodes
         > *value_table
@@ -178,7 +196,7 @@ namespace dbcppp::DBCX3::Grammar
     static const auto value_encoding_description_def = signed_int > quoted_string;
 
     static const auto message_def = lexeme[lit("BO_") >> omit[space]] > message_id > message_name
-        > ':' > message_size > skip(blank)[transmitter > eol] > *signal;
+        > ':' > message_size > skip(blank)[transmitter > (eol | eoi)] > *signal;
     static const auto message_id_def = unsigned_int;
     static const auto message_name_def = C_identifier;
     static const auto message_size_def = unsigned_int;
@@ -186,7 +204,7 @@ namespace dbcppp::DBCX3::Grammar
 
     static const auto signal_def = lexeme[lit("SG_") >> omit[space]] > signal_name
         > multiplexer_indicator > ':' > start_bit > '|' > signal_size > '@' > byte_order > value_type
-        > '(' > factor > ',' > offset > ')' > '[' > minimum > '|' > maximum > ']' > unit >> skip(blank)[*receiver > eol];
+        > '(' > factor > ',' > offset > ')' > '[' > minimum > '|' > maximum > ']' > unit >> skip(blank)[(receiver % ',') > (eol | eoi)];
     static const auto signal_name_def = C_identifier;
     static const auto multiplexer_indicator_def = -C_identifier;
     static const auto unit_def = quoted_string;
@@ -267,86 +285,169 @@ namespace dbcppp::DBCX3::Grammar
     static const auto signal_extended_value_type_def =
         lexeme[lit("SIG_VALTYPE_") > omit[space]] > message_id > signal_name > ':' > unsigned_int > ';';
     
-    BOOST_SPIRIT_DEFINE(block_comment)
-    BOOST_SPIRIT_DEFINE(quoted_string)
-    BOOST_SPIRIT_DEFINE(C_identifier)
-    BOOST_SPIRIT_DEFINE(start_bit) 
-    BOOST_SPIRIT_DEFINE(signal_size)
-    BOOST_SPIRIT_DEFINE(factor)
-    BOOST_SPIRIT_DEFINE(offset)
-    BOOST_SPIRIT_DEFINE(minimum)
-    BOOST_SPIRIT_DEFINE(maximum)
-    BOOST_SPIRIT_DEFINE(byte_order)
-    BOOST_SPIRIT_DEFINE(value_type)
-    BOOST_SPIRIT_DEFINE(version)
-    BOOST_SPIRIT_DEFINE(new_symbol)
-    BOOST_SPIRIT_DEFINE(new_symbols)
-    BOOST_SPIRIT_DEFINE(bit_timing)
-    BOOST_SPIRIT_DEFINE(baudrate)
-    BOOST_SPIRIT_DEFINE(btr1)
-    BOOST_SPIRIT_DEFINE(btr2)
-    BOOST_SPIRIT_DEFINE(node)
-    BOOST_SPIRIT_DEFINE(nodes)
-    BOOST_SPIRIT_DEFINE(node_name)
-    BOOST_SPIRIT_DEFINE(value_table)
-    BOOST_SPIRIT_DEFINE(value_table_name)
-    BOOST_SPIRIT_DEFINE(value_encoding_description)
-    BOOST_SPIRIT_DEFINE(message)
-    BOOST_SPIRIT_DEFINE(message_id)
-    BOOST_SPIRIT_DEFINE(message_name)
-    BOOST_SPIRIT_DEFINE(message_size)
-    BOOST_SPIRIT_DEFINE(transmitter)
-    BOOST_SPIRIT_DEFINE(signal)
-    BOOST_SPIRIT_DEFINE(signal_name)
-    BOOST_SPIRIT_DEFINE(multiplexer_indicator)
-    BOOST_SPIRIT_DEFINE(unit)
-    BOOST_SPIRIT_DEFINE(receiver)
-    BOOST_SPIRIT_DEFINE(message_transmitter)
-    BOOST_SPIRIT_DEFINE(environment_variable)
-    BOOST_SPIRIT_DEFINE(env_var_name)
-    BOOST_SPIRIT_DEFINE(env_var_type)
-    BOOST_SPIRIT_DEFINE(initial_value)
-    BOOST_SPIRIT_DEFINE(ev_id)
-    BOOST_SPIRIT_DEFINE(access_type)
-    BOOST_SPIRIT_DEFINE(access_nodes)
-    BOOST_SPIRIT_DEFINE(environment_variable_data)
-    BOOST_SPIRIT_DEFINE(data_size)
-    BOOST_SPIRIT_DEFINE(signal_type)
-    BOOST_SPIRIT_DEFINE(signal_type_name)
-    BOOST_SPIRIT_DEFINE(default_value)
-    BOOST_SPIRIT_DEFINE(comment)
-    BOOST_SPIRIT_DEFINE(comment_network)
-    BOOST_SPIRIT_DEFINE(comment_node)
-    BOOST_SPIRIT_DEFINE(comment_message)
-    BOOST_SPIRIT_DEFINE(comment_signal)
-    BOOST_SPIRIT_DEFINE(comment_env_var)
-    BOOST_SPIRIT_DEFINE(attribute_definition)
-    BOOST_SPIRIT_DEFINE(object_type)
-    BOOST_SPIRIT_DEFINE(attribute_name)
-    BOOST_SPIRIT_DEFINE(attribute_value_type)
-    BOOST_SPIRIT_DEFINE(attribute_value_type_int)
-    BOOST_SPIRIT_DEFINE(attribute_value_type_hex)
-    BOOST_SPIRIT_DEFINE(attribute_value_type_float)
-    BOOST_SPIRIT_DEFINE(attribute_value_type_string)
-    BOOST_SPIRIT_DEFINE(attribute_value_type_enum)
-    BOOST_SPIRIT_DEFINE(attribute_default)
-    BOOST_SPIRIT_DEFINE(attribute_value)
-    BOOST_SPIRIT_DEFINE(attribute_value_ent)
-    BOOST_SPIRIT_DEFINE(attribute_value_ent_network)
-    BOOST_SPIRIT_DEFINE(attribute_value_ent_node)
-    BOOST_SPIRIT_DEFINE(attribute_value_ent_message)
-    BOOST_SPIRIT_DEFINE(attribute_value_ent_signal)
-    BOOST_SPIRIT_DEFINE(attribute_value_ent_env_var)
-    BOOST_SPIRIT_DEFINE(value_description_signal)
-    BOOST_SPIRIT_DEFINE(value_description_env_var)
-    BOOST_SPIRIT_DEFINE(value_description_sig_env_var)
-    BOOST_SPIRIT_DEFINE(signal_extended_value_type)
-    BOOST_SPIRIT_DEFINE(network)
+    BOOST_SPIRIT_DEFINE(block_comment);
+    BOOST_SPIRIT_DEFINE(quoted_string);
+    BOOST_SPIRIT_DEFINE(C_identifier);
+    BOOST_SPIRIT_DEFINE(start_bit);
+    BOOST_SPIRIT_DEFINE(signal_size);
+    BOOST_SPIRIT_DEFINE(factor);
+    BOOST_SPIRIT_DEFINE(offset);
+    BOOST_SPIRIT_DEFINE(minimum);
+    BOOST_SPIRIT_DEFINE(maximum);
+    BOOST_SPIRIT_DEFINE(byte_order);
+    BOOST_SPIRIT_DEFINE(value_type);
+    BOOST_SPIRIT_DEFINE(version);
+    BOOST_SPIRIT_DEFINE(new_symbol);
+    BOOST_SPIRIT_DEFINE(new_symbols);
+    BOOST_SPIRIT_DEFINE(bit_timing);
+    BOOST_SPIRIT_DEFINE(baudrate);
+    BOOST_SPIRIT_DEFINE(btr1);
+    BOOST_SPIRIT_DEFINE(btr2);
+    BOOST_SPIRIT_DEFINE(node);
+    BOOST_SPIRIT_DEFINE(nodes);
+    BOOST_SPIRIT_DEFINE(node_name);
+    BOOST_SPIRIT_DEFINE(value_table);
+    BOOST_SPIRIT_DEFINE(value_table_name);
+    BOOST_SPIRIT_DEFINE(value_encoding_description);
+    BOOST_SPIRIT_DEFINE(message);
+    BOOST_SPIRIT_DEFINE(message_id);
+    BOOST_SPIRIT_DEFINE(message_name);
+    BOOST_SPIRIT_DEFINE(message_size);
+    BOOST_SPIRIT_DEFINE(transmitter);
+    BOOST_SPIRIT_DEFINE(signal);
+    BOOST_SPIRIT_DEFINE(signal_name);
+    BOOST_SPIRIT_DEFINE(multiplexer_indicator);
+    BOOST_SPIRIT_DEFINE(unit);
+    BOOST_SPIRIT_DEFINE(receiver);
+    BOOST_SPIRIT_DEFINE(message_transmitter);
+    BOOST_SPIRIT_DEFINE(environment_variable);
+    BOOST_SPIRIT_DEFINE(env_var_name);
+    BOOST_SPIRIT_DEFINE(env_var_type);
+    BOOST_SPIRIT_DEFINE(initial_value);
+    BOOST_SPIRIT_DEFINE(ev_id);
+    BOOST_SPIRIT_DEFINE(access_type);
+    BOOST_SPIRIT_DEFINE(access_nodes);
+    BOOST_SPIRIT_DEFINE(environment_variable_data);
+    BOOST_SPIRIT_DEFINE(data_size);
+    BOOST_SPIRIT_DEFINE(signal_type);
+    BOOST_SPIRIT_DEFINE(signal_type_name);
+    BOOST_SPIRIT_DEFINE(default_value);
+    BOOST_SPIRIT_DEFINE(comment);
+    BOOST_SPIRIT_DEFINE(comment_network);
+    BOOST_SPIRIT_DEFINE(comment_node);
+    BOOST_SPIRIT_DEFINE(comment_message);
+    BOOST_SPIRIT_DEFINE(comment_signal);
+    BOOST_SPIRIT_DEFINE(comment_env_var);
+    BOOST_SPIRIT_DEFINE(attribute_definition);
+    BOOST_SPIRIT_DEFINE(object_type);
+    BOOST_SPIRIT_DEFINE(attribute_name);
+    BOOST_SPIRIT_DEFINE(attribute_value_type);
+    BOOST_SPIRIT_DEFINE(attribute_value_type_int);
+    BOOST_SPIRIT_DEFINE(attribute_value_type_hex);
+    BOOST_SPIRIT_DEFINE(attribute_value_type_float);
+    BOOST_SPIRIT_DEFINE(attribute_value_type_string);
+    BOOST_SPIRIT_DEFINE(attribute_value_type_enum);
+    BOOST_SPIRIT_DEFINE(attribute_default);
+    BOOST_SPIRIT_DEFINE(attribute_value);
+    BOOST_SPIRIT_DEFINE(attribute_value_ent);
+    BOOST_SPIRIT_DEFINE(attribute_value_ent_network);
+    BOOST_SPIRIT_DEFINE(attribute_value_ent_node);
+    BOOST_SPIRIT_DEFINE(attribute_value_ent_message);
+    BOOST_SPIRIT_DEFINE(attribute_value_ent_signal);
+    BOOST_SPIRIT_DEFINE(attribute_value_ent_env_var);
+    BOOST_SPIRIT_DEFINE(value_description_signal);
+    BOOST_SPIRIT_DEFINE(value_description_env_var);
+    BOOST_SPIRIT_DEFINE(value_description_sig_env_var);
+    BOOST_SPIRIT_DEFINE(signal_extended_value_type);
+    BOOST_SPIRIT_DEFINE(network);
+
+    struct TagCharString : error_handler, annotate_on_success {};
+    struct TagCIdentifier : error_handler, annotate_on_success {};
+    struct TagStartBit : error_handler, annotate_on_success {};
+    struct TagSignalSize : error_handler, annotate_on_success {};
+    struct TagFactor : error_handler, annotate_on_success {};
+    struct TagOffset : error_handler, annotate_on_success {};
+    struct TagMinimum : error_handler, annotate_on_success {};
+    struct TagMaximum : error_handler, annotate_on_success {};
+    struct TagByteOrder : error_handler, annotate_on_success {};
+    struct TagValueType : error_handler, annotate_on_success {};
+    struct TagVersion : error_handler, annotate_on_success {};
+    struct TagNewSymbols : error_handler, annotate_on_success {};
+    struct TagNewSymbol : error_handler, annotate_on_success {};
+    struct TagBitTiming : error_handler, annotate_on_success {};
+    struct TagBaudrate : error_handler, annotate_on_success {};
+    struct TagBTR1 : error_handler, annotate_on_success {};
+    struct TagBTR2 : error_handler, annotate_on_success {};
+    struct TagNode : error_handler, annotate_on_success {};
+    struct TagNodeName : error_handler, annotate_on_success {};
+    struct TagValueTable : error_handler, annotate_on_success {};
+    struct TagValueTableName : error_handler, annotate_on_success {};
+    struct TagValueEncodingDescription : error_handler, annotate_on_success {};
+    struct TagTagMessage : error_handler, annotate_on_success {};
+    struct TagMessageId : error_handler, annotate_on_success {};
+    struct TagMessageName : error_handler, annotate_on_success {};
+    struct TagMessageSize : error_handler, annotate_on_success {};
+    struct TagTransmitter : error_handler, annotate_on_success {};
+    struct TagSignal : error_handler, annotate_on_success {};
+    struct TagSignalName : error_handler, annotate_on_success {};
+    struct TagMultiplexerIndicator : error_handler, annotate_on_success {};
+    struct TagUnit : error_handler, annotate_on_success {};
+    struct TagReceiver : error_handler, annotate_on_success {};
+    struct TagMessageTransmitter : error_handler, annotate_on_success {};
+    struct TagEnvironmentVariable : error_handler, annotate_on_success {};
+    struct TagEnvVarName : error_handler, annotate_on_success {};
+    struct TagEnvVarType : error_handler, annotate_on_success {};
+    struct TagInitialValue : error_handler, annotate_on_success {};
+    struct TagEvId : error_handler, annotate_on_success {};
+    struct TagAccessType : error_handler, annotate_on_success {};
+    struct TagAccessNodes : error_handler, annotate_on_success {};
+    struct TagEnvironmentVariableData : error_handler, annotate_on_success {};
+    struct TagDataSize : error_handler, annotate_on_success {};
+    struct TagSignalType : error_handler, annotate_on_success {};
+    struct TagSignalTypeName : error_handler, annotate_on_success {};
+    struct TagDefaultValue : error_handler, annotate_on_success {};
+    struct TagComment : error_handler, annotate_on_success {};
+    struct TagCommentNetwork : error_handler, annotate_on_success {};
+    struct TagCommentNode : error_handler, annotate_on_success {};
+    struct TagCommentMessage : error_handler, annotate_on_success {};
+    struct TagCommentSignal : error_handler, annotate_on_success {};
+    struct TagCommentEnvVar : error_handler, annotate_on_success {};
+    struct TagAttributeDefinition : error_handler, annotate_on_success {};
+    struct TagObjectType : error_handler, annotate_on_success {};
+    struct TagAttributeName : error_handler, annotate_on_success {};
+    struct TagAttributeValueType           : error_handler, annotate_on_success {};
+    struct TagAttributeValueTypeInt        : error_handler, annotate_on_success {};
+    struct TagAttributeValueTypeHex        : error_handler, annotate_on_success {};
+    struct TagAttributeValueTypeFloat      : error_handler, annotate_on_success {};
+    struct TagAttributeValueTypeString     : error_handler, annotate_on_success {};
+    struct TagAttributeValueTypeEnum       : error_handler, annotate_on_success {};
+    struct TagAttributeDefault             : error_handler, annotate_on_success {};
+    struct TagAttributeValue               : error_handler, annotate_on_success {};
+    struct TagAttributeValueEnt            : error_handler, annotate_on_success {};
+    struct TagAttributeValueEntNetwork     : error_handler, annotate_on_success {};
+    struct TagAttributeValueEntNode        : error_handler, annotate_on_success {};
+    struct TagAttributeValueEntMessage     : error_handler, annotate_on_success {};
+    struct TagAttributeValueEntSignal      : error_handler, annotate_on_success {};
+    struct TagAttributeValueEntEnvVar      : error_handler, annotate_on_success {};
+    struct TagValueDescriptionSigEnvVar    : error_handler, annotate_on_success {};
+    struct TagValueDescriptionSignal       : error_handler, annotate_on_success {};
+    struct TagValueDescriptionEnvVar       : error_handler, annotate_on_success {};
+    struct TagSignalExtendedValueType      : error_handler, annotate_on_success {};
+    struct TagNetwork                      : error_handler, annotate_on_success {};
 }
 std::optional<dbcppp::DBCX3::AST::G_Network> dbcppp::DBCX3::ParseFromMemory(const char* begin, const char* end)
 {
+    using boost::spirit::x3::with;
+    using boost::spirit::x3::error_handler_tag;
+    using error_handler_type = boost::spirit::x3::error_handler<const char*>;
+    error_handler_type error_handler(begin, end, std::cerr);
+    auto const parser =
+        with<error_handler_tag>(std::ref(error_handler))
+        [
+            dbcppp::DBCX3::Grammar::network
+        ];
     dbcppp::DBCX3::AST::G_Network gnet;
-    if (phrase_parse(begin, end, Grammar::network, Grammar::skipper, gnet) && begin == end)
+    if (phrase_parse(begin, end, parser, Grammar::skipper, gnet) && begin == end)
     {
         return gnet;
     }

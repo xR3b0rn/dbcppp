@@ -20,6 +20,7 @@ TEST_CASE("DBCParserTest", "[]")
         {
             continue;
         }
+        std::cout << "Testing DBC grammar with file: " << dbc_file << std::endl;
         auto dbc_file_tmp = dbc_file.path().string() + ".tmp";
         std::unique_ptr<dbcppp::Network> spec;
         std::unique_ptr<dbcppp::Network> test;
@@ -36,7 +37,6 @@ TEST_CASE("DBCParserTest", "[]")
             std::ifstream dbc(dbc_file_tmp);
             test = dbcppp::Network::loadDBCFromIs(dbc);
         }
-        auto error_msg = "Failed for " + std::to_string(i) + "th file ('" + dbc_file.path().string() + "')";
         if (*spec != *test)
         {
             std::cout << error_msg << std::endl;
