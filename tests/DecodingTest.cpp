@@ -53,7 +53,7 @@ auto generate_random_signal(
             rnd_start_bit = dist(rng) % (rnd_msg_byte_size * 8 - rnd_bit_size);
         }
         sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
-            rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
+            rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type, {});
     }
     else
     {
@@ -63,7 +63,7 @@ auto generate_random_signal(
         for (auto rnd_start_bit : indices)
         {
             sig = Signal::create(rnd_msg_byte_size, "Signal", Signal::Multiplexer::NoMux, 0, rnd_start_bit, rnd_bit_size,
-                rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type);
+                rnd_byte_order, rnd_value_type, 1.0, 0.0, 0.0, 0.0, "", {}, {}, {}, "", rnd_extended_value_type, {});
             if (sig->getError(Signal::ErrorCode::NoError))
             {
                 break;

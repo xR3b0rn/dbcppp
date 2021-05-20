@@ -6,6 +6,7 @@
 #include <dbcppp/Signal.h>
 #include <dbcppp/Node.h>
 #include "AttributeImpl.h"
+#include "SignalMultiplexerValueImpl.h"
 
 namespace dbcppp
 {
@@ -31,7 +32,8 @@ namespace dbcppp
             , std::vector<AttributeImpl>&& attribute_values
             , std::vector<std::tuple<int64_t, std::string>>&& value_descriptions
             , std::string&& comment
-            , Signal::ExtendedValueType extended_value_type);
+            , Signal::ExtendedValueType extended_value_type
+            , std::vector<SignalMultiplexerValueImpl>&& signal_multiplexer_values);
             
         virtual std::unique_ptr<Signal> clone() const override;
 
@@ -58,6 +60,7 @@ namespace dbcppp
         virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
         virtual const std::string& getComment() const override;
         virtual ExtendedValueType getExtendedValueType() const override;
+        virtual void forEachSignalMultiplexerValue(std::function<void(const SignalMultiplexerValue&)> cb) const override;
         virtual bool getError(ErrorCode code) const override;
         
         virtual bool operator==(const Signal& rhs) const override;
@@ -83,6 +86,7 @@ namespace dbcppp
         std::vector<std::tuple<int64_t, std::string>> _value_descriptions;
         std::string _comment;
         ExtendedValueType _extended_value_type;
+        std::vector<SignalMultiplexerValueImpl> _signal_multiplexer_values;
 
     public:
         // for performance

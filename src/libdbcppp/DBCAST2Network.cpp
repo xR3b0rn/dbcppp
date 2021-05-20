@@ -210,7 +210,7 @@ static auto getComment(const G_Network& gnet, const G_Message& m, const G_Signal
 }
 static auto getSignalExtendedValueType(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
-    Signal::ExtendedValueType result = Signal::ExtendedValueType::Integer;
+    Signal::ExtendedValueType extended_value_type = Signal::ExtendedValueType::Integer;
     auto iter = std::find_if(gnet.signal_extended_value_types.begin(), gnet.signal_extended_value_types.end(),
         [&](const G_SignalExtendedValueType& sev)
         {
@@ -220,15 +220,36 @@ static auto getSignalExtendedValueType(const G_Network& gnet, const G_Message& m
     {
         switch (iter->value)
         {
-        case 1: result = Signal::ExtendedValueType::Float; break;
-        case 2: result = Signal::ExtendedValueType::Double; break;
+        case 1: extended_value_type = Signal::ExtendedValueType::Float; break;
+        case 2: extended_value_type = Signal::ExtendedValueType::Double; break;
         }
     }
-    return result;
+    return extended_value_type;
+}
+static auto getSignalMultiplexerValues(const G_Network& gnet, const G_Signal& s)
+{
+    std::vector<std::unique_ptr<SignalMultiplexerValue>> signal_multiplexer_values;
+    for (const auto& gsmv : gnet.signal_multiplexer_values)
+    {
+        if (gsmv.signal_name == s.name)
+        {
+            auto switch_name = gsmv.switch_name;
+            std::vector<SignalMultiplexerValue::Range> value_ranges;
+            for (const auto& r : gsmv.value_ranges)
+            {
+                value_ranges.push_back({r.from, r.to});
+            }
+            auto signal_multiplexer_value = SignalMultiplexerValue::create(
+                  std::move(switch_name)
+                , std::move(value_ranges));
+            signal_multiplexer_values.push_back(std::move(signal_multiplexer_value));
+        }
+    }
+    return signal_multiplexer_values;
 }
 static auto getSignals(const G_Network& gnet, const G_Message& m)
 {
-    std::vector<std::unique_ptr<Signal>> result;
+    std::vector<std::unique_ptr<Signal>> signals;
     for (const G_Signal& s : m.signals)
     {
         std::vector<std::string> receivers;
@@ -237,6 +258,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
         auto extended_value_type = getSignalExtendedValueType(gnet, m, s);
         auto multiplexer_indicator = Signal::Multiplexer::NoMux;
         auto comment = getComment(gnet, m, s);
+        auto signal_multiplexer_values = getSignalMultiplexerValues(gnet, s);
         uint64_t multiplexer_switch_value = 0;
         if (s.multiplexer_indicator)
         {
@@ -256,6 +278,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
         {
             receivers.push_back(n);
         }
+
         auto ns = Signal::create(
               m.size
             , std::string(s.name)
@@ -274,7 +297,8 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
             , std::move(attribute_values)
             , std::move(value_descriptions)
             , std::move(comment)
-            , extended_value_type);
+            , extended_value_type
+            , std::move(signal_multiplexer_values));
         if (ns->getError(Signal::ErrorCode::SignalExceedsMessageSize))
         {
             std::cout << "Warning: The signals '" << m.name << "::" << s.name << "'"
@@ -295,9 +319,9 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
             std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
                 << " This warning appears when a signal uses type double but the system this programm is running on does not uses IEEE 754 encoding for doubles." << std::endl;
         }
-        result.push_back(std::move(ns));
+        signals.push_back(std::move(ns));
     }
-    return result;
+    return signals;
 }
 static auto getMessageTransmitters(const G_Network& gnet, const G_Message& m)
 {
