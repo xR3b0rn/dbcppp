@@ -5,6 +5,7 @@
 
 #include <boost/variant.hpp>
 #include <boost/optional.hpp>
+#include <boost/spirit/home/x3/support/ast/position_tagged.hpp>
 
 namespace dbcppp
 {
@@ -13,36 +14,42 @@ namespace dbcppp
         namespace AST
         {
             using variant_attr_value_t = boost::variant<int64_t, double, std::string>;
-
             struct G_Version
+                : boost::spirit::x3::position_tagged
             {
                 std::string version;
             };
             struct G_NewSymbols
+                : boost::spirit::x3::position_tagged
             {
-                std::vector<std::string> new_symbols;
+                boost::optional<std::vector<std::string>> new_symbols;
             };
             struct G_BitTiming
+                : boost::spirit::x3::position_tagged
             {
                 uint64_t baudrate;
                 uint64_t BTR1;
                 uint64_t BTR2;
             };
             struct G_Node
+                : boost::spirit::x3::position_tagged
             {
                 std::string name;
             };
             struct G_ValueEncodingDescription
+                : boost::spirit::x3::position_tagged
             {
                 int64_t value;
                 std::string description;
             };
             struct G_ValueTable
+                : boost::spirit::x3::position_tagged
             {
                 std::string name;
                 std::vector<G_ValueEncodingDescription> value_encoding_descriptions;
             };
             struct G_Signal
+                : boost::spirit::x3::position_tagged
             {
                 std::string name;
                 boost::optional<std::string> multiplexer_indicator;
@@ -58,6 +65,7 @@ namespace dbcppp
                 std::vector<std::string> receivers;
             };
             struct G_Message
+                : boost::spirit::x3::position_tagged
             {
                 uint64_t id;
                 std::string name;
@@ -66,11 +74,13 @@ namespace dbcppp
                 std::vector<G_Signal> signals;
             };
             struct G_MessageTransmitter
+                : boost::spirit::x3::position_tagged
             {
                 uint64_t id;
                 std::vector<std::string> transmitters;
             };
             struct G_EnvironmentVariable
+                : boost::spirit::x3::position_tagged
             {
                 std::string name;
                 uint64_t var_type;
@@ -83,11 +93,13 @@ namespace dbcppp
                 std::vector<std::string> access_nodes;
             };
             struct G_EnvironmentVariableData
+                : boost::spirit::x3::position_tagged
             {
                 std::string name;
                 uint64_t size;
             };
             struct G_SignalType
+                : boost::spirit::x3::position_tagged
             {
                 std::string name;
                 uint64_t size;
@@ -102,54 +114,65 @@ namespace dbcppp
                 std::string value_table_name;
             };
             struct G_CommentNetwork
+                : boost::spirit::x3::position_tagged
             {
                 std::string comment;
             };
             struct G_CommentNode
+                : boost::spirit::x3::position_tagged
             {
                 std::string node_name;
                 std::string comment;
             };
             struct G_CommentMessage
+                : boost::spirit::x3::position_tagged
             {
                 uint64_t message_id;
                 std::string comment;
             };
             struct G_CommentSignal
+                : boost::spirit::x3::position_tagged
             {
                 uint64_t message_id;
                 std::string signal_name;
                 std::string comment;
             };
             struct G_CommentEnvVar
+                : boost::spirit::x3::position_tagged
             {
                 std::string env_var_name;
                 std::string comment;
             };
             using variant_comment_t = boost::variant<G_CommentNetwork, G_CommentNode, G_CommentMessage, G_CommentSignal, G_CommentEnvVar>;
             struct G_Comment
+                : boost::spirit::x3::position_tagged
             {
                 variant_comment_t comment;
             };
             struct G_AttributeValueTypeInt
+                : boost::spirit::x3::position_tagged
             {
                 int64_t minimum;
                 int64_t maximum;
             };
             struct G_AttributeValueTypeHex
+                : boost::spirit::x3::position_tagged
             {
                 int64_t minimum;
                 int64_t maximum;
             };
             struct G_AttributeValueTypeFloat
+                : boost::spirit::x3::position_tagged
             {
                 double minimum;
                 double maximum;
             };
             struct G_AttributeValueTypeString
+                : boost::spirit::x3::position_tagged
             {
             };
             struct G_AttributeValueTypeEnum
+                : boost::spirit::x3::position_tagged
             {
                 std::vector<std::string> values;
             };
@@ -159,38 +182,45 @@ namespace dbcppp
                     G_AttributeValueTypeFloat, G_AttributeValueTypeString,
                     G_AttributeValueTypeEnum>;
             struct G_AttributeValue
+                : boost::spirit::x3::position_tagged
             {
                 variant_attribute_value_t value;
             };
             struct G_AttributeDefinition
+                : boost::spirit::x3::position_tagged
             {
                 boost::optional<std::string> object_type;
                 std::string name;
                 G_AttributeValue value_type;
             };
             struct G_Attribute
+                : boost::spirit::x3::position_tagged
             {
                 std::string name;
                 variant_attr_value_t value;
             };
             struct G_AttributeNetwork
+                : boost::spirit::x3::position_tagged
             {
                 std::string attribute_name;
                 variant_attr_value_t value;
             };
             struct G_AttributeNode
+                : boost::spirit::x3::position_tagged
             {
                 std::string attribute_name;
                 std::string node_name;
                 variant_attr_value_t value;
             };
             struct G_AttributeMessage
+                : boost::spirit::x3::position_tagged
             {
                 std::string attribute_name;
                 uint64_t message_id;
                 variant_attr_value_t value;
             };
             struct G_AttributeSignal
+                : boost::spirit::x3::position_tagged
             {
                 std::string attribute_name;
                 uint64_t message_id;
@@ -198,39 +228,46 @@ namespace dbcppp
                 variant_attr_value_t value;
             };
             struct G_AttributeEnvVar
+                : boost::spirit::x3::position_tagged
             {
                 std::string attribute_name;
                 std::string env_var_name;
                 variant_attr_value_t value;
             };
             struct G_ValueDescription
+                : boost::spirit::x3::position_tagged
             {
                 int64_t value;
                 std::string description;
             };
             using variant_attribute_t = boost::variant<G_AttributeNetwork, G_AttributeNode, G_AttributeMessage, G_AttributeSignal, G_AttributeEnvVar>;
             struct G_ValueDescriptionSignal
+                : boost::spirit::x3::position_tagged
             {
                 uint64_t message_id;
                 std::string signal_name;
                 std::vector<G_ValueDescription> value_descriptions;
             };
             struct G_ValueDescriptionEnvVar
+                : boost::spirit::x3::position_tagged
             {;
                 std::string env_var_name;
                 std::vector<G_ValueDescription> value_descriptions;
             };
             struct G_ValueDescriptionSigEnvVar
+                : boost::spirit::x3::position_tagged
             {
                 boost::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar> description;
             };
             struct G_SignalExtendedValueType
+                : boost::spirit::x3::position_tagged
             {
                 uint64_t message_id;
                 std::string signal_name;
                 uint64_t value;
             };
             struct G_Network
+                : boost::spirit::x3::position_tagged
             {
                 G_Version version;
                 std::vector<std::string> new_symbols;

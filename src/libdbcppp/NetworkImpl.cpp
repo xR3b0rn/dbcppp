@@ -505,7 +505,11 @@ std::map<std::string, std::unique_ptr<Network>> Network::loadNetworkFromFile(con
     }
     else if (filename.extension() == ".dbc")
     {
-        result.insert(std::make_pair("", loadDBCFromIs(is)));
+        auto net = loadDBCFromIs(is);
+        if (net)
+        {
+            result.insert(std::make_pair("", std::move(net)));
+        }
     }
     else if (filename.extension() == ".kcd")
     {

@@ -68,7 +68,7 @@ BO_ 3 Message64big: 8 Vector__XXX
  SG_ s64big : 7|64@0- (1,0) [0|0] "" Vector__XXX
 
 BO_ 2 Message64: 8 Vector__XXX
- SG_ s64 : 0|64@1- (1,0) [-9.22337203685478E+018|9.22337203685478E+018] "" Vector__XXX
+ SG_ s64 : 0|64@1- (1,0) [-9.22|9.22] "" Vector__XXX
 
 BO_ 1 Message33: 8 Vector__XXX
  SG_ s33 : 0|33@1- (1,0) [-4294967296|4294967295] "" Vector__XXX

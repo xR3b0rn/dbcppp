@@ -23,7 +23,7 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
             //native_to_big_inplace(data);
-            boost::endian::native_to_big_inplace(data);
+            native_to_big_inplace(data);
             data &= sigi->_mask;
             data <<= sigi->_fixed_start_bit_0;
             data1 >>= sigi->_fixed_start_bit_1;
@@ -32,7 +32,7 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         else
         {
             //native_to_little_inplace(data);
-            boost::endian::native_to_little_inplace(data);
+            native_to_little_inplace(data);
             data >>= sigi->_fixed_start_bit_0;
             data1 &= sigi->_mask;
             data1 <<= sigi->_fixed_start_bit_1;
@@ -65,12 +65,12 @@ Signal::raw_t template_decode(const Signal* sig, const void* nbytes) noexcept
         if constexpr (aByteOrder == Signal::ByteOrder::BigEndian)
         {
             //native_to_big_inplace(data);
-            boost::endian::native_to_big_inplace(data);
+            native_to_big_inplace(data);
         }
         else
         {
             //native_to_little_inplace(data);
-            boost::endian::native_to_little_inplace(data);
+            native_to_little_inplace(data);
         }
         if constexpr (aExtendedValueType == Signal::ExtendedValueType::Double)
         {
