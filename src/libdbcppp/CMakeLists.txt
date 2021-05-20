@@ -35,7 +35,7 @@ file(GLOB src
 target_sources(${PROJECT_NAME}
     PRIVATE ${header} 
     PUBLIC ${header_interface}
-    PRIVATE ${src}
+    PRIVATE ${src} DBCX3AdaptStructs.inl
 )
 
 include(GenerateExportHeader)

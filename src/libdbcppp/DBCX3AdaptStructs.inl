@@ -205,6 +205,18 @@ BOOST_FUSION_ADAPT_STRUCT(
     value
 )
 BOOST_FUSION_ADAPT_STRUCT(
+    dbcppp::DBCX3::AST::G_Range,
+    from,
+    to
+)
+BOOST_FUSION_ADAPT_STRUCT(
+    dbcppp::DBCX3::AST::G_SignalMultiplexerValue,
+    message_id,
+    signal_name,
+    switch_name,
+    value_ranges
+)
+BOOST_FUSION_ADAPT_STRUCT(
     dbcppp::DBCX3::AST::G_Network,
     version,
     new_symbols,
@@ -221,5 +233,6 @@ BOOST_FUSION_ADAPT_STRUCT(
     attribute_defaults,
     attribute_values,
     value_descriptions_sig_env_var,
-    signal_extended_value_types
+    signal_extended_value_types,
+    signal_multiplexer_values
 )

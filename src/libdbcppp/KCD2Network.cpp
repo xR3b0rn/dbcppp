@@ -344,7 +344,8 @@ public:
             , {}
             , std::move(value_descriptions)
             , std::move(comment)
-            , extended_value_type);
+            , extended_value_type
+            , {});
     }
     std::vector<std::string>
         parseReceivers(const xml::Element* signal)

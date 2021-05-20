@@ -36,6 +36,7 @@ TEST_CASE("DBCParserTest", "[]")
         {
             std::ifstream dbc(dbc_file_tmp);
             test = dbcppp::Network::loadDBCFromIs(dbc);
+            REQUIRE(test);
         }
         auto error_msg = "Failed for " + std::to_string(i) + "th file ('" + dbc_file.path().string() + "')";
         if (*spec != *test)
