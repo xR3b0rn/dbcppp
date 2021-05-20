@@ -1028,7 +1028,8 @@ extern "C"
             , std::move(avs)
             , std::move(vds)
             , std::string(comment)
-            , evt);
+            , evt
+            , {});
         return reinterpret_cast<const dbcppp_Signal*>(result.release());
     }
     DBCPPP_API const char* dbcppp_SignalGetName(const dbcppp_Signal* sig)
