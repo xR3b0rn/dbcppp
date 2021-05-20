@@ -120,10 +120,11 @@ int main()
 * attribute_values
 * value_descriptions
 * signal_extended_value_type_list
+* signal_groups
+* signal_multiplexer_value
 ## Not supported yet
 * sigtype_attr_list
 * signal_type_refs
-* signal_groups
 # Decode-function
 The signals decode function is using prestored masks and fixed offsets to speed up calculation, therefore the decoding-function should be almost as fast as a code generated decode function would be. The assembly of the `decode`-function on its critical path (signed and byte swap must happen) looks like this (VS19 10.0.18362.0 compiler):
 ```
