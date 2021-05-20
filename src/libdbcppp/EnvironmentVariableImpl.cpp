@@ -109,7 +109,7 @@ bool EnvironmentVariableImpl::hasAccessNode(const std::string& name) const
     auto iter = std::find(_access_nodes.begin(), _access_nodes.end(), name);
     return iter != _access_nodes.end();
 }
-void EnvironmentVariableImpl::forEachAccessNode(std::function<void(const std::string&)>&& cb) const
+void EnvironmentVariableImpl::forEachAccessNode(std::function<void(const std::string&)> cb) const
 {
     for (const auto& n : _access_nodes)
     {
@@ -127,7 +127,7 @@ const std::string* EnvironmentVariableImpl::getValueDescriptionByValue(int64_t v
     }
     return result;
 }
-void EnvironmentVariableImpl::forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const
+void EnvironmentVariableImpl::forEachValueDescription(std::function<void(int64_t, const std::string&)> cb) const
 {
     for (const auto& vd : _value_descriptions)
     {
@@ -149,7 +149,7 @@ const Attribute* EnvironmentVariableImpl::getAttributeValueByName(const std::str
     }
     return result;
 }
-const Attribute* EnvironmentVariableImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
+const Attribute* EnvironmentVariableImpl::findAttributeValue(std::function<bool(const Attribute&)> pred) const
 {
     const Attribute* result = nullptr;
     auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(), pred);
@@ -159,7 +159,7 @@ const Attribute* EnvironmentVariableImpl::findAttributeValue(std::function<bool(
     }
     return result;
 }
-void EnvironmentVariableImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+void EnvironmentVariableImpl::forEachAttributeValue(std::function<void(const Attribute&)> cb) const
 {
     for (const auto& av : _attribute_values)
     {

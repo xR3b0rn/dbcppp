@@ -572,7 +572,7 @@ bool SignalImpl::hasReceiver(const std::string& name) const
     auto iter = std::find(_receivers.begin(), _receivers.end(), name);
     return iter != _receivers.end();
 }
-void SignalImpl::forEachReceiver(std::function<void(const std::string&)>&& cb) const
+void SignalImpl::forEachReceiver(std::function<void(const std::string&)> cb) const
 {
     for (const auto& n : _receivers)
     {
@@ -590,7 +590,7 @@ const std::string* SignalImpl::getValueDescriptionByValue(int64_t value) const
     }
     return result;
 }
-void SignalImpl::forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const
+void SignalImpl::forEachValueDescription(std::function<void(int64_t, const std::string&)> cb) const
 {
     for (auto& av : _value_descriptions)
     {
@@ -609,7 +609,7 @@ const Attribute* SignalImpl::getAttributeValueByName(const std::string& name) co
     }
     return result;
 }
-const Attribute* SignalImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
+const Attribute* SignalImpl::findAttributeValue(std::function<bool(const Attribute&)> pred) const
 {
     const Attribute* result = nullptr;
     for (const auto& av : _attribute_values)
@@ -622,7 +622,7 @@ const Attribute* SignalImpl::findAttributeValue(std::function<bool(const Attribu
     }
     return result;
 }
-void SignalImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+void SignalImpl::forEachAttributeValue(std::function<void(const Attribute&)> cb) const
 {
     for (const auto& av : _attribute_values)
     {

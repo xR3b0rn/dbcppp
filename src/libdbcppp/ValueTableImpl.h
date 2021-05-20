@@ -23,7 +23,7 @@ namespace dbcppp
         virtual const std::string& getName() const override;
         virtual std::optional<std::reference_wrapper<const SignalType>> getSignalType() const override;
         virtual const std::string* getvalueEncodingDescriptionByValue(int64_t value) const override;
-        virtual void forEachValueEncodingDescription(std::function<void(int64_t, const std::string&)>&& cb) const override;
+        virtual void forEachValueEncodingDescription(std::function<void(int64_t, const std::string&)> cb) const override;
         
         virtual bool operator==(const ValueTable& rhs) const override;
         virtual bool operator!=(const ValueTable& rhs) const override;

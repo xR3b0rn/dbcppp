@@ -11,10 +11,12 @@ std::unique_ptr<Message> Message::create(
     , std::vector<std::string>&& message_transmitters
     , std::vector<std::unique_ptr<Signal>>&& signals
     , std::vector<std::unique_ptr<Attribute>>&& attribute_values
-    , std::string&& comment)
+    , std::string&& comment
+    , std::vector<std::unique_ptr<SignalGroup>>&& signal_groups)
 {
     std::vector<SignalImpl> ss;
     std::vector<AttributeImpl> avs;
+    std::vector<SignalGroupImpl> sgs;
     for (auto& s : signals)
     {
         ss.push_back(std::move(static_cast<SignalImpl&>(*s)));
@@ -25,6 +27,11 @@ std::unique_ptr<Message> Message::create(
         avs.push_back(std::move(static_cast<AttributeImpl&>(*av)));
         av.reset(nullptr);
     }
+    for (auto& sg : signal_groups)
+    {
+        sgs.push_back(std::move(static_cast<SignalGroupImpl&>(*sg)));
+        sg.reset(nullptr);
+    }
     return std::make_unique<MessageImpl>(
           id
         , std::move(name)
@@ -33,7 +40,8 @@ std::unique_ptr<Message> Message::create(
         , std::move(message_transmitters)
         , std::move(ss)
         , std::move(avs)
-        , std::move(comment));
+        , std::move(comment)
+        , std::move(sgs));
 }
 MessageImpl::MessageImpl(
       uint64_t id
@@ -43,7 +51,8 @@ MessageImpl::MessageImpl(
     , std::vector<std::string>&& message_transmitters
     , std::vector<SignalImpl>&& signals
     , std::vector<AttributeImpl>&& attribute_values
-    , std::string&& comment)
+    , std::string&& comment
+    , std::vector<SignalGroupImpl>&& signal_groups)
     
     : _id(std::move(id))
     , _name(std::move(name))
@@ -53,6 +62,7 @@ MessageImpl::MessageImpl(
     , _signals(std::move(signals))
     , _attribute_values(std::move(attribute_values))
     , _comment(std::move(comment))
+    , _signal_groups(std::move(signal_groups))
     , _mux_signal(nullptr)
     , _error(ErrorCode::NoError)
 {
@@ -145,7 +155,7 @@ bool MessageImpl::hasMessageTransmitter(const std::string& name) const
       [&](const auto& other) { return name == other; });
     return iter != _message_transmitters.end();
 }
-void MessageImpl::forEachMessageTransmitter(std::function<void(const std::string&)>&& cb) const
+void MessageImpl::forEachMessageTransmitter(std::function<void(const std::string&)> cb) const
 {
     for (const auto& n : _message_transmitters)
     {
@@ -163,7 +173,7 @@ const Signal* MessageImpl::getSignalByName(const std::string& name) const
     }
     return result;
 }
-const Signal* MessageImpl::findSignal(std::function<bool(const Signal&)>&& pred) const
+const Signal* MessageImpl::findSignal(std::function<bool(const Signal&)> pred) const
 {
     const Signal* result = nullptr;
     auto iter = std::find_if(_signals.begin(), _signals.end(), pred);
@@ -173,7 +183,7 @@ const Signal* MessageImpl::findSignal(std::function<bool(const Signal&)>&& pred)
     }
     return result;
 }
-void MessageImpl::forEachSignal(std::function<void(const Signal&)>&& cb) const
+void MessageImpl::forEachSignal(std::function<void(const Signal&)> cb) const
 {
     for (const auto& s : _signals)
     {
@@ -191,7 +201,7 @@ const Attribute* MessageImpl::getAttributeValueByName(const std::string& name) c
     }
     return result;
 }
-const Attribute* MessageImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
+const Attribute* MessageImpl::findAttributeValue(std::function<bool(const Attribute&)> pred) const
 {
     const Attribute* result = nullptr;
     auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(), pred);
@@ -201,7 +211,7 @@ const Attribute* MessageImpl::findAttributeValue(std::function<bool(const Attrib
     }
     return result;
 }
-void MessageImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+void MessageImpl::forEachAttributeValue(std::function<void(const Attribute&)> cb) const
 {
     for (const auto& av : _attribute_values)
     {
@@ -211,6 +221,13 @@ void MessageImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& 
 const std::string& MessageImpl::getComment() const
 {
     return _comment;
+}
+void MessageImpl::forEachSignalGroup(std::function<void(const SignalGroup&)> cb) const
+{
+    for (const auto& signal_group : _signal_groups)
+    {
+        cb(signal_group);
+    }
 }
 const Signal* MessageImpl::getMuxSignal() const 
 {
@@ -227,27 +244,34 @@ const std::vector<SignalImpl>& MessageImpl::signals() const
 }
 bool MessageImpl::operator==(const Message& rhs) const
 {
-    bool result = true;
-    result &= _id == rhs.getId();
-    result &= _name == rhs.getName();
-    result &= _transmitter == rhs.getTransmitter();
+    bool equal = true;
+    equal &= _id == rhs.getId();
+    equal &= _name == rhs.getName();
+    equal &= _transmitter == rhs.getTransmitter();
     rhs.forEachMessageTransmitter(
         [&](const std::string& msg_trans)
         {
-            result &= std::find(_message_transmitters.begin(), _message_transmitters.end(), msg_trans) != _message_transmitters.end();
+            equal &= std::find(_message_transmitters.begin(), _message_transmitters.end(), msg_trans) != _message_transmitters.end();
         });
     rhs.forEachSignal(
         [&](const dbcppp::Signal& sig)
         {
-            result &= std::find(_signals.begin(), _signals.end(), sig) != _signals.end();
+            equal &= std::find(_signals.begin(), _signals.end(), sig) != _signals.end();
         });
     rhs.forEachAttributeValue(
         [&](const dbcppp::Attribute& attr)
         {
-            result &= std::find(_attribute_values.begin(), _attribute_values.end(), attr) != _attribute_values.end();
+            equal &= std::find(_attribute_values.begin(), _attribute_values.end(), attr) != _attribute_values.end();
         });
-    result &= _comment == rhs.getComment();
-    return result;
+    equal &= _comment == rhs.getComment();
+    rhs.forEachSignalGroup(
+        [&](const SignalGroup& sg)
+        {
+            auto beg = _signal_groups.begin();
+            auto end = _signal_groups.end();
+            equal &= std::find(beg, end, sg) != end;
+        });
+    return equal;
 }
 bool MessageImpl::operator!=(const Message& rhs) const
 {

@@ -28,7 +28,7 @@ static auto getNewSymbols(const G_Network& gnet)
 }
 static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
 {
-    std::optional<std::unique_ptr<SignalType>> result;
+    std::optional<std::unique_ptr<SignalType>> signal_type;
     auto iter = std::find_if(gnet.signal_types.begin(), gnet.signal_types.end(),
         [&](const auto& st)
         {
@@ -37,7 +37,7 @@ static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
     if (iter != gnet.signal_types.end())
     {
         auto& st = *iter;
-        result = SignalType::create(
+        signal_type = SignalType::create(
               std::string(st.name)
             , st.size
             , st.byte_order == '0' ? Signal::ByteOrder::BigEndian : Signal::ByteOrder::LittleEndian
@@ -50,11 +50,11 @@ static auto getSignalType(const G_Network& gnet, const G_ValueTable& vt)
             , st.default_value
             , std::string(st.value_table_name));
     }
-    return result;
+    return signal_type;
 }
 static auto getValueTables(const G_Network& gnet)
 {
-    std::vector<std::unique_ptr<ValueTable>> result;
+    std::vector<std::unique_ptr<ValueTable>> value_tables;
     for (const auto& vt : gnet.value_tables)
     {
         auto sig_type = getSignalType(gnet, vt);
@@ -64,22 +64,22 @@ static auto getValueTables(const G_Network& gnet)
             copy_ved.push_back({ved.value, ved.description});
         }
         auto nvt = ValueTable::create(std::string(vt.name), std::move(sig_type), std::move(copy_ved));
-        result.push_back(std::move(nvt));
+        value_tables.push_back(std::move(nvt));
     }
-    return result;
+    return value_tables;
 }
 static auto getBitTiming(const G_Network& gnet)
 {
-    std::unique_ptr<BitTiming> result;
+    std::unique_ptr<BitTiming> bit_timing;
     if (gnet.bit_timing)
     {
-        result = BitTiming::create(gnet.bit_timing->baudrate, gnet.bit_timing->BTR1, gnet.bit_timing->BTR2);
+        bit_timing = BitTiming::create(gnet.bit_timing->baudrate, gnet.bit_timing->BTR1, gnet.bit_timing->BTR2);
     }
     else
     {
-        result = BitTiming::create(0, 0, 0);
+        bit_timing = BitTiming::create(0, 0, 0);
     }
-    return result;
+    return bit_timing;
 }
 
 template <class Variant>
@@ -112,7 +112,7 @@ auto boost_variant_to_std_variant(const boost::variant<Args...>& old)
 
 static auto getAttributeValues(const G_Network& gnet, const G_Node& n)
 {
-    std::vector<std::unique_ptr<Attribute>> result;
+    std::vector<std::unique_ptr<Attribute>> attribute_values;
     for (const variant_attribute_t& av : gnet.attribute_values)
     {
         auto av_ = boost_variant_to_std_variant(av);
@@ -121,14 +121,14 @@ static auto getAttributeValues(const G_Network& gnet, const G_Node& n)
             auto name = pav->attribute_name;
             auto value = boost_variant_to_std_variant(pav->value);
             auto attribute = Attribute::create(std::move(name), AttributeDefinition::ObjectType::Node, std::move(value));
-            result.push_back(std::move(attribute));
+            attribute_values.push_back(std::move(attribute));
         }
     }
-    return result;
+    return attribute_values;
 }
 static auto getComment(const G_Network& gnet, const G_Node& n)
 {
-    std::string result;
+    std::string comment;
     auto iter_comment = std::find_if(gnet.comments.begin(), gnet.comments.end(),
         [&](const auto& c)
         {
@@ -139,25 +139,25 @@ static auto getComment(const G_Network& gnet, const G_Node& n)
     if (iter_comment != gnet.comments.end())
     {
         auto comment_ = boost_variant_to_std_variant(iter_comment->comment);
-        result = std::get<G_CommentNode>(comment_).comment;
+        comment = std::get<G_CommentNode>(comment_).comment;
     }
-    return result;
+    return comment;
 }
 static auto getNodes(const G_Network& gnet)
 {
-    std::vector<std::unique_ptr<Node>> result;
+    std::vector<std::unique_ptr<Node>> nodes;
     for (const auto& n : gnet.nodes)
     {
         auto comment = getComment(gnet, n);
         auto attribute_values = getAttributeValues(gnet, n);
         auto nn = Node::create(std::string(n.name), std::move(comment), std::move(attribute_values));
-        result.push_back(std::move(nn));
+        nodes.push_back(std::move(nn));
     }
-    return result;
+    return nodes;
 }
 static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
-    std::vector<std::unique_ptr<Attribute>> result;
+    std::vector<std::unique_ptr<Attribute>> attribute_values;
     for (const auto& vav : gnet.attribute_values)
     {
         auto vav_ = boost_variant_to_std_variant(vav);
@@ -168,11 +168,11 @@ static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const 
             {
                 auto value = boost_variant_to_std_variant(av.value);
                 auto attribute = Attribute::create(std::string(av.attribute_name), AttributeDefinition::ObjectType::Signal, std::move(value));
-                result.push_back(std::move(attribute));
+                attribute_values.push_back(std::move(attribute));
             }
         }
     }
-    return result;
+    return attribute_values;
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
@@ -195,18 +195,18 @@ static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, cons
 }
 static auto getComment(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
-    std::string result;
+    std::string comment;
     for (const auto& c : gnet.comments)
     {
         auto c_ = boost_variant_to_std_variant(c.comment);
         if (auto pcs = std::get_if<G_CommentSignal>(&c_);
             pcs && pcs->message_id == m.id && pcs->signal_name == s.name)
         {
-            result = std::get<G_CommentSignal>(c_).comment;
+            comment = std::get<G_CommentSignal>(c_).comment;
             break;
         }
     }
-    return result;
+    return comment;
 }
 static auto getSignalExtendedValueType(const G_Network& gnet, const G_Message& m, const G_Signal& s)
 {
@@ -325,7 +325,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
 }
 static auto getMessageTransmitters(const G_Network& gnet, const G_Message& m)
 {
-    std::vector<std::string> result;
+    std::vector<std::string> message_transmitters;
     auto iter_mt = std::find_if(gnet.message_transmitters.begin(), gnet.message_transmitters.end(),
         [&](const G_MessageTransmitter& mt)
         {
@@ -335,14 +335,14 @@ static auto getMessageTransmitters(const G_Network& gnet, const G_Message& m)
     {
         for (const auto& t : iter_mt->transmitters)
         {
-            result.push_back(t);
+            message_transmitters.push_back(t);
         }
     }
-    return result;
+    return message_transmitters;
 }
 static auto getAttributeValues(const G_Network& gnet, const G_Message& m)
 {
-    std::vector<std::unique_ptr<Attribute>> result;
+    std::vector<std::unique_ptr<Attribute>> attribute_values;
     for (const auto& vav : gnet.attribute_values)
     {
         auto vav_ = boost_variant_to_std_variant(vav);
@@ -353,36 +353,56 @@ static auto getAttributeValues(const G_Network& gnet, const G_Message& m)
             {
                 auto value = boost_variant_to_std_variant(av.value);
                 auto attribute = Attribute::create(std::string(av.attribute_name), AttributeDefinition::ObjectType::Message, std::move(value));
-                result.push_back(std::move(attribute));
+                attribute_values.push_back(std::move(attribute));
             }
         }
     }
-    return result;
+    return attribute_values;
 }
 static auto getComment(const G_Network& gnet, const G_Message& m)
 {
-    std::string result;
+    std::string comment;
     for (const auto& c : gnet.comments)
     {
         auto c_ = boost_variant_to_std_variant(c.comment);
         if (auto pcm = std::get_if<G_CommentMessage>(&c_);
             pcm && pcm->message_id == m.id)
         {
-            result = std::get<G_CommentMessage>(c_).comment;
+            comment = std::get<G_CommentMessage>(c_).comment;
             break;
         }
     }
-    return result;
+    return comment;
+}
+static auto getSignalGroups(const G_Network& gnet, const G_Message& m)
+{
+    std::vector<std::unique_ptr<SignalGroup>> signal_groups;
+    for (const auto& sg : gnet.signal_groups)
+    {
+        if (sg.message_id == m.id)
+        {
+            auto name = sg.signal_group_name;
+            auto signal_names = sg.signal_names;
+            auto signal_group = SignalGroup::create(
+                  sg.message_id
+                , std::move(name)
+                , sg.repetitions
+                , std::move(signal_names));
+            signal_groups.push_back(std::move(signal_group));
+        }
+    }
+    return signal_groups;
 }
 static auto getMessages(const G_Network& gnet)
 {
-    std::vector<std::unique_ptr<Message>> result;
+    std::vector<std::unique_ptr<Message>> messages;
     for (const auto& m : gnet.messages)
     {
         auto message_transmitters = getMessageTransmitters(gnet, m);
         auto signals = getSignals(gnet, m);
         auto attribute_values = getAttributeValues(gnet, m);
         auto comment = getComment(gnet, m);
+        auto signal_groups = getSignalGroups(gnet, m);
         auto msg = Message::create(
               m.id
             , std::string(m.name)
@@ -391,14 +411,15 @@ static auto getMessages(const G_Network& gnet)
             , std::move(message_transmitters)
             , std::move(signals)
             , std::move(attribute_values)
-            , std::move(comment));
+            , std::move(comment)
+            , std::move(signal_groups));
         if (msg->getError() == Message::ErrorCode::MuxValeWithoutMuxSignal)
         {
             std::cout << "Warning: Message " << msg->getName() << " does have mux value but no mux signal!" << std::endl;
         }
-        result.push_back(std::move(msg));
+        messages.push_back(std::move(msg));
     }
-    return result;
+    return messages;
 }
 static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVariable& ev)
 {
@@ -421,7 +442,7 @@ static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVaria
 }
 static auto getAttributeValues(const G_Network& gnet, const G_EnvironmentVariable& ev)
 {
-    std::vector<std::unique_ptr<Attribute>> result;
+    std::vector<std::unique_ptr<Attribute>> attribute_values;
     for (const auto& vav : gnet.attribute_values)
     {
         auto vav_ = boost_variant_to_std_variant(vav);
@@ -432,30 +453,30 @@ static auto getAttributeValues(const G_Network& gnet, const G_EnvironmentVariabl
             {
                 auto value = boost_variant_to_std_variant(av.value);
                 auto attribute = Attribute::create(std::string(av.attribute_name), AttributeDefinition::ObjectType::EnvironmentVariable, std::move(value));
-                result.push_back(std::move(attribute));
+                attribute_values.push_back(std::move(attribute));
             }
         }
     }
-    return result;
+    return attribute_values;
 }
 static auto getComment(const G_Network& gnet, const G_EnvironmentVariable& ev)
 {
-    std::string result;
+    std::string comment;
     for (const auto& c : gnet.comments)
     {
         auto c_ = boost_variant_to_std_variant(c.comment);
         if (auto pce = std::get_if<G_CommentEnvVar>(&c_);
             pce && pce->env_var_name == ev.name)
         {
-            result = std::get<G_CommentEnvVar>(c_).comment;
+            comment = std::get<G_CommentEnvVar>(c_).comment;
             break;
         }
     }
-    return result;
+    return comment;
 }
 static auto getEnvironmentVariables(const G_Network& gnet)
 {
-    std::vector<std::unique_ptr<EnvironmentVariable>> result;
+    std::vector<std::unique_ptr<EnvironmentVariable>> environment_variables;
     for (const auto& ev : gnet.environment_variables)
     {
         EnvironmentVariable::VarType var_type;
@@ -510,13 +531,13 @@ static auto getEnvironmentVariables(const G_Network& gnet)
             , data_size
             , std::move(attribute_values)
             , std::move(comment));
-        result.push_back(std::move(env_var));
+        environment_variables.push_back(std::move(env_var));
     }
-    return result;
+    return environment_variables;
 }
 static auto getAttributeDefinitions(const G_Network& gnet)
 {
-    std::vector<std::unique_ptr<AttributeDefinition>> result;
+    std::vector<std::unique_ptr<AttributeDefinition>> attribute_definitions;
     struct VisitorValueType
     {
         AttributeDefinition::value_type_t operator()(const G_AttributeValueTypeInt& cn)
@@ -582,24 +603,24 @@ static auto getAttributeDefinitions(const G_Network& gnet)
         auto value = boost_variant_to_std_variant(cvt.value);
         std::visit(vvt, value);
         auto nad = AttributeDefinition::create(std::move(std::string(ad.name)), object_type, std::visit(vvt, value));
-        result.push_back(std::move(nad));
+        attribute_definitions.push_back(std::move(nad));
     }
-    return result;
+    return attribute_definitions;
 }
 static auto getAttributeDefaults(const G_Network& gnet)
 {
-    std::vector<std::unique_ptr<Attribute>> result;
+    std::vector<std::unique_ptr<Attribute>> attribute_defaults;
     for (auto& ad : gnet.attribute_defaults)
     {
         auto value = boost_variant_to_std_variant(ad.value);
         auto nad = Attribute::create(std::string(ad.name), AttributeDefinition::ObjectType::Network, value);
-        result.push_back(std::move(nad));
+        attribute_defaults.push_back(std::move(nad));
     }
-    return result;
+    return attribute_defaults;
 }
 static auto getAttributeValues(const G_Network& gnet)
 {
-    std::vector<std::unique_ptr<Attribute>> result;
+    std::vector<std::unique_ptr<Attribute>> attribute_values;
     for (const auto& av : gnet.attribute_values)
     {
         auto av_ = boost_variant_to_std_variant(av);
@@ -611,24 +632,24 @@ static auto getAttributeValues(const G_Network& gnet)
                 std::string(av_.attribute_name)
                 , AttributeDefinition::ObjectType::Network
                 , std::move(value));
-            result.push_back(std::move(attribute));
+            attribute_values.push_back(std::move(attribute));
         }
     }
-    return result;
+    return attribute_values;
 }
 static auto getComment(const G_Network& gnet)
 {
-    std::string result;
+    std::string comment;
     for (const auto& c : gnet.comments)
     {
         auto c_ = boost_variant_to_std_variant(c.comment);
         if (auto pcn = std::get_if<G_CommentNetwork>(&c_))
         {
-            result = pcn->comment;
+            comment = pcn->comment;
             break;
         }
     }
-    return result;
+    return comment;
 }
 
 std::unique_ptr<Network> DBCAST2Network(const G_Network& gnet)

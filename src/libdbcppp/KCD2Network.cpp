@@ -222,7 +222,8 @@ public:
             , std::move(transmitter)
             , std::move(signals)
             , {}
-            , std::move(comment));
+            , std::move(comment)
+            , {});
     }
     std::string
         parseComment(const xml::Element* note)

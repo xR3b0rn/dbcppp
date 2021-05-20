@@ -139,7 +139,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         break;
     }
     }
-    os << ";";
+    os << ";\n";
     return os;
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const AttributeDefinition& ad)
@@ -200,7 +200,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     }
     os << "\"" << ad.getName() << "\"";
     std::visit(VisitorValueType(os), ad.getValueType());
-    os << ";";
+    os << ";\n";
     return os;
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const BitTiming& bt)
@@ -210,6 +210,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     {
         os << " " << bt.getBaudrate() << " : " << bt.getBTR1() << ", " << bt.getBTR2();
     }
+    os << "\n";
     return os;
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const EnvironmentVariable& ev)
@@ -245,16 +246,15 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                 os << ", " << n;
             }
         });
-    os << ";";
+    os << ";\n";
     return os;
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const Message& m)
 {
-    os << "BO_ " << m.getId() << " " << m.getName() << ": " << m.getMessageSize() << " " << m.getTransmitter();
+    os << "BO_ " << m.getId() << " " << m.getName() << ": " << m.getMessageSize() << " " << m.getTransmitter() << "\n";
     m.forEachSignal(
         [&](const Signal& s)
         {
-            os << "\n ";
             os << s;
         });
     return os;
@@ -266,33 +266,29 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     {
         os << net.getVersion();
     }
-    os << "\"";
-    os << "\n";
-    os << "NS_:";
+    os << "\"\n";
+    os << "NS_:\n";
     net.forEachNewSymbol(
         [&](const std::string& ns)
         {
-            os << "\n " << ns;
+            os << "\t" << ns << "\n";
         });
-    os << "\n";
     os << net.getBitTiming();
-    os << "\n";
     os << "BU_:";
     net.forEachNode(
         [&](const Node& n)
         {
             os << " " << n.getName(); 
         });
+    os << "\n";
     net.forEachValueTable(
         [&](const ValueTable& vt)
         {
-            os << "\n";
             os << vt;
         });
     net.forEachMessage(
         [&](const Message& m)
         {
-            os << "\n";
             os << m;
         });
     // serialize message_transmitters
@@ -306,7 +302,6 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                     if (first)
                     {
                         first = false;
-                        os << "\n";
                         os << "BO_TX_BU_ " << m.getId() << " :";
                         os << " " << n;
                     }
@@ -317,13 +312,12 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                 });
             if (!first)
             {
-                os << ";";
+                os << ";\n";
             }
         });
     net.forEachEnvironmentVariable(
         [&](const EnvironmentVariable& ev)
         {
-            os << "\n";
             os << ev;
         });
     net.forEachEnvironmentVariable(
@@ -331,8 +325,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         {
             if (ev.getVarType() == EnvironmentVariable::VarType::Data)
             {
-                os << "\n";
-                os << "ENVVAR_DATA_ " << ev.getName() << " : " << ev.getDataSize() << ";";
+                os << "ENVVAR_DATA_ " << ev.getName() << " : " << ev.getDataSize() << ";\n";
             }
         });
     net.forEachValueTable(
@@ -340,7 +333,6 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         {
             if (vt.getSignalType())
             {
-                os << "\n";
                 os << vt;
             }
         });
@@ -348,8 +340,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     // Network comment
     if (net.getComment() != "")
     {
-        os << "\n";
-        os << "CM_ \"" << net.getComment() << "\";";
+        os << "CM_ \"" << net.getComment() << "\";\n";
     }
     // Node comments
     net.forEachNode(
@@ -357,8 +348,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         {
             if (n.getComment() != "")
             {
-                os << "\n";
-                os << "CM_ BU_ " << n.getName() << " \"" << n.getComment() << "\"" << ";";
+                os << "CM_ BU_ " << n.getName() << " \"" << n.getComment() << "\"" << ";\n";
             }
         });
     // Message comments
@@ -367,8 +357,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         {
             if (m.getComment() != "")
             {
-                os << "\n";
-                os << "CM_ BO_ " << m.getId() << " \"" << m.getComment() << "\"" << ";";
+                os << "CM_ BO_ " << m.getId() << " \"" << m.getComment() << "\"" << ";\n";
             }
         });
     // Signal comments
@@ -380,8 +369,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                 {
                     if (s.getComment() != "")
                     {
-                        os << "\n";
-                        os << "CM_ SG_ " << m.getId() << " " << s.getName() << " \"" << s.getComment() << "\"" << ";";
+                        os << "CM_ SG_ " << m.getId() << " " << s.getName() << " \"" << s.getComment() << "\"" << ";\n";
                     }
                 });
         });
@@ -391,8 +379,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         {
             if (ev.getComment() != "")
             {
-                os << "\n";
-                os << "CM_ EV_ " << ev.getName() << " \"" << ev.getComment() << "\"" << ";";
+                os << "CM_ EV_ " << ev.getName() << " \"" << ev.getComment() << "\"" << ";\n";
             }
         });
     net.forEachAttributeDefinition(
@@ -471,14 +458,13 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                             if (first)
                             {
                                 first = false;
-                                os << "\n";
                                 os << "VAL_ " << m.getId() << " " << s.getName();
                             }
                             os << " " << value << " \"" << desc << "\"";
                         });
                     if (!first)
                     {
-                        os << ";";
+                        os << ";\n";
                     }
                 });
         });
@@ -492,15 +478,29 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                     if (first)
                     {
                         first = false;
-                        os << "\n";
                         os << "VAL_ " << ev.getName();
                     }
                     os << " " << value << " \"" << desc << "\"";
                 });
             if (!first)
             {
-                os << ";";
+                os << ";\n";
             }
+        });
+    net.forEachMessage(
+        [&](const Message& m)
+        {
+            m.forEachSignalGroup(
+                [&](const SignalGroup& sg)
+                {
+                    os << "SIG_GROUP_ " << sg.getMessageId() << " " << sg.getName() << " " << sg.getRepetitions() << " :";
+                    sg.forEachSignalName(
+                        [&](const std::string& name)
+                        {
+                            os << " " << name;
+                        });
+                    os << ";\n";
+                });
         });
     net.forEachMessage(
         [&](const Message& m)
@@ -516,8 +516,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
                         case Signal::ExtendedValueType::Float: type = 1; break;
                         case Signal::ExtendedValueType::Double: type = 2; break;
                         }
-                        os << "\n";
-                        os << "SIG_VALTYPE_ " << m.getId() << " " << s.getName() << " : " << type << ";";
+                        os << "SIG_VALTYPE_ " << m.getId() << " " << s.getName() << " : " << type << ";\n";
                     }
                 });
         });
@@ -555,7 +554,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const Signal& s)
 {
-    os << "SG_ " << s.getName() << " ";
+    os << "\tSG_ " << s.getName() << " ";
     switch (s.getMultiplexerIndicator())
     {
     case Signal::Multiplexer::MuxSwitch: os << "M "; break;
@@ -588,6 +587,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         os << " ";
     }
     os << receivers;
+    os << "\n";
     return os;
 }
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const SignalType& st)
@@ -625,7 +625,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         });
     if (!first)
     {
-        os << ";";
+        os << ";\n";
     }
     return os;
 }

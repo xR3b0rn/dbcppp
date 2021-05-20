@@ -4,6 +4,7 @@
 #include "SignalImpl.h"
 #include "NodeImpl.h"
 #include "AttributeImpl.h"
+#include "SignalGroupImpl.h"
 
 namespace dbcppp
 {
@@ -19,7 +20,8 @@ namespace dbcppp
             , std::vector<std::string>&& message_transmitters
             , std::vector<SignalImpl>&& signals
             , std::vector<AttributeImpl>&& attribute_values
-            , std::string&& comment);
+            , std::string&& comment
+            , std::vector<SignalGroupImpl>&& signal_groups);
         MessageImpl(const MessageImpl& other);
         MessageImpl(MessageImpl&& other) = default;
         MessageImpl& operator=(const MessageImpl& other);
@@ -32,14 +34,15 @@ namespace dbcppp
         virtual uint64_t getMessageSize() const override;
         virtual const std::string& getTransmitter() const override;
         virtual bool hasMessageTransmitter(const std::string& name) const override;
-        virtual void forEachMessageTransmitter(std::function<void(const std::string&)>&& cb) const override;
+        virtual void forEachMessageTransmitter(std::function<void(const std::string&)> cb) const override;
         virtual const Signal* getSignalByName(const std::string& name) const override;
-        virtual const Signal* findSignal(std::function<bool(const Signal&)>&& pred) const override;
-        virtual void forEachSignal(std::function<void(const Signal&)>&& cb) const override;
+        virtual const Signal* findSignal(std::function<bool(const Signal&)> pred) const override;
+        virtual void forEachSignal(std::function<void(const Signal&)> cb) const override;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
+        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)> pred) const override;
+        virtual void forEachAttributeValue(std::function<void(const Attribute&)> cb) const override;
         virtual const std::string& getComment() const override;
+        virtual void forEachSignalGroup(std::function<void(const SignalGroup&)> cb) const override;
         virtual const Signal* getMuxSignal() const override;
         
         virtual ErrorCode getError() const override;
@@ -58,6 +61,7 @@ namespace dbcppp
         std::vector<SignalImpl> _signals;
         std::vector<AttributeImpl> _attribute_values;
         std::string _comment;
+        std::vector<SignalGroupImpl> _signal_groups;
 
         const Signal* _mux_signal;
 
