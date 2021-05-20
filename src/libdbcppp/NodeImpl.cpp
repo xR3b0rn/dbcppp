@@ -43,7 +43,7 @@ const Attribute* NodeImpl::getAttributeValueByName(const std::string& name) cons
     }
     return result;
 }
-const Attribute* NodeImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
+const Attribute* NodeImpl::findAttributeValue(std::function<bool(const Attribute&)> pred) const
 {
     const Attribute* result = nullptr;
     for (auto& av : _attribute_values)
@@ -56,7 +56,7 @@ const Attribute* NodeImpl::findAttributeValue(std::function<bool(const Attribute
     }
     return result;
 }
-void NodeImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+void NodeImpl::forEachAttributeValue(std::function<void(const Attribute&)> cb) const
 {
     for (const auto& av : _attribute_values)
     {

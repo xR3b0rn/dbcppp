@@ -23,8 +23,8 @@ namespace dbcppp
         virtual ~Node() = default;
         virtual const std::string& getName() const = 0;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
+        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)> pred) const = 0;
+        virtual void forEachAttributeValue(std::function<void(const Attribute&)> cb) const = 0;
         virtual const std::string& getComment() const = 0;
         
         virtual bool operator==(const dbcppp::Node& rhs) const = 0;

@@ -50,14 +50,14 @@ namespace dbcppp
         virtual double getMaximum() const override;
         virtual std::string getUnit() const override;
         virtual bool hasReceiver(const std::string& name) const override;
-        virtual void forEachReceiver(std::function<void(const std::string&)>&& cb) const override;
+        virtual void forEachReceiver(std::function<void(const std::string&)> cb) const override;
 
         virtual const std::string* getValueDescriptionByValue(int64_t value) const override;
-        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const override;
+        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)> cb) const override;
     
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
+        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)> pred) const override;
+        virtual void forEachAttributeValue(std::function<void(const Attribute&)> cb) const override;
         virtual const std::string& getComment() const override;
         virtual ExtendedValueType getExtendedValueType() const override;
         virtual void forEachSignalMultiplexerValue(std::function<void(const SignalMultiplexerValue&)> cb) const override;
