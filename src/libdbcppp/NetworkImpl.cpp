@@ -135,7 +135,7 @@ const Node* NetworkImpl::getNodeByName(const std::string& name) const
     }
     return result;
 }
-const Node* NetworkImpl::findNode(std::function<bool(const Node&)>&& pred) const
+const Node* NetworkImpl::findNode(std::function<bool(const Node&)> pred) const
 {
     const Node* result = nullptr;
     for (const auto& n : _nodes)
@@ -148,7 +148,7 @@ const Node* NetworkImpl::findNode(std::function<bool(const Node&)>&& pred) const
     }
     return result;
 }
-void NetworkImpl::forEachNode(std::function<void(const Node&)>&& cb) const
+void NetworkImpl::forEachNode(std::function<void(const Node&)> cb) const
 {
     for (const auto& n : _nodes)
     {
@@ -166,7 +166,7 @@ const ValueTable* NetworkImpl::getValueTableByName(const std::string& name) cons
     }
     return result;
 }
-const ValueTable* NetworkImpl::findValueTable(std::function<bool(const ValueTable&)>&& pred) const
+const ValueTable* NetworkImpl::findValueTable(std::function<bool(const ValueTable&)> pred) const
 {
     const ValueTable* result = nullptr;
     for (const auto& vt : _value_tables)
@@ -179,7 +179,7 @@ const ValueTable* NetworkImpl::findValueTable(std::function<bool(const ValueTabl
     }
     return result;
 }
-void NetworkImpl::forEachValueTable(std::function<void(const ValueTable&)>&& cb) const
+void NetworkImpl::forEachValueTable(std::function<void(const ValueTable&)> cb) const
 {
     for (const auto& vt : _value_tables)
     {
@@ -197,7 +197,7 @@ const Message* NetworkImpl::getMessageById(uint64_t id) const
     }
     return result;
 }
-const Message* NetworkImpl::findMessage(std::function<bool(const Message&)>&& pred) const
+const Message* NetworkImpl::findMessage(std::function<bool(const Message&)> pred) const
 {
     const Message* result = nullptr;
     for (const auto& m : _messages)
@@ -210,7 +210,7 @@ const Message* NetworkImpl::findMessage(std::function<bool(const Message&)>&& pr
     }
     return result;
 }
-void NetworkImpl::forEachMessage(std::function<void(const Message&)>&& cb) const
+void NetworkImpl::forEachMessage(std::function<void(const Message&)> cb) const
 {
     for (const auto& m : _messages)
     {
@@ -228,7 +228,7 @@ const EnvironmentVariable* NetworkImpl::getEnvironmentVariableByName(const std::
     }
     return result;
 }
-const EnvironmentVariable* NetworkImpl::findEnvironmentVariable(std::function<bool(const EnvironmentVariable&)>&& pred) const
+const EnvironmentVariable* NetworkImpl::findEnvironmentVariable(std::function<bool(const EnvironmentVariable&)> pred) const
 {
     const EnvironmentVariable* result = nullptr;
     for (const auto& ev : _environment_variables)
@@ -241,7 +241,7 @@ const EnvironmentVariable* NetworkImpl::findEnvironmentVariable(std::function<bo
     }
     return result;
 }
-void NetworkImpl::forEachEnvironmentVariable(std::function<void(const EnvironmentVariable&)>&& cb) const
+void NetworkImpl::forEachEnvironmentVariable(std::function<void(const EnvironmentVariable&)> cb) const
 {
     for (const auto& ev : _environment_variables)
     {
@@ -259,7 +259,7 @@ const AttributeDefinition* NetworkImpl::getAttributeDefinitionByName(const std::
     }
     return result;
 }
-const AttributeDefinition* NetworkImpl::findAttributeDefinition(std::function<bool(const AttributeDefinition&)>&& pred) const
+const AttributeDefinition* NetworkImpl::findAttributeDefinition(std::function<bool(const AttributeDefinition&)> pred) const
 {
     const AttributeDefinition* result = nullptr;
     for (const auto& ad : _attribute_definitions)
@@ -272,7 +272,7 @@ const AttributeDefinition* NetworkImpl::findAttributeDefinition(std::function<bo
     }
     return result;
 }
-void NetworkImpl::forEachAttributeDefinition(std::function<void(const AttributeDefinition&)>&& cb) const
+void NetworkImpl::forEachAttributeDefinition(std::function<void(const AttributeDefinition&)> cb) const
 {
     for (const auto& ad : _attribute_definitions)
     {
@@ -290,7 +290,7 @@ const Attribute* NetworkImpl::getAttributeDefaultByName(const std::string& name)
     }
     return result;
 }
-const Attribute* NetworkImpl::findAttributeDefault(std::function<bool(const Attribute&)>&& pred) const
+const Attribute* NetworkImpl::findAttributeDefault(std::function<bool(const Attribute&)> pred) const
 {
     const Attribute* result = nullptr;
     for (const auto& ad : _attribute_defaults)
@@ -303,7 +303,7 @@ const Attribute* NetworkImpl::findAttributeDefault(std::function<bool(const Attr
     }
     return result;
 }
-void NetworkImpl::forEachAttributeDefault(std::function<void(const Attribute&)>&& cb) const
+void NetworkImpl::forEachAttributeDefault(std::function<void(const Attribute&)> cb) const
 {
     for (const auto& ad : _attribute_defaults)
     {
@@ -321,7 +321,7 @@ const Attribute* NetworkImpl::getAttributeValueByName(const std::string& name) c
     }
     return result;
 }
-const Attribute* NetworkImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
+const Attribute* NetworkImpl::findAttributeValue(std::function<bool(const Attribute&)> pred) const
 {
     const Attribute* result = nullptr;
     for (const auto& av : _attribute_values)
@@ -334,7 +334,7 @@ const Attribute* NetworkImpl::findAttributeValue(std::function<bool(const Attrib
     }
     return result;
 }
-void NetworkImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
+void NetworkImpl::forEachAttributeValue(std::function<void(const Attribute&)> cb) const
 {
     for (const auto& av : _attribute_values)
     {

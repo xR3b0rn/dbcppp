@@ -105,6 +105,7 @@ namespace dbcppp::DBCX3::Grammar
     static const rule<struct TagSignalExtendedValueType, G_SignalExtendedValueType> signal_extended_value_type("SignalExtendedValueType");
     static const rule<struct TagRange, G_Range> range("Range");
     static const rule<struct TagSignalMultiplexerValue, G_SignalMultiplexerValue> signal_multiplexer_value("SignalMultiplexerValue");
+    static const rule<struct TagSignalSignalGroup, G_SignalGroup> signal_group("SignalGroup");
     
     static const rule<struct TagNetwork, G_Network> network("Network");
 
@@ -125,6 +126,7 @@ namespace dbcppp::DBCX3::Grammar
         > *attribute_value_ent
 
         > *value_description_sig_env_var
+        > *signal_group
         > *signal_extended_value_type
         > *signal_multiplexer_value
         ;
@@ -193,11 +195,11 @@ namespace dbcppp::DBCX3::Grammar
     static const auto node_def = node_name;
     static const auto node_name_def = C_identifier;
 
-    static const auto value_table_def = lit("VAL_TABLE_") > value_table_name > *value_encoding_description > ';';
+    static const auto value_table_def = lexeme[lit("VAL_TABLE_") >> omit[skipper]] > value_table_name > *value_encoding_description > ';';
     static const auto value_table_name_def = C_identifier;
     static const auto value_encoding_description_def = signed_int > quoted_string;
 
-    static const auto message_def = lexeme[lit("BO_") >> omit[space]] > message_id > message_name
+    static const auto message_def = lexeme[lit("BO_") >> omit[skipper]] > message_id > message_name
         > ':' > message_size > skip(blank)[transmitter > (eol | eoi)] > *signal;
     static const auto message_id_def = unsigned_int;
     static const auto message_name_def = C_identifier;
@@ -215,7 +217,7 @@ namespace dbcppp::DBCX3::Grammar
     static const auto message_transmitter_def = lexeme[lit("BO_TX_BU_") >> omit[space]] > message_id > ':' > (transmitter % ',') > ';';
     
     static const auto environment_variable_def =
-            lexeme[lit("EV_") >> omit[space]] > env_var_name > ':' > env_var_type > '[' > minimum > '|' > maximum
+            lexeme[lit("EV_") >> omit[skipper]] > env_var_name > ':' > env_var_type > '[' > minimum > '|' > maximum
         > ']' > unit > initial_value > ev_id > access_type > access_nodes > ';';
     static const auto env_var_name_def = C_identifier;
     static const auto env_var_type_def = unsigned_int;
@@ -228,7 +230,7 @@ namespace dbcppp::DBCX3::Grammar
     static const auto data_size_def = unsigned_int;
     
     static const auto signal_type_def =
-          lexeme[lit("SGTYPE_") >> omit[space]] > signal_type_name > ':' > signal_size > '@' > byte_order
+          lexeme[lit("SGTYPE_") >> omit[skipper]] > signal_type_name > ':' > signal_size > '@' > byte_order
         > value_type > '(' > factor > ',' > offset > ')' > '[' > minimum > '|' > maximum > ']' > unit
         >> default_value > ',' > value_table_name > ';';
     static const auto signal_type_name_def = C_identifier;
@@ -244,7 +246,7 @@ namespace dbcppp::DBCX3::Grammar
     static const auto comment_env_var_def = lit("EV_") > env_var_name > quoted_string > ';';
     
     static const auto attribute_definition_def =
-        lexeme[lit("BA_DEF_") >> omit[space]] > object_type > attribute_name > attribute_value_type > ';';
+        lexeme[lit("BA_DEF_") >> omit[skipper]] > object_type > attribute_name > attribute_value_type > ';';
     
     static const auto object_type_def =
         -(string("BU_")[SetVal]
@@ -268,7 +270,7 @@ namespace dbcppp::DBCX3::Grammar
     static const auto attribute_value_def = double_ | signed_int | quoted_string;
     
     static const auto attribute_value_ent_def = 
-            lexeme[lit("BA_") >> omit[space]]
+            lexeme[lit("BA_") >> omit[skipper]]
         > (attribute_value_ent_network | attribute_value_ent_node
             | attribute_value_ent_message | attribute_value_ent_signal
             | attribute_value_ent_env_var) > ';';
@@ -280,16 +282,19 @@ namespace dbcppp::DBCX3::Grammar
     
     static const auto value_description_sig_env_var_def = value_description_signal | value_description_env_var;
     static const auto value_description_signal_def =
-        lexeme[lit("VAL_") >> omit[space]] >> message_id > signal_name > *value_encoding_description > ';';
+        lexeme[lit("VAL_") >> omit[skipper]] >> message_id > signal_name > *value_encoding_description > ';';
     static const auto value_description_env_var_def =
-        lexeme[lit("VAL_") >> omit[space]] >> env_var_name > *value_encoding_description > ';';
+        lexeme[lit("VAL_") >> omit[skipper]] >> env_var_name > *value_encoding_description > ';';
 
     static const auto signal_extended_value_type_def =
-        lexeme[lit("SIG_VALTYPE_") > omit[space]] > message_id > signal_name > ':' > unsigned_int > ';';
+        lexeme[lit("SIG_VALTYPE_") > omit[skipper]] > message_id > signal_name > ':' > unsigned_int > ';';
     
     static const auto range_def = unsigned_int > '-' > unsigned_int;
     static const auto signal_multiplexer_value_def =
-        lexeme[lit("SG_MUL_VAL_") >> omit[space]] > unsigned_int > C_identifier > C_identifier > (range % ',') > ';';
+        lexeme[lit("SG_MUL_VAL_") >> omit[skipper]] > unsigned_int > C_identifier > C_identifier > (range % ',') > ';';
+
+    static const auto signal_group_def =
+        lexeme[lit("SIG_GROUP_") >> omit[skipper]] > unsigned_int > C_identifier > unsigned_int > ":" > *C_identifier > ';';
 
     BOOST_SPIRIT_DEFINE(block_comment);
     BOOST_SPIRIT_DEFINE(quoted_string);
@@ -367,6 +372,7 @@ namespace dbcppp::DBCX3::Grammar
     BOOST_SPIRIT_DEFINE(signal_extended_value_type);
     BOOST_SPIRIT_DEFINE(range);
     BOOST_SPIRIT_DEFINE(signal_multiplexer_value);
+    BOOST_SPIRIT_DEFINE(signal_group);
     BOOST_SPIRIT_DEFINE(network);
 
     struct TagCharString                    : error_handler, annotate_on_success {};
@@ -441,6 +447,8 @@ namespace dbcppp::DBCX3::Grammar
     struct TagValueDescriptionSignal        : error_handler, annotate_on_success {};
     struct TagValueDescriptionEnvVar        : error_handler, annotate_on_success {};
     struct TagSignalExtendedValueType       : error_handler, annotate_on_success {};
+    struct TagRange                         : error_handler, annotate_on_success {};
+    struct TagSignalMultiplexerValue        : error_handler, annotate_on_success {};
     struct TagNetwork                       : error_handler, annotate_on_success {};
 }
 std::optional<dbcppp::DBCX3::AST::G_Network> dbcppp::DBCX3::ParseFromMemory(const char* begin, const char* end)

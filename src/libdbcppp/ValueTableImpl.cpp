@@ -53,7 +53,7 @@ const std::string* ValueTableImpl::getvalueEncodingDescriptionByValue(int64_t va
     }
     return result;
 }
-void ValueTableImpl::forEachValueEncodingDescription(std::function<void(int64_t, const std::string&)>&& cb) const
+void ValueTableImpl::forEachValueEncodingDescription(std::function<void(int64_t, const std::string&)> cb) const
 {
     for (const auto& ved : _value_encoding_descriptions)
     {

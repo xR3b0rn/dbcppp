@@ -36,13 +36,13 @@ namespace dbcppp
         virtual uint64_t getEvId() const override;
         virtual AccessType getAccessType() const override;
         virtual bool hasAccessNode(const std::string& name) const override;
-        virtual void forEachAccessNode(std::function<void(const std::string&)>&& cb) const override;
+        virtual void forEachAccessNode(std::function<void(const std::string&)> cb) const override;
         virtual const std::string* getValueDescriptionByValue(int64_t value) const override;
-        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const override;
+        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)> cb) const override;
         virtual uint64_t getDataSize() const override;
         virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
+        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)> pred) const override;
+        virtual void forEachAttributeValue(std::function<void(const Attribute&)> cb) const override;
         virtual const std::string& getComment() const override;
         
         virtual bool operator==(const EnvironmentVariable& rhs) const override;

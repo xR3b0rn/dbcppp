@@ -35,14 +35,14 @@ const AttributeDefinition::value_type_t& AttributeDefinitionImpl::getValueType()
 {
     return _value_type;
 }
-void AttributeDefinitionImpl::forEachValueTypeEnum(std::function<void(const std::string&)>&& cb) const
+void AttributeDefinitionImpl::forEachValueTypeEnum(std::function<void(const std::string&)> cb) const
 {
     for (const auto& v : std::get<ValueTypeEnum>(getValueType()).values)
     {
         cb(v);
     }
 }
-const std::string* AttributeDefinitionImpl::findValueTypeEnum(std::function<bool(const std::string&)>&& pred) const
+const std::string* AttributeDefinitionImpl::findValueTypeEnum(std::function<bool(const std::string&)> pred) const
 {
     const std::string* result = nullptr;
     auto begin = std::get<ValueTypeEnum>(getValueType()).values.cbegin();

@@ -280,6 +280,13 @@ namespace dbcppp
                 std::string switch_name;
                 std::vector<G_Range> value_ranges;
             };
+            struct G_SignalGroup
+            {
+                uint64_t message_id;
+                std::string signal_group_name;
+                uint64_t repetitions;
+                std::vector<std::string> signal_names;
+            };
 
             struct G_Network
                 : boost::spirit::x3::position_tagged
@@ -299,6 +306,7 @@ namespace dbcppp
                 std::vector<G_Attribute> attribute_defaults;
                 std::vector<variant_attribute_t> attribute_values;
                 std::vector<G_ValueDescriptionSigEnvVar> value_descriptions_sig_env_var;
+                std::vector<G_SignalGroup> signal_groups;
                 std::vector<G_SignalExtendedValueType> signal_extended_value_types;
                 std::vector<G_SignalMultiplexerValue> signal_multiplexer_values;
             };

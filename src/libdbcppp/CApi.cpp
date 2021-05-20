@@ -516,7 +516,8 @@ extern "C"
             , std::move(msg_trans)
             , std::move(sigs)
             , std::move(attrs)
-            , std::string(comment));
+            , std::string(comment)
+            , {});
         return reinterpret_cast<const dbcppp_Message*>(result.release());
     }
     DBCPPP_API void dbcppp_MessageFree(const dbcppp_Message* msg)
