@@ -1,5 +1,6 @@
 
 include(GNUInstallDirs)
+include(TestBigEndian)
 
 add_library(${PROJECT_NAME} SHARED "")
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
@@ -13,6 +14,14 @@ include_directories(
     ${CMAKE_BINARY_DIR}/src
 )
 
+test_big_endian(is_big_endian)
+if (is_big_endian)
+    set(BYTE_ORDER Big)
+else ()
+    set(BYTE_ORDER Little)
+endif ()
+configure_file(EndianConfig.h.in ${CMAKE_CURRENT_SOURCE_DIR}/EndianConfig.h @ONLY)
+
 file(GLOB header
     "*.h"
 )
@@ -24,7 +33,7 @@ file(GLOB src
 )
 
 target_sources(${PROJECT_NAME}
-    PRIVATE ${header}
+    PRIVATE ${header} 
     PUBLIC ${header_interface}
     PRIVATE ${src}
 )

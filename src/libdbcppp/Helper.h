@@ -3,11 +3,42 @@
 
 #include <string>
 #include <memory>
-#include <boost/endian/conversion.hpp>
-#include <boost/iterator/iterator_facade.hpp>
-#include <boost/predef/hardware/simd.h>
 
 #include "Export.h"
+
+#include "EndianConfig.h"
+
+#ifdef _MSC_VER
+#   include <stdlib.h>
+#   define bswap_32(x) _byteswap_ulong(x)
+#   define bswap_64(x) _byteswap_uint64(x)
+#elif defined(__APPLE__)
+    // Mac OS X / Darwin features
+#   include <libkern/OSByteOrder.h>
+#   define bswap_32(x) OSSwapInt32(x)
+#   define bswap_64(x) OSSwapInt64(x)
+#elif defined(__sun) || defined(sun)
+#   include <sys/byteorder.h>
+#   define bswap_32(x) BSWAP_32(x)
+#   define bswap_64(x) BSWAP_64(x)
+#elif defined(__FreeBSD__)
+#   include <sys/endian.h>
+#   define bswap_32(x) bswap32(x)
+#   defiee bswap_64(x) bswap64(x)
+#elif defined(__OpenBSD__)
+#   include <sys/types.h>
+#   define bswap_32(x) swap32(x)
+#   define bswap_64(x) swap64(x)
+#elif defined(__NetBSD__)
+#   include <sys/types.h>
+#   include <machine/bswap.h>
+#   if defined(__BSWAP_RENAME) && !defined(__bswap_32)
+#       define bswap_32(x) bswap32(x)
+#       define bswap_64(x) bswap64(x)
+#   endif
+#else
+#   include <byteswap.h>
+#endif
 
 namespace dbcppp
 {
@@ -16,24 +47,18 @@ namespace dbcppp
     {
         bool operator()(const NodeImpl& lhs, const NodeImpl& rhs) const;
     };
-#if BOOST_ENDIAN_LITTLE_BYTE
-    inline void native_to_big_inplace(uint64_t& data) noexcept
+    inline void native_to_big_inplace(uint64_t& value)
     {
-        boost::endian::native_to_big_inplace(data);
+        if constexpr (dbcppp::Endian::Native == dbcppp::Endian::Little)
+        {
+            value = bswap_64(value);
+        }
     }
-#else
-    inline void native_to_big_inplace(uint64_t& data) noexcept
+    inline void native_to_little_inplace(uint64_t& value)
     {
+        if constexpr (dbcppp::Endian::Native == dbcppp::Endian::Big)
+        {
+            value = bswap_64(value);
+        }
     }
-#endif
-#if BOOST_ENDIAN_BIG_BYTE
-    inline void native_to_little_inplace(uint64_t& data) noexcept
-    {
-        boost::endian::native_to_little_inplace(data);
-    }
-#else
-    inline void native_to_little_inplace(uint64_t& data) noexcept
-    {
-    }
-#endif
 }

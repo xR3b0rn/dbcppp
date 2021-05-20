@@ -560,6 +560,7 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     {
         receivers.erase(receivers.end() - 1);
         receivers.erase(receivers.end() - 1);
+        os << " ";
     }
     os << receivers;
     return os;
