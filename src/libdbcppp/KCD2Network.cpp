@@ -7,7 +7,7 @@
 
 #include <libxmlmm.h>
 
-#include "kcd.h"
+#include "KcdXsd.h"
 #include "../../include/dbcppp/Network.h"
 
 using namespace dbcppp;
