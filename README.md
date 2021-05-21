@@ -49,24 +49,33 @@ candump any | dbcppp decode --bus=vcan0,file1.dbc --bus=vcan1,file2.dbc
 #include <dbcppp/Network.h>
 int main()
 {
-    std::ifstream dbc_file{"your_dbc.dbc"};
-    std::unique_ptr<dbcppp::Network> net = dbcppp::Network::loadDBCFromIs(dbc_file);
-    if (net)
+    std::unique_ptr<dbcppp::INetwork> net;
     {
-        can_frame frame;
-        while (1)
+        std::ifstream idbc("your.dbc");
+        net = dbcppp::INetwork::LoadDBCFromIs(idbc);
+    }
+    std::unordered_map<uint64_t, const dbcppp::IMessage*> messages;
+    for (const dbcppp::IMessage& msg : net->Messages())
+    {
+        messages.insert(std::make_pair(msg.Id(), &msg));
+    }
+    can_frame frame;
+    while (1)
+    {
+        receive_frame_data(&frame);
+        auto iter = messages.find(frame.can_id);
+        if (iter != messages.end())
         {
-            receive_can_frame_from_somewhere(&frame);
-            const Message* msg = net->getMessageById(frame.id);
-            if (msg)
+            const dbcppp::IMessage* msg = iter->second;
+            std::cout << "Received Message: " << msg->Name() << "\n";
+            for (const dbcppp::ISignal& sig : msg->Signals())
             {
-                std::cout << "Received message: " << msg->getName() << std::endl;
-                msg->forEachSignal(
-                    [&](const Signal& signal)
-                    {
-                        uint64_t raw = signal.decode(frame.data);
-                        std::cout << "\t" << signal.getName() << "=" << signal.rawToPhys(raw) << std::endl;
-                    });
+                const dbcppp::ISignal* mux_sig = msg->MuxSignal();
+                if (sig.MultiplexerIndicator() != dbcppp::ISignal::EMultiplexer::MuxValue ||
+                    (mux_sig && mux_sig->Decode(frame.data) == sig.MultiplexerSwitchValue()))
+                {
+                    std::cout << "\t" << sig.Name() << "=" << sig.RawToPhys(sig.Decode(frame.data)) << sig.Unit() << "\n";
+                }
             }
         }
     }
@@ -78,28 +87,40 @@ int main()
 #include <dbcppp/CApi.h>
 int main()
 {
-    const dbcppp_Nework* net = dbcppp_NetworkLoadDBCFromFile("your_dbc.dbc");
+    const dbcppp_Nework* net = dbcppp_NetworkLoadDBCFromFile("your.dbc");
     if (net)
     {
         can_frame frame;
         while (1)
         {
             receive_can_frame_from_somewhere(&frame);
-            const dbcppp_Message* msg = dbcppp_NetworkGetMessageById(net, frame.id);
-            if (msg)
+            const dbcppp_Message* msg = nullptr;
+            auto n_msgs = dbcppp_NetworkMessages_Size(net);
+            for (uint64_t i = 0; i < n_msgs; i++)
             {
-                printf("Received message: %s\n", dbcppp_MessageGetName(msg));
-                void print_signal_data(const dbcppp_Signal* sig, void* data)
+                const dbcppp_Message* msg = dbcppp_NetworkMessages_Get(i);
+                if (dbcppp_MessageId(tmp) == frame.can_id)
                 {
-                    can_frame* frame = (can_frame*)data;
-                    uint64_t raw = dbcppp_SignalDecode(sig, frame->data);
-                    double phys = dbcppp_SignalRawToPhys(sig, raw);
-                    printf("\t%s=%f\n", dbcppp_SignalGetName(sig), phys);
+                    printf("Received message: %s\n", dbcppp_MessageGetName(msg));
+                    void print_signal_data(const dbcppp_Signal* sig, void* data)
+                    {
+                        uint64_t raw = dbcppp_SignalDecode(sig, frame->data);
+                        double phys = dbcppp_SignalRawToPhys(sig, raw);
+                        printf("\t%s=%f\n", dbcppp_SignalGetName(sig), phys);
+                    }
+                    dbcppp_MessageForEachSignal(msg, print_signal_data, &frame);
+                    for (uint64_t i = 0; i < dbcppp_MessageSignals_Size(msg); i++)
+                    {
+                        const dbcppp_Signal* sig = dbcppp_MessageSignals_Get(msg, i);
+                        uint64_t raw = dbcppp_SignalDecode(sig, frame.data);
+                        double phys = dbcppp_SignalRawToPhys(sig, raw);
+                        printf("\t%s=%f\n", dbcppp_SignalName(sig), phys);
+                    }
                 }
-                dbcppp_MessageForEachSignal(msg, print_signal_data, &frame);
             }
         }
     }
+    dbcppp_NetworkFree(net);
 }
 ```
 # DBC data types

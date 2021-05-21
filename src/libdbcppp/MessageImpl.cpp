@@ -3,16 +3,16 @@
 using namespace dbcppp;
 
 
-std::unique_ptr<Message> Message::create(
+std::unique_ptr<IMessage> IMessage::Create(
       uint64_t id
     , std::string&& name
     , uint64_t message_size
     , std::string&& transmitter
     , std::vector<std::string>&& message_transmitters
-    , std::vector<std::unique_ptr<Signal>>&& signals
-    , std::vector<std::unique_ptr<Attribute>>&& attribute_values
+    , std::vector<std::unique_ptr<ISignal>>&& signals
+    , std::vector<std::unique_ptr<IAttribute>>&& attribute_values
     , std::string&& comment
-    , std::vector<std::unique_ptr<SignalGroup>>&& signal_groups)
+    , std::vector<std::unique_ptr<ISignalGroup>>&& signal_groups)
 {
     std::vector<SignalImpl> ss;
     std::vector<AttributeImpl> avs;
@@ -64,24 +64,24 @@ MessageImpl::MessageImpl(
     , _comment(std::move(comment))
     , _signal_groups(std::move(signal_groups))
     , _mux_signal(nullptr)
-    , _error(ErrorCode::NoError)
+    , _error(EErrorCode::NoError)
 {
     bool have_mux_value = false;
     for (const auto& sig : _signals)
     {
-        switch (sig.getMultiplexerIndicator())
+        switch (sig.MultiplexerIndicator())
         {
-        case Signal::Multiplexer::MuxValue:
+        case ISignal::EMultiplexer::MuxValue:
             have_mux_value = true;
             break;
-        case Signal::Multiplexer::MuxSwitch:
+        case ISignal::EMultiplexer::MuxSwitch:
             _mux_signal = &sig;
             break;
         }
     }
     if (have_mux_value && _mux_signal == nullptr)
     {
-        _error = ErrorCode::MuxValeWithoutMuxSignal;
+        _error = EErrorCode::MuxValeWithoutMuxSignal;
     }
 }
 MessageImpl::MessageImpl(const MessageImpl& other)
@@ -97,9 +97,9 @@ MessageImpl::MessageImpl(const MessageImpl& other)
     _mux_signal = nullptr;
     for (const auto& sig : _signals)
     {
-        switch (sig.getMultiplexerIndicator())
+        switch (sig.MultiplexerIndicator())
         {
-        case Signal::Multiplexer::MuxSwitch:
+        case ISignal::EMultiplexer::MuxSwitch:
             _mux_signal = &sig;
             break;
         }
@@ -119,9 +119,9 @@ MessageImpl& MessageImpl::operator=(const MessageImpl& other)
     _mux_signal = nullptr;
     for (const auto& sig : _signals)
     {
-        switch (sig.getMultiplexerIndicator())
+        switch (sig.MultiplexerIndicator())
         {
-        case Signal::Multiplexer::MuxSwitch:
+        case ISignal::EMultiplexer::MuxSwitch:
             _mux_signal = &sig;
             break;
         }
@@ -129,111 +129,67 @@ MessageImpl& MessageImpl::operator=(const MessageImpl& other)
     _error = other._error;
     return *this;
 }
-std::unique_ptr<Message> MessageImpl::clone() const
+std::unique_ptr<IMessage> MessageImpl::Clone() const
 {
     return std::make_unique<MessageImpl>(*this);
 }
-uint64_t MessageImpl::getId() const
+uint64_t MessageImpl::Id() const
 {
     return _id;
 }
-const std::string& MessageImpl::getName() const
+const std::string& MessageImpl::Name() const
 {
     return _name;
 }
-uint64_t MessageImpl::getMessageSize() const
+uint64_t MessageImpl::MessageSize() const
 {
     return _message_size;
 }
-const std::string& MessageImpl::getTransmitter() const
+const std::string& MessageImpl::Transmitter() const
 {
     return _transmitter;
 }
-bool MessageImpl::hasMessageTransmitter(const std::string& name) const
+const std::string& MessageImpl::MessageTransmitters_Get(std::size_t i) const
 {
-    auto iter = std::find_if(_message_transmitters.begin(), _message_transmitters.end(),
-      [&](const auto& other) { return name == other; });
-    return iter != _message_transmitters.end();
+    return _message_transmitters[i];
 }
-void MessageImpl::forEachMessageTransmitter(std::function<void(const std::string&)> cb) const
+uint64_t MessageImpl::MessageTransmitters_Size() const
 {
-    for (const auto& n : _message_transmitters)
-    {
-        cb(n);
-    }
+    return _message_transmitters.size();
 }
-const Signal* MessageImpl::getSignalByName(const std::string& name) const
+const ISignal& MessageImpl::Signals_Get(std::size_t i) const
 {
-    const Signal* result = nullptr;
-    auto iter = std::find_if(_signals.begin(), _signals.end(),
-        [&](const SignalImpl& sig) { return sig.getName() == name; });
-    if (iter != _signals.end())
-    {
-        result = &*iter;
-    }
-    return result;
+    return _signals[i];
 }
-const Signal* MessageImpl::findSignal(std::function<bool(const Signal&)> pred) const
+uint64_t MessageImpl::Signals_Size() const
 {
-    const Signal* result = nullptr;
-    auto iter = std::find_if(_signals.begin(), _signals.end(), pred);
-    if (iter != _signals.end())
-    {
-      result = &*iter;
-    }
-    return result;
+    return _signals.size();
 }
-void MessageImpl::forEachSignal(std::function<void(const Signal&)> cb) const
+const IAttribute& MessageImpl::AttributeValues_Get(std::size_t i) const
 {
-    for (const auto& s : _signals)
-    {
-        cb(s);
-    }
+    return _attribute_values[i];
 }
-const Attribute* MessageImpl::getAttributeValueByName(const std::string& name) const
+uint64_t MessageImpl::AttributeValues_Size() const
 {
-    const Attribute* result = nullptr;
-    auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(),
-        [&](const AttributeImpl& av) { return av.getName() == name; });
-    if (iter != _attribute_values.end())
-    {
-        result = &*iter;
-    }
-    return result;
+    return _attribute_values.size();
 }
-const Attribute* MessageImpl::findAttributeValue(std::function<bool(const Attribute&)> pred) const
-{
-    const Attribute* result = nullptr;
-    auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(), pred);
-    if (iter != _attribute_values.end())
-    {
-        result = &*iter;
-    }
-    return result;
-}
-void MessageImpl::forEachAttributeValue(std::function<void(const Attribute&)> cb) const
-{
-    for (const auto& av : _attribute_values)
-    {
-        cb(av);
-    }
-}
-const std::string& MessageImpl::getComment() const
+const std::string& MessageImpl::Comment() const
 {
     return _comment;
 }
-void MessageImpl::forEachSignalGroup(std::function<void(const SignalGroup&)> cb) const
+const ISignalGroup& MessageImpl::SignalGroups_Get(std::size_t i) const
 {
-    for (const auto& signal_group : _signal_groups)
-    {
-        cb(signal_group);
-    }
+    return _signal_groups[i];
 }
-const Signal* MessageImpl::getMuxSignal() const 
+uint64_t MessageImpl::SignalGroups_Size() const
+{
+    return _signal_groups.size();
+}
+const ISignal* MessageImpl::MuxSignal() const 
 {
     return _mux_signal;
 }
-MessageImpl::ErrorCode MessageImpl::getError() const
+MessageImpl::EErrorCode MessageImpl::Error() const
 {
     return _error;
 }
@@ -242,38 +198,40 @@ const std::vector<SignalImpl>& MessageImpl::signals() const
 {
     return _signals;
 }
-bool MessageImpl::operator==(const Message& rhs) const
+bool MessageImpl::operator==(const IMessage& rhs) const
 {
     bool equal = true;
-    equal &= _id == rhs.getId();
-    equal &= _name == rhs.getName();
-    equal &= _transmitter == rhs.getTransmitter();
-    rhs.forEachMessageTransmitter(
-        [&](const std::string& msg_trans)
-        {
-            equal &= std::find(_message_transmitters.begin(), _message_transmitters.end(), msg_trans) != _message_transmitters.end();
-        });
-    rhs.forEachSignal(
-        [&](const dbcppp::Signal& sig)
-        {
-            equal &= std::find(_signals.begin(), _signals.end(), sig) != _signals.end();
-        });
-    rhs.forEachAttributeValue(
-        [&](const dbcppp::Attribute& attr)
-        {
-            equal &= std::find(_attribute_values.begin(), _attribute_values.end(), attr) != _attribute_values.end();
-        });
-    equal &= _comment == rhs.getComment();
-    rhs.forEachSignalGroup(
-        [&](const SignalGroup& sg)
-        {
-            auto beg = _signal_groups.begin();
-            auto end = _signal_groups.end();
-            equal &= std::find(beg, end, sg) != end;
-        });
+    equal &= _id == rhs.Id();
+    equal &= _name == rhs.Name();
+    equal &= _transmitter == rhs.Transmitter();
+    for (const auto& msg_trans : rhs.MessageTransmitters())
+    {
+        auto beg = _message_transmitters.begin();
+        auto end = _message_transmitters.end();
+        equal &= std::find(beg, end, msg_trans) != _message_transmitters.end();
+    }
+    for (const auto& sig : rhs.Signals())
+    {
+        auto beg = _signals.begin();
+        auto end = _signals.end();
+        equal &= std::find(beg, end, sig) != _signals.end();
+    }
+    for (const auto& attr : rhs.AttributeValues())
+    {
+        auto beg = _attribute_values.begin();
+        auto end = _attribute_values.end();
+        equal &= std::find(beg, end, attr) != _attribute_values.end();
+    }
+    equal &= _comment == rhs.Comment();
+    for (const auto& sg : rhs.SignalGroups())
+    {
+        auto beg = _signal_groups.begin();
+        auto end = _signal_groups.end();
+        equal &= std::find(beg, end, sg) != end;
+    }
     return equal;
 }
-bool MessageImpl::operator!=(const Message& rhs) const
+bool MessageImpl::operator!=(const IMessage& rhs) const
 {
     return !(*this == rhs);
 }

@@ -9,7 +9,7 @@
 namespace dbcppp
 {
     class MessageImpl final
-        : public Message
+        : public IMessage
     {
     public:
         MessageImpl(
@@ -27,30 +27,29 @@ namespace dbcppp
         MessageImpl& operator=(const MessageImpl& other);
         MessageImpl& operator=(MessageImpl&&) = default;
             
-        virtual std::unique_ptr<Message> clone() const override;
-
-        virtual uint64_t getId() const override;
-        virtual const std::string& getName() const override;
-        virtual uint64_t getMessageSize() const override;
-        virtual const std::string& getTransmitter() const override;
-        virtual bool hasMessageTransmitter(const std::string& name) const override;
-        virtual void forEachMessageTransmitter(std::function<void(const std::string&)> cb) const override;
-        virtual const Signal* getSignalByName(const std::string& name) const override;
-        virtual const Signal* findSignal(std::function<bool(const Signal&)> pred) const override;
-        virtual void forEachSignal(std::function<void(const Signal&)> cb) const override;
-        virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)> pred) const override;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)> cb) const override;
-        virtual const std::string& getComment() const override;
-        virtual void forEachSignalGroup(std::function<void(const SignalGroup&)> cb) const override;
-        virtual const Signal* getMuxSignal() const override;
+        virtual std::unique_ptr<IMessage> Clone() const override;
         
-        virtual ErrorCode getError() const override;
+        virtual uint64_t Id() const override;
+        virtual const std::string& Name() const override;
+        virtual uint64_t MessageSize() const override;
+        virtual const std::string& Transmitter() const override;
+        virtual const std::string& MessageTransmitters_Get(std::size_t i) const override;
+        virtual uint64_t MessageTransmitters_Size() const override;
+        virtual const ISignal& Signals_Get(std::size_t i) const override;
+        virtual uint64_t Signals_Size() const override;
+        virtual const IAttribute& AttributeValues_Get(std::size_t i) const override;
+        virtual uint64_t AttributeValues_Size() const override;
+        virtual const std::string& Comment() const override;
+        virtual const ISignalGroup& SignalGroups_Get(std::size_t i) const override;
+        virtual uint64_t SignalGroups_Size() const override;
+        virtual const ISignal* MuxSignal() const override;
+        
+        virtual EErrorCode Error() const override;
         
         const std::vector<SignalImpl>& signals() const;
         
-        virtual bool operator==(const Message& rhs) const override;
-        virtual bool operator!=(const Message& rhs) const override;
+        virtual bool operator==(const IMessage& rhs) const override;
+        virtual bool operator!=(const IMessage& rhs) const override;
         
     private:
         uint64_t _id;
@@ -63,8 +62,8 @@ namespace dbcppp
         std::string _comment;
         std::vector<SignalGroupImpl> _signal_groups;
 
-        const Signal* _mux_signal;
+        const ISignal* _mux_signal;
 
-        ErrorCode _error;
+        EErrorCode _error;
     };
 }

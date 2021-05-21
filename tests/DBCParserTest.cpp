@@ -22,11 +22,11 @@ TEST_CASE("DBCParserTest", "[]")
         }
         std::cout << "Testing DBC grammar with file: " << dbc_file << std::endl;
         auto dbc_file_tmp = dbc_file.path().string() + ".tmp";
-        std::unique_ptr<dbcppp::Network> spec;
-        std::unique_ptr<dbcppp::Network> test;
+        std::unique_ptr<dbcppp::INetwork> spec;
+        std::unique_ptr<dbcppp::INetwork> test;
         {
             std::ifstream dbc(dbc_file.path());
-            spec = dbcppp::Network::loadDBCFromIs(dbc);
+            spec = dbcppp::INetwork::LoadDBCFromIs(dbc);
             std::ofstream tmp_dbc(dbc_file_tmp);
             bool open = tmp_dbc.is_open();
             using namespace dbcppp::Network2DBC;
@@ -35,7 +35,7 @@ TEST_CASE("DBCParserTest", "[]")
         }
         {
             std::ifstream dbc(dbc_file_tmp);
-            test = dbcppp::Network::loadDBCFromIs(dbc);
+            test = dbcppp::INetwork::LoadDBCFromIs(dbc);
             REQUIRE(test);
         }
         auto error_msg = "Failed for " + std::to_string(i) + "th file ('" + dbc_file.path().string() + "')";

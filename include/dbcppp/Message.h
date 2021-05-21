@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "Export.h"
+#include "Iterator.h"
 #include "Node.h"
 #include "Signal.h"
 #include "Attribute.h"
@@ -12,49 +13,53 @@
 
 namespace dbcppp
 {
-    class DBCPPP_API Message
+    class DBCPPP_API IMessage
     {
     public:
-        enum class ErrorCode
+        enum class EErrorCode
             : uint64_t
         {
             NoError,
             MuxValeWithoutMuxSignal
         };
 
-        static std::unique_ptr<Message> create(
+        static std::unique_ptr<IMessage> Create(
               uint64_t id
             , std::string&& name
             , uint64_t message_size
             , std::string&& transmitter
             , std::vector<std::string>&& message_transmitters
-            , std::vector<std::unique_ptr<Signal>>&& signals
-            , std::vector<std::unique_ptr<Attribute>>&& attribute_values
+            , std::vector<std::unique_ptr<ISignal>>&& signals
+            , std::vector<std::unique_ptr<IAttribute>>&& attribute_values
             , std::string&& comment
-            , std::vector<std::unique_ptr<SignalGroup>>&& signal_groups);
+            , std::vector<std::unique_ptr<ISignalGroup>>&& signal_groups);
 
-        virtual std::unique_ptr<Message> clone() const = 0;
+        virtual std::unique_ptr<IMessage> Clone() const = 0;
 
-        virtual ~Message() = default;
-        virtual uint64_t getId() const = 0;
-        virtual const std::string& getName() const = 0;
-        virtual uint64_t getMessageSize() const = 0;
-        virtual const std::string& getTransmitter() const = 0;
-        virtual bool hasMessageTransmitter(const std::string& name) const = 0;
-        virtual void forEachMessageTransmitter(std::function<void(const std::string&)> cb) const = 0;
-        virtual const Signal* getSignalByName(const std::string& name) const = 0;
-        virtual const Signal* findSignal(std::function<bool(const Signal&)> pred) const = 0;
-        virtual void forEachSignal(std::function<void(const Signal&)> cb) const = 0;
-        virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)> pred) const = 0;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)> cb) const = 0;
-        virtual const std::string& getComment() const = 0;
-        virtual void forEachSignalGroup(std::function<void(const SignalGroup&)> cb) const = 0;
-        virtual const Signal* getMuxSignal() const = 0;
+        virtual ~IMessage() = default;
+        virtual uint64_t Id() const = 0;
+        virtual const std::string& Name() const = 0;
+        virtual uint64_t MessageSize() const = 0;
+        virtual const std::string& Transmitter() const = 0;
+        virtual const std::string& MessageTransmitters_Get(std::size_t i) const = 0;
+        virtual uint64_t MessageTransmitters_Size() const = 0;
+        virtual const ISignal& Signals_Get(std::size_t i) const = 0;
+        virtual uint64_t Signals_Size() const = 0;
+        virtual const IAttribute& AttributeValues_Get(std::size_t i) const = 0;
+        virtual uint64_t AttributeValues_Size() const = 0;
+        virtual const std::string& Comment() const = 0;
+        virtual const ISignalGroup& SignalGroups_Get(std::size_t i) const = 0;
+        virtual uint64_t SignalGroups_Size() const = 0;
+        virtual const ISignal* MuxSignal() const = 0;
         
-        virtual bool operator==(const Message& message) const = 0;
-        virtual bool operator!=(const Message& message) const = 0;
+        DBCPPP_MAKE_ITERABLE(IMessage, MessageTransmitters, std::string);
+        DBCPPP_MAKE_ITERABLE(IMessage, Signals, ISignal);
+        DBCPPP_MAKE_ITERABLE(IMessage, AttributeValues, IAttribute);
+        DBCPPP_MAKE_ITERABLE(IMessage, SignalGroups, ISignalGroup);
+        
+        virtual bool operator==(const IMessage& message) const = 0;
+        virtual bool operator!=(const IMessage& message) const = 0;
 
-        virtual ErrorCode getError() const = 0;
+        virtual EErrorCode Error() const = 0;
     };
 }
