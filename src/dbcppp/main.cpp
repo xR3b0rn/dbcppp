@@ -59,13 +59,13 @@ int main(int argc, char** argv)
         }
         const auto& format = vm["format"].as<std::string>();
         auto dbcs = vm["dbc"].as<std::vector<std::string>>();
-        auto net = dbcppp::Network::create({}, {}, dbcppp::BitTiming::create(0, 0, 0), {}, {}, {}, {}, {}, {}, {}, {});
+        auto net = dbcppp::INetwork::Create({}, {}, dbcppp::IBitTiming::Create(0, 0, 0), {}, {}, {}, {}, {}, {}, {}, {});
         for (const auto& dbc : dbcs)
         {
-            auto nets = dbcppp::Network::loadNetworkFromFile(dbc);
+            auto nets = dbcppp::INetwork::LoadNetworkFromFile(dbc);
             for (auto& other : nets)
             {
-                net->merge(std::move(other.second));
+                net->Merge(std::move(other.second));
             }
         }
         if (format == "C")
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
         struct Bus
         {
             std::string name;
-            std::unique_ptr<dbcppp::Network> net;
+            std::unique_ptr<dbcppp::INetwork> net;
         };
         std::unordered_map<std::string, Bus> buses;
         for (const auto& opt_bus : opt_buses)
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
             if (std::getline(ss, opt))
             {
                 std::ifstream fdbc(opt);
-                b.net = dbcppp::Network::loadDBCFromIs(fdbc);
+                b.net = dbcppp::INetwork::LoadDBCFromIs(fdbc);
             }
             else
             {
@@ -171,32 +171,37 @@ int main(int argc, char** argv)
                 {
                     data[i] = uint8_t(std::strtol(cm[4 + i].str().c_str(), nullptr, 16));
                 }
-                const dbcppp::Message* msg = bus->second.net->getMessageById(msg_id);
-                if (msg)
+                auto beg_msg = bus->second.net->Messages().begin();
+                auto end_msg = bus->second.net->Messages().end();
+                auto iter = std::find_if(beg_msg, end_msg, [&](const dbcppp::IMessage& msg) { return msg.Id() == msg_id; });
+                if (iter != end_msg)
                 {
-                    std::cout << line << " :: " << msg->getName() << "(";
+                    const dbcppp::IMessage* msg = &*iter;
+                    std::cout << line << " :: " << msg->Name() << "(";
                     bool first = true;
-                    const auto* mux_sig = msg->getMuxSignal();
-                    msg->forEachSignal(
-                        [&](const dbcppp::Signal& sig)
+                    const auto* mux_sig = msg->MuxSignal();
+
+                    for (const dbcppp::ISignal& sig : msg->Signals())
+                    {
+                        if (sig.MultiplexerIndicator() != dbcppp::ISignal::EMultiplexer::MuxValue ||
+                            mux_sig && sig.MultiplexerSwitchValue() == mux_sig->Decode(&data[0]))
                         {
-                            if (sig.getMultiplexerIndicator() != dbcppp::Signal::Multiplexer::MuxValue ||
-                                mux_sig && sig.getMultiplexerSwitchValue() == mux_sig->decode(&data[0]))
+                            if (first) first = false; else std::cout << ", ";
+                            auto raw = sig.Decode(&data[0]);
+                            auto beg_ved = sig.ValueEncodingDescriptions().begin();
+                            auto end_ved = sig.ValueEncodingDescriptions().end();
+                            auto iter = std::find_if(beg_ved, end_ved, [&](const dbcppp::IValueEncodingDescription& ved) { return ved.Value() == raw; });
+                            if (iter != end_ved)
                             {
-                                if (first) first = false; else std::cout << ", ";
-                                auto raw = sig.decode(&data[0]);
-                                auto desc = sig.getValueDescriptionByValue(raw);
-                                if (desc != nullptr)
-                                {
-                                    std::cout << sig.getName() << ": " << desc << " " << sig.getUnit();
-                                }
-                                else
-                                {
-                                    auto val = sig.rawToPhys(raw);
-                                    std::cout << sig.getName() << ": " << val << " " << sig.getUnit();
-                                }
+                                std::cout << sig.Name() << ": " << iter->Description() << " " << sig.Unit();
                             }
-                        });
+                            else
+                            {
+                                auto val = sig.RawToPhys(raw);
+                                std::cout << sig.Name() << ": " << val << " " << sig.Unit();
+                            }
+                        }
+                    }
                     std::cout << ")\n";
                 }
             }

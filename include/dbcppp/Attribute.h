@@ -9,26 +9,25 @@
 
 namespace dbcppp
 {
-    class Network;
-    class DBCPPP_API Attribute
+    class DBCPPP_API IAttribute
     {
     public:
         using hex_value_t = int64_t;
         using value_t = std::variant<int64_t, double, std::string>;
 
-        static std::unique_ptr<Attribute> create(
+        static std::unique_ptr<IAttribute> Create(
               std::string&& name
-            , AttributeDefinition::ObjectType object_type
+            , IAttributeDefinition::EObjectType object_type
             , value_t value);
             
-        virtual std::unique_ptr<Attribute> clone() const = 0;
+        virtual std::unique_ptr<IAttribute> Clone() const = 0;
 
-        virtual ~Attribute() = default;
-        virtual const std::string& getName() const = 0;
-        virtual AttributeDefinition::ObjectType getObjectType() const = 0;
-        virtual const value_t& getValue() const = 0;
+        virtual ~IAttribute() = default;
+        virtual const std::string& Name() const = 0;
+        virtual IAttributeDefinition::EObjectType ObjectType() const = 0;
+        virtual const value_t& Value() const = 0;
 
-        virtual bool operator==(const Attribute& rhs) const = 0;
-        virtual bool operator!=(const Attribute& rhs) const = 0;
+        virtual bool operator==(const IAttribute& rhs) const = 0;
+        virtual bool operator!=(const IAttribute& rhs) const = 0;
     };
 }

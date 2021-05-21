@@ -10,6 +10,7 @@
 #include <filesystem>
 
 #include "Export.h"
+#include "Iterator.h"
 #include "BitTiming.h"
 #include "ValueTable.h"
 #include "Node.h"
@@ -21,60 +22,62 @@
 
 namespace dbcppp
 {
-    class DBCPPP_API Network
+    class DBCPPP_API INetwork
     {
     public:
-        static std::unique_ptr<Network> create(
+        static std::unique_ptr<INetwork> Create(
               std::string&& version
             , std::vector<std::string>&& new_symbols
-            , std::unique_ptr<BitTiming>&& bit_timing
-            , std::vector<std::unique_ptr<Node>>&& nodes
-            , std::vector<std::unique_ptr<ValueTable>>&& value_tables
-            , std::vector<std::unique_ptr<Message>>&& messages
-            , std::vector<std::unique_ptr<EnvironmentVariable>>&& environment_variables
-            , std::vector<std::unique_ptr<AttributeDefinition>>&& attribute_definitions
-            , std::vector<std::unique_ptr<Attribute>>&& attribute_defaults
-            , std::vector<std::unique_ptr<Attribute>>&& attribute_values
+            , std::unique_ptr<IBitTiming>&& bit_timing
+            , std::vector<std::unique_ptr<INode>>&& nodes
+            , std::vector<std::unique_ptr<IValueTable>>&& value_tables
+            , std::vector<std::unique_ptr<IMessage>>&& messages
+            , std::vector<std::unique_ptr<IEnvironmentVariable>>&& environment_variables
+            , std::vector<std::unique_ptr<IAttributeDefinition>>&& attribute_definitions
+            , std::vector<std::unique_ptr<IAttribute>>&& attribute_defaults
+            , std::vector<std::unique_ptr<IAttribute>>&& attribute_values
             , std::string&& comment);
-        static std::map<std::string, std::unique_ptr<Network>> loadNetworkFromFile(const std::filesystem::path& filename);
-        static std::unique_ptr<Network> loadDBCFromIs(std::istream& is);
-        static std::map<std::string, std::unique_ptr<Network>> loadKCDFromIs(std::istream& is);
+        static std::map<std::string, std::unique_ptr<INetwork>> LoadNetworkFromFile(const std::filesystem::path& filename);
+        static std::unique_ptr<INetwork> LoadDBCFromIs(std::istream& is);
+        static std::map<std::string, std::unique_ptr<INetwork>> LoadKCDFromIs(std::istream& is);
         
-        virtual std::unique_ptr<Network> clone() const = 0;
+        virtual std::unique_ptr<INetwork> Clone() const = 0;
 
-        virtual ~Network() = default;
-        virtual const std::string& getVersion() const = 0;
-        virtual bool hasNewSymbol(const std::string& name) const = 0;
-        virtual void forEachNewSymbol(std::function<void(const std::string&)> cb) const = 0;
-        virtual const BitTiming& getBitTiming() const = 0;
-        virtual const Node* getNodeByName(const std::string& name) const = 0;
-        virtual const Node* findNode(std::function<bool(const Node&)> pred) const = 0;
-        virtual void forEachNode(std::function<void(const Node&)> cb) const= 0;
-        virtual const ValueTable* getValueTableByName(const std::string& name) const = 0;
-        virtual const ValueTable* findValueTable(std::function<bool(const ValueTable&)> pred) const = 0;
-        virtual void forEachValueTable(std::function<void(const ValueTable&)> cb) const = 0;
-        virtual const Message* getMessageById(uint64_t id) const = 0;
-        virtual const Message* findMessage(std::function<bool(const Message&)> pred) const = 0;
-        virtual void forEachMessage(std::function<void(const Message&)> cb) const = 0;
-        virtual const EnvironmentVariable* getEnvironmentVariableByName(const std::string& name) const = 0;
-        virtual const EnvironmentVariable* findEnvironmentVariable(std::function<bool(const EnvironmentVariable&)> cb) const = 0;
-        virtual void forEachEnvironmentVariable(std::function<void(const EnvironmentVariable&)> cb) const = 0;
-        virtual const AttributeDefinition* getAttributeDefinitionByName(const std::string& name) const = 0;
-        virtual const AttributeDefinition* findAttributeDefinition(std::function<bool(const AttributeDefinition&)> pred) const = 0;
-        virtual void forEachAttributeDefinition(std::function<void(const AttributeDefinition&)> cb) const = 0;
-        virtual const Attribute* getAttributeDefaultByName(const std::string& name) const = 0;
-        virtual const Attribute* findAttributeDefault(std::function<bool(const Attribute&)> pred) const = 0;
-        virtual void forEachAttributeDefault(std::function<void(const Attribute&)> cb) const = 0;
-        virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)> pred) const = 0;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)> cb) const = 0;
-        virtual const std::string& getComment() const = 0;
+        virtual ~INetwork() = default;
+        virtual const std::string& Version() const = 0;
+        virtual const std::string& NewSymbols_Get(std::size_t i) const = 0;
+        virtual uint64_t NewSymbols_Size() const = 0;
+        virtual const IBitTiming& BitTiming() const = 0;
+        virtual const INode& Nodes_Get(std::size_t i) const = 0;
+        virtual uint64_t Nodes_Size() const = 0;
+        virtual const IValueTable& ValueTables_Get(std::size_t i) const = 0;
+        virtual uint64_t ValueTables_Size() const = 0;
+        virtual const IMessage& Messages_Get(std::size_t i) const = 0;
+        virtual uint64_t Messages_Size() const = 0;
+        virtual const IEnvironmentVariable& EnvironmentVariables_Get(std::size_t i) const = 0;
+        virtual uint64_t EnvironmentVariables_Size() const = 0;
+        virtual const IAttributeDefinition& AttributeDefinitions_Get(std::size_t i) const = 0;
+        virtual uint64_t AttributeDefinitions_Size() const = 0;
+        virtual const IAttribute& AttributeDefaults_Get(std::size_t i) const = 0;
+        virtual uint64_t AttributeDefaults_Size() const = 0;
+        virtual const IAttribute& AttributeValues_Get(std::size_t i) const = 0;
+        virtual uint64_t AttributeValues_Size() const = 0;
+        virtual const std::string& Comment() const = 0;
         
-        virtual const Message* findParentMessage(const Signal* sig) const = 0;
+        DBCPPP_MAKE_ITERABLE(INetwork, NewSymbols, std::string);
+        DBCPPP_MAKE_ITERABLE(INetwork, Nodes, INode);
+        DBCPPP_MAKE_ITERABLE(INetwork, ValueTables, IValueTable);
+        DBCPPP_MAKE_ITERABLE(INetwork, Messages, IMessage);
+        DBCPPP_MAKE_ITERABLE(INetwork, EnvironmentVariables, IEnvironmentVariable);
+        DBCPPP_MAKE_ITERABLE(INetwork, AttributeDefinitions, IAttributeDefinition);
+        DBCPPP_MAKE_ITERABLE(INetwork, AttributeDefaults, IAttribute);
+        DBCPPP_MAKE_ITERABLE(INetwork, AttributeValues, IAttribute);
 
-        virtual bool operator==(const Network& rhs) const = 0;
-        virtual bool operator!=(const Network& rhs) const = 0;
+        virtual const IMessage* ParentMessage(const ISignal* sig) const = 0;
 
-        void merge(std::unique_ptr<Network>&& other);
+        virtual bool operator==(const INetwork& rhs) const = 0;
+        virtual bool operator!=(const INetwork& rhs) const = 0;
+
+        void Merge(std::unique_ptr<INetwork>&& other);
     };
 }
