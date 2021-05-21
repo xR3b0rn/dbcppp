@@ -144,10 +144,10 @@ extern "C"
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableValueEncodingDescriptions_GetValue(const dbcppp_EnvironmentVariable* env_var, int64_t i);
     DBCPPP_API const char* dbcppp_EnvironmentVariableValueEncodingDescriptions_GetDescription(const dbcppp_EnvironmentVariable* env_var, int64_t i);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableValueEncodingDescriptions_Size(const dbcppp_EnvironmentVariable* env_var);
-    DBCPPP_API uint64_t dbcppp_EnvironmentVariableGetDataSize(const dbcppp_EnvironmentVariable* env_var);
+    DBCPPP_API uint64_t dbcppp_EnvironmentVariableDataSize(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API const dbcppp_Attribute* dbcppp_EnvironmentVariableAttributeValues_Get(const dbcppp_EnvironmentVariable* env_var, uint64_t i);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableAttributeValues_Size(const dbcppp_EnvironmentVariable* env_var);
-    DBCPPP_API const char* dbcppp_EnvironmentVariableGetComment(const dbcppp_EnvironmentVariable* env_var);
+    DBCPPP_API const char* dbcppp_EnvironmentVariableComment(const dbcppp_EnvironmentVariable* env_var);
 
     DBCPPP_API const dbcppp_Message* dbcppp_MessageCreate(
           uint64_t id
@@ -159,9 +159,9 @@ extern "C"
         , dbcppp_Attribute** attribute_values
         , const char* comment);
     DBCPPP_API void dbcppp_MessageFree(const dbcppp_Message* msg);
-    DBCPPP_API uint64_t dbcppp_MessageGetId(const dbcppp_Message* msg);
-    DBCPPP_API const char* dbcppp_MessageGetName(const dbcppp_Message* msg);
-    DBCPPP_API uint64_t dbcppp_MessageGetMessageSize(const dbcppp_Message* msg);
+    DBCPPP_API uint64_t dbcppp_MessageId(const dbcppp_Message* msg);
+    DBCPPP_API const char* dbcppp_MessageName(const dbcppp_Message* msg);
+    DBCPPP_API uint64_t dbcppp_MessageMessageSize(const dbcppp_Message* msg);
     DBCPPP_API const char* dbcppp_MessageTransmitter(const dbcppp_Message* msg);
     DBCPPP_API const char* dbcppp_MessageTransmitters_Get(const dbcppp_Message* msg, uint64_t i);
     DBCPPP_API uint64_t dbcppp_MessageTransmitters_Size(const dbcppp_Message* msg);
@@ -288,8 +288,8 @@ extern "C"
     
     DBCPPP_API const dbcppp_ValueEncodingDescription* dbcppp_ValueEncodingDescriptionCreate(uint64_t value, const char* desc);
     DBCPPP_API void dbcppp_ValueEncodingDescriptionFree(const dbcppp_ValueEncodingDescription* ved);
-    DBCPPP_API uint64_t dbcppp_ValueEncodingDescriptionGetValue(const dbcppp_ValueEncodingDescription* ved);
-    DBCPPP_API const char* dbcppp_ValueEncodingDescriptionGetDesc(const dbcppp_ValueEncodingDescription* ved);
+    DBCPPP_API uint64_t dbcppp_ValueEncodingDescriptionValue(const dbcppp_ValueEncodingDescription* ved);
+    DBCPPP_API const char* dbcppp_ValueEncodingDescriptionDescription(const dbcppp_ValueEncodingDescription* ved);
 
 #ifdef __cplusplus
 }

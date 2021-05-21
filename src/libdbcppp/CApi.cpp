@@ -429,7 +429,7 @@ extern "C"
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->ValueEncodingDescriptions_Size();
     }
-    DBCPPP_API uint64_t dbcppp_EnvironmentVariableGetDataSize(const dbcppp_EnvironmentVariable* env_var)
+    DBCPPP_API uint64_t dbcppp_EnvironmentVariableDataSize(const dbcppp_EnvironmentVariable* env_var)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->DataSize();
@@ -444,7 +444,7 @@ extern "C"
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->AttributeValues_Size();
     }
-    DBCPPP_API const char* dbcppp_EnvironmentVariableGetComment(const dbcppp_EnvironmentVariable* env_var)
+    DBCPPP_API const char* dbcppp_EnvironmentVariableComment(const dbcppp_EnvironmentVariable* env_var)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->Comment().c_str();
@@ -496,17 +496,17 @@ extern "C"
     {
         std::unique_ptr<const MessageImpl>(reinterpret_cast<const MessageImpl*>(msg));
     }
-    DBCPPP_API uint64_t dbcppp_MessageGetId(const dbcppp_Message* msg)
+    DBCPPP_API uint64_t dbcppp_MessageId(const dbcppp_Message* msg)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         return msgi->Id();
     }
-    DBCPPP_API const char* dbcppp_MessageGetName(const dbcppp_Message* msg)
+    DBCPPP_API const char* dbcppp_MessageName(const dbcppp_Message* msg)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         return msgi->Name().c_str();
     }
-    DBCPPP_API uint64_t dbcppp_MessageGetMessageSize(const dbcppp_Message* msg)
+    DBCPPP_API uint64_t dbcppp_MessageMessageSize(const dbcppp_Message* msg)
     {
         auto msgi = reinterpret_cast<const MessageImpl*>(msg);
         return msgi->MessageSize();
@@ -1160,12 +1160,12 @@ extern "C"
         auto ved = reinterpret_cast<const ValueEncodingDescriptionImpl*>(cved);
         std::unique_ptr<const ValueEncodingDescriptionImpl> upved(ved);
     }
-    DBCPPP_API uint64_t dbcppp_ValueEncodingDescriptionGetValue(const dbcppp_ValueEncodingDescription* cved)
+    DBCPPP_API uint64_t dbcppp_ValueEncodingDescriptionValue(const dbcppp_ValueEncodingDescription* cved)
     {
         auto ved = reinterpret_cast<const ValueEncodingDescriptionImpl*>(cved);
         return ved->Value();
     }
-    DBCPPP_API const char* dbcppp_ValueEncodingDescriptionGetDesc(const dbcppp_ValueEncodingDescription* cved)
+    DBCPPP_API const char* dbcppp_ValueEncodingDescriptionDescription(const dbcppp_ValueEncodingDescription* cved)
     {
         auto ved = reinterpret_cast<const ValueEncodingDescriptionImpl*>(cved);
         return ved->Description().c_str();
