@@ -3,11 +3,11 @@
 
 using namespace dbcppp;
 
-std::unique_ptr<SignalType> SignalType::create(
+std::unique_ptr<ISignalType> ISignalType::Create(
       std::string&& name
     , uint64_t signal_size
-    , Signal::ByteOrder byte_order
-    , Signal::ValueType value_type
+    , ISignal::EByteOrder byte_order
+    , ISignal::EValueType value_type
     , double factor
     , double offset
     , double minimum
@@ -33,8 +33,8 @@ std::unique_ptr<SignalType> SignalType::create(
 SignalTypeImpl::SignalTypeImpl(
       std::string&& name
     , uint64_t signal_size
-    , Signal::ByteOrder byte_order
-    , Signal::ValueType value_type
+    , ISignal::EByteOrder byte_order
+    , ISignal::EValueType value_type
     , double factor
     , double offset
     , double minimum
@@ -55,70 +55,70 @@ SignalTypeImpl::SignalTypeImpl(
     , _default_value(std::move(default_value))
     , _value_table(std::move(value_table))
 {}
-std::unique_ptr<SignalType> SignalTypeImpl::clone() const
+std::unique_ptr<ISignalType> SignalTypeImpl::Clone() const
 {
     return std::make_unique<SignalTypeImpl>(*this);
 }
-const std::string& SignalTypeImpl::getName() const
+const std::string& SignalTypeImpl::Name() const
 {
     return _name;
 }
-uint64_t SignalTypeImpl::getSignalSize() const
+uint64_t SignalTypeImpl::SignalSize() const
 {
     return _signal_size;
 }
-Signal::ByteOrder SignalTypeImpl::getByteOrder() const
+ISignal::EByteOrder SignalTypeImpl::ByteOrder() const
 {
     return _byte_order;
 }
-Signal::ValueType SignalTypeImpl::getValueType() const
+ISignal::EValueType SignalTypeImpl::ValueType() const
 {
     return _value_type;
 }
-double SignalTypeImpl::getFactor() const
+double SignalTypeImpl::Factor() const
 {
     return _factor;
 }
-double SignalTypeImpl::getOffset() const
+double SignalTypeImpl::Offset() const
 {
     return _offset;
 }
-double SignalTypeImpl::getMinimum() const
+double SignalTypeImpl::Minimum() const
 {
     return _minimum;
 }
-double SignalTypeImpl::getMaximum() const
+double SignalTypeImpl::Maximum() const
 {
     return _maximum;
 }
-const std::string& SignalTypeImpl::getUnit() const
+const std::string& SignalTypeImpl::Unit() const
 {
     return _unit;
 }
-double SignalTypeImpl::getDefaultValue() const
+double SignalTypeImpl::DefaultValue() const
 {
     return _default_value;
 }
-const std::string& SignalTypeImpl::getValueTable() const
+const std::string& SignalTypeImpl::ValueTable() const
 {
     return _value_table;
 }
-bool SignalTypeImpl::operator==(const SignalType& rhs) const
+bool SignalTypeImpl::operator==(const ISignalType& rhs) const
 {
-    bool result = true;
-    result &= _name == rhs.getName();
-    result &= _signal_size == rhs.getSignalSize();
-    result &= _value_type == rhs.getValueType();
-    result &= _factor == rhs.getFactor();
-    result &= _offset == rhs.getOffset();
-    result &= _minimum == rhs.getMinimum();
-    result &= _maximum == rhs.getMaximum();
-    result &= _unit == rhs.getUnit();
-    result &= _default_value == rhs.getDefaultValue();
-    result &= _value_table == rhs.getValueTable();
-    return result;
+    bool equal = true;
+    equal &= _name == rhs.Name();
+    equal &= _signal_size == rhs.SignalSize();
+    equal &= _value_type == rhs.ValueType();
+    equal &= _factor == rhs.Factor();
+    equal &= _offset == rhs.Offset();
+    equal &= _minimum == rhs.Minimum();
+    equal &= _maximum == rhs.Maximum();
+    equal &= _unit == rhs.Unit();
+    equal &= _default_value == rhs.DefaultValue();
+    equal &= _value_table == rhs.ValueTable();
+    return equal;
 }
-bool SignalTypeImpl::operator!=(const SignalType& rhs) const
+bool SignalTypeImpl::operator!=(const ISignalType& rhs) const
 {
     return !(*this == rhs);
 }

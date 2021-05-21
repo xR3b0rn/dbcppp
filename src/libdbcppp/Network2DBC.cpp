@@ -7,7 +7,7 @@ using namespace dbcppp::Network2DBC;
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const na_t& na)
 {
     const auto& net = std::get<0>(na);
-    const auto& a = std::get<1>(na);
+    const auto& iattr = std::get<1>(na);
     struct Visitor
     {
         Visitor(std::ostream& os)
@@ -29,143 +29,149 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
         std::ostream& _os;
     };
     std::string cmd = "BA_";
-    if (net.getAttributeDefaultByName(a.getName()) == &a)
     {
-        cmd = "BA_DEF_DEF_";
+        auto beg = net.AttributeDefaults().begin();
+        auto end = net.AttributeDefaults().end();
+        if (std::find_if(beg, end, [&](const IAttribute& attr) { return &attr == &iattr; }) != end)
+        {
+            cmd = "BA_DEF_DEF_";
+        }
     }
-    os << cmd << " \"" << a.getName() << "\"";
-    switch (a.getObjectType())
+    os << cmd << " \"" << iattr.Name() << "\"";
+    switch (iattr.ObjectType())
     {
-    case AttributeDefinition::ObjectType::Network:
+    case IAttributeDefinition::EObjectType::Network:
     {
-        std::visit(Visitor(os), a.getValue());
+        std::visit(Visitor(os), iattr.Value());
         break;
     }
-    case AttributeDefinition::ObjectType::Node:
+    case IAttributeDefinition::EObjectType::Node:
     {
         auto find_node_name =
             [&]()
             {
-                const Node* n = net.findNode(
-                    [&](const Node& n)
+                auto beg_node = net.Nodes().begin();
+                auto end_node = net.Nodes().end();
+                auto iter = std::find_if(beg_node, end_node,
+                    [&](const INode& n)
                     {
-                        const Attribute* av = n.findAttributeValue(
-                            [&](const Attribute& av)
-                            {
-                                return &av == &a;
-                            });
-                        return av != nullptr;
+                        auto beg_attr = n.AttributeValues().begin();
+                        auto end_attr = n.AttributeValues().end();
+                        auto iter = std::find_if(beg_attr, end_attr, [&](const IAttribute& other) { return &other == &iattr; });
+                        return iter != end_attr;
                     });
-                return n ? n->getName() : "";
+                return iter != end_node ? iter->Name() : "";
             };
         os << " BU_ " << find_node_name();
-        std::visit(Visitor(os), a.getValue());
+        std::visit(Visitor(os), iattr.Value());
         break;
     }
-    case AttributeDefinition::ObjectType::Message:
+    case IAttributeDefinition::EObjectType::Message:
     {
         auto find_message_id =
             [&]()
             {
-                const Message* m = net.findMessage(
-                    [&](const Message& m)
+                auto beg_msg = net.Messages().begin();
+                auto end_msg = net.Messages().end();
+                auto iter = std::find_if(beg_msg, end_msg,
+                    [&](const IMessage& msg)
                     {
-                        const Attribute* av = m.findAttributeValue(
-                            [&](const Attribute& av)
-                            {
-                                return &av == &a;
-                            });
-                        return av != nullptr;
+                        auto beg_attr = msg.AttributeValues().begin();
+                        auto end_attr = msg.AttributeValues().end();
+                        auto iter = std::find_if(beg_attr, end_attr, [&](const IAttribute& other) { return &other == &iattr; });
+                        return iter != end_attr;
                     });
-                return m ? m->getId() : uint64_t(-1);
+                return iter != end_msg ? iter->Id() : uint64_t(-1);
             };
         os << " BO_ " << find_message_id();
-        std::visit(Visitor(os), a.getValue());
+        std::visit(Visitor(os), iattr.Value());
         break;
     }
-    case AttributeDefinition::ObjectType::Signal:
+    case IAttributeDefinition::EObjectType::Signal:
     {
         auto find_signal =
-            [&]() -> const Signal*
+            [&]() -> const ISignal*
             {
-                const Signal* sig = nullptr;
-                const Message* m = net.findMessage(
-                    [&](const Message& m)
+                const ISignal* osig = nullptr;
+                auto beg_msg = net.Messages().begin();
+                auto end_msg = net.Messages().end();
+                auto iter = std::find_if(beg_msg, end_msg,
+                    [&](const IMessage& msg)
                     {
-                        const Signal* s = m.findSignal(
-                            [&](const Signal& s)
+                        auto beg_sig = msg.Signals().begin();
+                        auto end_sig = msg.Signals().end();
+                        auto iter = std::find_if(beg_sig, end_sig,
+                            [&](const ISignal& sig)
                             {
-                                const Attribute* av = s.findAttributeValue(
-                                    [&](const Attribute& av)
-                                    {
-                                        return &av == &a;
-                                    });
-                                if (av != nullptr)
+                                auto beg_attr = sig.AttributeValues().begin();
+                                auto end_attr = sig.AttributeValues().end();
+                                auto iter = std::find_if(beg_attr, end_attr, [&](const IAttribute& other) { return &other == &iattr; });
+                                if (iter != end_attr)
                                 {
-                                    sig = &s;
+                                    osig = &sig;
                                 }
-                                return av != nullptr;
+                                return iter != end_attr;
                             });
-                        return s != nullptr;
+                        return iter != end_sig;
                     });
-                return sig;
+                return osig;
             };
-        const Signal* sig = find_signal();
-        os << " SG_ " << net.findParentMessage(sig)->getId();
-        os << " " << sig->getName();
-        std::visit(Visitor(os), a.getValue());
+        const ISignal* sig = find_signal();
+        os << " SG_ " << net.ParentMessage(sig)->Id();
+        os << " " << sig->Name();
+        std::visit(Visitor(os), iattr.Value());
         break;
     }
-    case AttributeDefinition::ObjectType::EnvironmentVariable:
+    case IAttributeDefinition::EObjectType::EnvironmentVariable:
     {
         auto find_environment_variable_name =
             [&]()
             {
-                const EnvironmentVariable* ev = net.findEnvironmentVariable(
-                    [&](const EnvironmentVariable& ev)
+                auto beg_env_var = net.EnvironmentVariables().begin();
+                auto end_env_var = net.EnvironmentVariables().end();
+                auto iter = std::find_if(beg_env_var, end_env_var,
+                    [&](const IEnvironmentVariable& ev)
                     {
-                        const Attribute* av = ev.findAttributeValue(
-                            [&](const Attribute& av)
-                            {
-                                return &av == &a;
-                            });
-                        return av != nullptr;
+                        auto beg_attr = ev.AttributeValues().begin();
+                        auto end_attr = ev.AttributeValues().end();
+                        auto iter = std::find_if(beg_attr, end_attr, [&](const IAttribute& other) { return &other == &iattr; });
+                        return iter != end_attr;
                     });
-                return ev ? ev->getName() : "";
+                return iter != end_env_var ? iter->Name() : "";
 
             };
         os << " EV_ " << find_environment_variable_name();
-        std::visit(Visitor(os), a.getValue());
+        std::visit(Visitor(os), iattr.Value());
         break;
     }
     }
     os << ";\n";
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const AttributeDefinition& ad)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const IAttributeDefinition& ad)
 {
     struct VisitorValueType
     {
         VisitorValueType(std::ostream& os)
             : _os(os)
         {}
-        void operator()(const AttributeDefinition::ValueTypeInt& vt) const
+        void operator()(const IAttributeDefinition::ValueTypeInt& vt) const
         {
             _os << " INT" << " " << vt.minimum << " " << vt.maximum;
         }
-        void operator()(const AttributeDefinition::ValueTypeHex& vt) const
+        void operator()(const IAttributeDefinition::ValueTypeHex& vt) const
         {
             _os << " HEX" << " " << vt.minimum << " " << vt.maximum;
         }
-        void operator()(const AttributeDefinition::ValueTypeFloat& vt) const
+        void operator()(const IAttributeDefinition::ValueTypeFloat& vt) const
         {
             _os << " FLOAT" << " " << vt.minimum << " " << vt.maximum;
         }
-        void operator()(const AttributeDefinition::ValueTypeString& vt) const
+        void operator()(const IAttributeDefinition::ValueTypeString& vt) const
         {
             _os << " STRING";
         }
-        void operator()(const AttributeDefinition::ValueTypeEnum& vt) const
+        void operator()(const IAttributeDefinition::ValueTypeEnum& vt) const
         {
             _os << " ENUM";
             const auto& values = vt.values;
@@ -185,401 +191,334 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     };
 
     std::string object_type = "";
-    switch (ad.getObjectType())
+    switch (ad.ObjectType())
     {
-    case AttributeDefinition::ObjectType::Network: break;
-    case AttributeDefinition::ObjectType::Node: object_type = "BU_"; break;
-    case AttributeDefinition::ObjectType::Message: object_type = "BO_"; break;
-    case AttributeDefinition::ObjectType::Signal: object_type = "SG_"; break;
-    case AttributeDefinition::ObjectType::EnvironmentVariable: object_type = "EV_"; break;
+    case IAttributeDefinition::EObjectType::Network: break;
+    case IAttributeDefinition::EObjectType::Node: object_type = "BU_"; break;
+    case IAttributeDefinition::EObjectType::Message: object_type = "BO_"; break;
+    case IAttributeDefinition::EObjectType::Signal: object_type = "SG_"; break;
+    case IAttributeDefinition::EObjectType::EnvironmentVariable: object_type = "EV_"; break;
     }
     os << "BA_DEF_ ";
     if (object_type != "")
     {
         os << object_type << " ";
     }
-    os << "\"" << ad.getName() << "\"";
-    std::visit(VisitorValueType(os), ad.getValueType());
+    os << "\"" << ad.Name() << "\"";
+    std::visit(VisitorValueType(os), ad.ValueType());
     os << ";\n";
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const BitTiming& bt)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const IBitTiming& bt)
 {
     os << "BS_:";
-    if (bt.getBaudrate() != 0 && bt.getBTR1() != 0 && bt.getBTR2() != 0)
+    if (bt.Baudrate() != 0 && bt.BTR1() != 0 && bt.BTR2() != 0)
     {
-        os << " " << bt.getBaudrate() << " : " << bt.getBTR1() << ", " << bt.getBTR2();
+        os << " " << bt.Baudrate() << " : " << bt.BTR1() << ", " << bt.BTR2();
     }
     os << "\n";
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const EnvironmentVariable& ev)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const IEnvironmentVariable& ev)
 {
-    os << "EV_ " << ev.getName() << ": ";
-    switch (ev.getVarType())
+    os << "EV_ " << ev.Name() << ": ";
+    switch (ev.VarType())
     {
-    case EnvironmentVariable::VarType::Integer: os << "0"; break;
-    case EnvironmentVariable::VarType::Float: os << "1"; break;
-    case EnvironmentVariable::VarType::String: os << "2"; break;
-    case EnvironmentVariable::VarType::Data: os << "0"; break;
+    case IEnvironmentVariable::EVarType::Integer: os << "0"; break;
+    case IEnvironmentVariable::EVarType::Float: os << "1"; break;
+    case IEnvironmentVariable::EVarType::String: os << "2"; break;
+    case IEnvironmentVariable::EVarType::Data: os << "0"; break;
     }
-    os << " [" << ev.getMinimum() << "|" << ev.getMaximum() << "]" << " \"" << ev.getUnit() << "\" "
-        << ev.getInitialValue() << " " << ev.getEvId() << " ";
-    switch (ev.getAccessType())
+    os << " [" << ev.Minimum() << "|" << ev.Maximum() << "]" << " \"" << ev.Unit() << "\" "
+        << ev.InitialValue() << " " << ev.EvId() << " ";
+    switch (ev.AccessType())
     {
-    case EnvironmentVariable::AccessType::Unrestricted: os << "DUMMY_NODE_VECTOR0"; break;
-    case EnvironmentVariable::AccessType::Read: os << "DUMMY_NODE_VECTOR1"; break;
-    case EnvironmentVariable::AccessType::Write: os << "DUMMY_NODE_VECTOR2"; break;
-    case EnvironmentVariable::AccessType::ReadWrite: os << "DUMMY_NODE_VECTOR3"; break;
+    case IEnvironmentVariable::EAccessType::Unrestricted: os << "DUMMY_NODE_VECTOR0"; break;
+    case IEnvironmentVariable::EAccessType::Read: os << "DUMMY_NODE_VECTOR1"; break;
+    case IEnvironmentVariable::EAccessType::Write: os << "DUMMY_NODE_VECTOR2"; break;
+    case IEnvironmentVariable::EAccessType::ReadWrite: os << "DUMMY_NODE_VECTOR3"; break;
     }
     bool first = true;
-    ev.forEachAccessNode(
-        [&](const std::string& n)
+    for (const std::string& n : ev.AccessNodes())
+    {
+        if (first)
         {
-            if (first)
-            {
-                os << " " << n;
-                first = false;
-            }
-            else
-            {
-                os << ", " << n;
-            }
-        });
+            os << " " << n;
+            first = false;
+        }
+        else
+        {
+            os << ", " << n;
+        }
+    }
     os << ";\n";
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const Message& m)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const IMessage& m)
 {
-    os << "BO_ " << m.getId() << " " << m.getName() << ": " << m.getMessageSize() << " " << m.getTransmitter() << "\n";
-    m.forEachSignal(
-        [&](const Signal& s)
-        {
-            os << s;
-        });
+    os << "BO_ " << m.Id() << " " << m.Name() << ": " << m.MessageSize() << " " << m.Transmitter() << "\n";
+    for (const ISignal& s : m.Signals())
+    {
+        os << s;
+    };
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const Network& net)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const INetwork& net)
 {
     os << "VERSION \"";
-    if (net.getVersion() != "")
+    if (net.Version() != "")
     {
-        os << net.getVersion();
+        os << net.Version();
     }
     os << "\"\n";
     os << "NS_:\n";
-    net.forEachNewSymbol(
-        [&](const std::string& ns)
-        {
-            os << "\t" << ns << "\n";
-        });
-    os << net.getBitTiming();
+    for (const std::string& ns : net.NewSymbols())
+    {
+        os << "\t" << ns << "\n";
+    };
+    os << net.BitTiming();
     os << "BU_:";
-    net.forEachNode(
-        [&](const Node& n)
-        {
-            os << " " << n.getName(); 
-        });
+    for (const INode& n : net.Nodes())
+    {
+            os << " " << n.Name(); 
+    }
     os << "\n";
-    net.forEachValueTable(
-        [&](const ValueTable& vt)
+    for (const IValueTable& vt : net.ValueTables())
+    {
+            os << vt;
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        os << m;
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        if (m.MessageTransmitters_Size())
+        {
+            const std::string& n = m.MessageTransmitters_Get(0);
+            os << "BO_TX_BU_ " << m.Id() << " :";
+            os << " " << n;
+            for (std::size_t i = 1; i < m.MessageTransmitters_Size(); i++)
+            {
+                const std::string& n = m.MessageTransmitters_Get(i);
+                os << ", " << n;
+            }
+            os << ";\n";
+        }
+    }
+    for (const IEnvironmentVariable& ev : net.EnvironmentVariables())
+    {
+        os << ev;
+    }
+    for (const IEnvironmentVariable& ev : net.EnvironmentVariables())
+    {
+        if (ev.VarType() == IEnvironmentVariable::EVarType::Data)
+        {
+            os << "ENVVAR_DATA_ " << ev.Name() << " : " << ev.DataSize() << ";\n";
+        }
+    }
+    for (const IValueTable& vt : net.ValueTables())
+    {
+        if (vt.SignalType())
         {
             os << vt;
-        });
-    net.forEachMessage(
-        [&](const Message& m)
-        {
-            os << m;
-        });
-    // serialize message_transmitters
-    net.forEachMessage(
-        [&](const Message& m)
-        {
-            bool first = true;
-            m.forEachMessageTransmitter(
-                [&](const std::string& n)
-                {
-                    if (first)
-                    {
-                        first = false;
-                        os << "BO_TX_BU_ " << m.getId() << " :";
-                        os << " " << n;
-                    }
-                    else
-                    {
-                        os << ", " << n;
-                    }
-                });
-            if (!first)
-            {
-                os << ";\n";
-            }
-        });
-    net.forEachEnvironmentVariable(
-        [&](const EnvironmentVariable& ev)
-        {
-            os << ev;
-        });
-    net.forEachEnvironmentVariable(
-        [&](const EnvironmentVariable& ev)
-        {
-            if (ev.getVarType() == EnvironmentVariable::VarType::Data)
-            {
-                os << "ENVVAR_DATA_ " << ev.getName() << " : " << ev.getDataSize() << ";\n";
-            }
-        });
-    net.forEachValueTable(
-        [&](const ValueTable& vt)
-        {
-            if (vt.getSignalType())
-            {
-                os << vt;
-            }
-        });
-    // serialize comments
-    // Network comment
-    if (net.getComment() != "")
-    {
-        os << "CM_ \"" << net.getComment() << "\";\n";
+        }
     }
-    // Node comments
-    net.forEachNode(
-        [&](const Node& n)
+    if (net.Comment() != "")
+    {
+        os << "CM_ \"" << net.Comment() << "\";\n";
+    }
+    for (const INode& n : net.Nodes())
+    {
+        if (n.Comment() != "")
         {
-            if (n.getComment() != "")
+            os << "CM_ BU_ " << n.Name() << " \"" << n.Comment() << "\"" << ";\n";
+        }
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        if (m.Comment() != "")
+        {
+            os << "CM_ BO_ " << m.Id() << " \"" << m.Comment() << "\"" << ";\n";
+        }
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        for (const ISignal& s : m.Signals())
+        {
+            if (s.Comment() != "")
             {
-                os << "CM_ BU_ " << n.getName() << " \"" << n.getComment() << "\"" << ";\n";
+                os << "CM_ SG_ " << m.Id() << " " << s.Name() << " \"" << s.Comment() << "\"" << ";\n";
             }
-        });
-    // Message comments
-    net.forEachMessage(
-        [&](const Message& m)
+        }
+    }
+    for (const IEnvironmentVariable& ev : net.EnvironmentVariables())
+    {
+        if (ev.Comment() != "")
         {
-            if (m.getComment() != "")
-            {
-                os << "CM_ BO_ " << m.getId() << " \"" << m.getComment() << "\"" << ";\n";
-            }
-        });
-    // Signal comments
-    net.forEachMessage(
-        [&](const Message& m)
-        {
-            m.forEachSignal(
-                [&](const Signal& s)
-                {
-                    if (s.getComment() != "")
-                    {
-                        os << "CM_ SG_ " << m.getId() << " " << s.getName() << " \"" << s.getComment() << "\"" << ";\n";
-                    }
-                });
-        });
-    // EnvironmentVariable comments
-    net.forEachEnvironmentVariable(
-        [&](const EnvironmentVariable& ev)
-        {
-            if (ev.getComment() != "")
-            {
-                os << "CM_ EV_ " << ev.getName() << " \"" << ev.getComment() << "\"" << ";\n";
-            }
-        });
-    net.forEachAttributeDefinition(
-        [&](const AttributeDefinition& ad)
-        {
-            os << "\n";
-            os << ad;
-        });
-    net.forEachAttributeDefault(
-        [&](const Attribute& ad)
-        {
-            os << "\n";
-            os << na_t{net, ad};
-        });
-    net.forEachAttributeValue(
-        [&](const Attribute& av)
+            os << "CM_ EV_ " << ev.Name() << " \"" << ev.Comment() << "\"" << ";\n";
+        }
+    }
+    for (const IAttributeDefinition& ad : net.AttributeDefinitions())
+    {
+        os << "\n";
+        os << ad;
+    }
+    for (const IAttribute& ad : net.AttributeDefaults())
+    {
+        os << "\n";
+        os << na_t{net, ad};
+    }
+    for (const IAttribute& av : net.AttributeValues())
+    {
+        os << "\n";
+        os << na_t{net, av};
+    }
+    for (const INode& n : net.Nodes())
+    {
+        for (const IAttribute& av : n.AttributeValues())
         {
             os << "\n";
             os << na_t{net, av};
-        });
-    net.forEachNode(
-        [&](const Node& n)
+        }
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        for (const IAttribute& av : m.AttributeValues())
         {
-            n.forEachAttributeValue(
-                [&](const Attribute& av)
-                {
-                    os << "\n";
-                    os << na_t{net, av};
-                });
-        });
-    net.forEachMessage(
-        [&](const Message& m)
+            os << "\n";
+            os << na_t{net, av};
+        }
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        for (const ISignal& s : m.Signals())
         {
-            m.forEachAttributeValue(
-                [&](const Attribute& av)
-                {
-                    os << "\n";
-                    os << na_t{net, av};
-                });
-        });
-    net.forEachMessage(
-        [&](const Message& m)
-        {
-            m.forEachSignal(
-                [&](const Signal& s)
-                {
-                    s.forEachAttributeValue(
-                        [&](const Attribute& av)
-                        {
-                            os << "\n";
-                            os << na_t{net, av};
-                        });
-                });
-        });
-    net.forEachEnvironmentVariable(
-        [&](const EnvironmentVariable& ev)
-        {
-            ev.forEachAttributeValue(
-                [&](const Attribute& av)
-                {
-                    os << "\n";
-                    os << na_t{net, av};
-                });
-        });
-    // Serialize value descriptions
-    net.forEachMessage(
-        [&](const Message& m)
-        {
-            m.forEachSignal(
-                [&](const Signal& s)
-                {
-                    bool first = true;
-                    s.forEachValueDescription(
-                        [&](int64_t value, const std::string& desc)
-                        {
-                            if (first)
-                            {
-                                first = false;
-                                os << "VAL_ " << m.getId() << " " << s.getName();
-                            }
-                            os << " " << value << " \"" << desc << "\"";
-                        });
-                    if (!first)
-                    {
-                        os << ";\n";
-                    }
-                });
-        });
-    net.forEachEnvironmentVariable(
-        [&](const EnvironmentVariable& ev)
-        {
-            bool first = true;
-            ev.forEachValueDescription(
-                [&](int64_t value, const std::string& desc)
-                {
-                    if (first)
-                    {
-                        first = false;
-                        os << "VAL_ " << ev.getName();
-                    }
-                    os << " " << value << " \"" << desc << "\"";
-                });
-            if (!first)
+            for (const IAttribute& av : s.AttributeValues())
             {
+                os << "\n";
+                os << na_t{net, av};
+            }
+        }
+    }
+    for (const IEnvironmentVariable& ev : net.EnvironmentVariables())
+    {
+        for (const IAttribute& av : ev.AttributeValues())
+        {
+            os << "\n";
+            os << na_t{net, av};
+        }
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        for (const ISignal& s : m.Signals())
+        {
+            if (s.ValueEncodingDescriptions_Size())
+            {
+                os << "VAL_ " << m.Id() << " " << s.Name();
+                for (const IValueEncodingDescription& ved : s.ValueEncodingDescriptions())
+                {
+                    os << " " << ved.Value() << " \"" << ved.Description() << "\"";
+                }
                 os << ";\n";
             }
-        });
-    net.forEachMessage(
-        [&](const Message& m)
+        }
+    }
+    for (const IEnvironmentVariable& ev : net.EnvironmentVariables())
+    {
+        if (ev.ValueEncodingDescriptions_Size())
         {
-            m.forEachSignalGroup(
-                [&](const SignalGroup& sg)
-                {
-                    os << "SIG_GROUP_ " << sg.getMessageId() << " " << sg.getName() << " " << sg.getRepetitions() << " :";
-                    sg.forEachSignalName(
-                        [&](const std::string& name)
-                        {
-                            os << " " << name;
-                        });
-                    os << ";\n";
-                });
-        });
-    net.forEachMessage(
-        [&](const Message& m)
+            os << "VAL_ " << ev.Name();
+            for (const IValueEncodingDescription& ved : ev.ValueEncodingDescriptions())
+            {
+                os << " " << ved.Value() << " \"" << ved.Description() << "\"";
+            }
+            os << ";\n";
+        }
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        for (const ISignalGroup& sg : m.SignalGroups())
         {
-            m.forEachSignal(
-                [&](const Signal& s)
-                {
-                    if (s.getExtendedValueType() != Signal::ExtendedValueType::Integer)
-                    {
-                        uint64_t type = 0;
-                        switch (s.getExtendedValueType())
-                        {
-                        case Signal::ExtendedValueType::Float: type = 1; break;
-                        case Signal::ExtendedValueType::Double: type = 2; break;
-                        }
-                        os << "SIG_VALTYPE_ " << m.getId() << " " << s.getName() << " : " << type << ";\n";
-                    }
-                });
-        });
-    net.forEachMessage(
-        [&](const Message& m)
+            os << "SIG_GROUP_ " << sg.MessageId() << " " << sg.Name() << " " << sg.Repetitions() << " :";
+            for (const std::string& name : sg.SignalNames())
+            {
+                os << " " << name;
+            }
+            os << ";\n";
+        }
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        for (const ISignal& s : m.Signals())
         {
-            m.forEachSignal(
-                [&](const Signal& s)
+            if (s.ExtendedValueType() != ISignal::EExtendedValueType::Integer)
+            {
+                uint64_t type = 0;
+                switch (s.ExtendedValueType())
                 {
-                    s.forEachSignalMultiplexerValue(
-                        [&](const SignalMultiplexerValue& smv)
-                        {
-                            os << "SG_MUL_VAL_ " << m.getId() << " " << s.getName() << " " << smv.getSwitchName();
-                            std::string ssr;
-                            smv.forEachValueRange(
-                                [&](const SignalMultiplexerValue::Range& r)
-                                {
-                                    ssr += " " + std::to_string(r.from) + "-" + std::to_string(r.to) + ",";
-                                });
-                            if (!ssr.empty())
-                            {
-                                ssr.erase(ssr.end() - 1);
-                                os << ssr;
-                            }
-                            os <<  ";\n";
-                        });
-                });
-        });
+                case ISignal::EExtendedValueType::Float: type = 1; break;
+                case ISignal::EExtendedValueType::Double: type = 2; break;
+                }
+                os << "SIG_VALTYPE_ " << m.Id() << " " << s.Name() << " : " << type << ";\n";
+            }
+        }
+    }
+    for (const IMessage& m : net.Messages())
+    {
+        for (const ISignal& s : m.Signals())
+        {
+            for (const ISignalMultiplexerValue& smv : s.SignalMultiplexerValues())
+            {
+                os << "SG_MUL_VAL_ " << m.Id() << " " << s.Name() << " " << smv.SwitchName();
+                std::string ssr;
+                for (const ISignalMultiplexerValue::Range& range : smv.ValueRanges())
+                {
+                    ssr += " " + std::to_string(range.from) + "-" + std::to_string(range.to) + ",";
+                }
+                if (!ssr.empty())
+                {
+                    ssr.erase(ssr.end() - 1);
+                    os << ssr;
+                }
+                os <<  ";\n";
+            }
+        }
+    }
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const Node& n)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const INode& n)
 {
-    os << n.getName();
+    os << n.Name();
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const Signal& s)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const ISignal& s)
 {
-    os << "\tSG_ " << s.getName() << " ";
-    switch (s.getMultiplexerIndicator())
+    os << "\tSG_ " << s.Name() << " ";
+    switch (s.MultiplexerIndicator())
     {
-    case Signal::Multiplexer::MuxSwitch: os << "M "; break;
-    case Signal::Multiplexer::MuxValue: os << "m" << s.getMultiplexerSwitchValue() << " "; break;
+    case ISignal::EMultiplexer::MuxSwitch: os << "M "; break;
+    case ISignal::EMultiplexer::MuxValue: os << "m" << s.MultiplexerSwitchValue() << " "; break;
     }
-    os << ": " << s.getStartBit() << "|" << s.getBitSize() << "@";
-    switch (s.getByteOrder())
+    os << ": " << s.StartBit() << "|" << s.BitSize() << "@";
+    switch (s.ByteOrder())
     {
-    case Signal::ByteOrder::BigEndian: os << "0"; break;
-    case Signal::ByteOrder::LittleEndian: os << "1"; break;
+    case ISignal::EByteOrder::BigEndian: os << "0"; break;
+    case ISignal::EByteOrder::LittleEndian: os << "1"; break;
     }
-    switch (s.getValueType())
+    switch (s.ValueType())
     {
-    case Signal::ValueType::Unsigned: os << "+ "; break;
-    case Signal::ValueType::Signed: os << "- "; break;
+    case ISignal::EValueType::Unsigned: os << "+ "; break;
+    case ISignal::EValueType::Signed: os << "- "; break;
     }
-    os << "(" << s.getFactor() << "," << s.getOffset() << ") ";
-    os << "[" << s.getMinimum() << "|" << s.getMaximum() << "] ";
-    os << "\"" << s.getUnit() << "\"";
+    os << "(" << s.Factor() << "," << s.Offset() << ") ";
+    os << "[" << s.Minimum() << "|" << s.Maximum() << "] ";
+    os << "\"" << s.Unit() << "\"";
     std::string receivers;
-    s.forEachReceiver(
-        [&](const std::string& n)
-        {
-            receivers += n + ", ";
-        });
+    for (const std::string& n : s.Receivers())
+    {
+        receivers += n + ", ";
+    }
     if (receivers.size())
     {
         receivers.erase(receivers.end() - 1);
@@ -590,41 +529,35 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     os << "\n";
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const SignalType& st)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const ISignalType& st)
 {
-    os << "SGTYPE_ " << st.getName() << " : " << st.getSignalSize() << "@";
-    switch (st.getByteOrder())
+    os << "SGTYPE_ " << st.Name() << " : " << st.SignalSize() << "@";
+    switch (st.ByteOrder())
     {
-    case Signal::ByteOrder::BigEndian: os << "0"; break;
-    case Signal::ByteOrder::LittleEndian: os << "1"; break;
+    case ISignal::EByteOrder::BigEndian: os << "0"; break;
+    case ISignal::EByteOrder::LittleEndian: os << "1"; break;
     }
-    switch (st.getValueType())
+    switch (st.ValueType())
     {
-    case Signal::ValueType::Unsigned: os << "+ "; break;
-    case Signal::ValueType::Signed: os << "- "; break;
+    case ISignal::EValueType::Unsigned: os << "+ "; break;
+    case ISignal::EValueType::Signed: os << "- "; break;
     }
-    os << "(" << st.getFactor() << "," << st.getOffset() << ") ";
-    os << "[" << st.getMinimum() << "|" << st.getMaximum() << "] ";
-    os << "\"" << st.getUnit() << "\" " << st.getDefaultValue();
-    os << ", " << st.getValueTable();
+    os << "(" << st.Factor() << "," << st.Offset() << ") ";
+    os << "[" << st.Minimum() << "|" << st.Maximum() << "] ";
+    os << "\"" << st.Unit() << "\" " << st.DefaultValue();
+    os << ", " << st.ValueTable();
     os << ";";
     return os;
 }
-DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const ValueTable& vt)
+DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const IValueTable& vt)
 {
-    bool first = true;
-    vt.forEachValueEncodingDescription(
-        [&](int64_t value, const std::string& desc)
-        {
-            if (first)
-            {
-                first = false;
-                os << "VAL_TABLE_ " << vt.getName();
-            }
-            os << " " << value << " \"" << desc << "\"";
-        });
-    if (!first)
+    if (vt.ValueEncodingDescriptions_Size())
     {
+        os << "VAL_TABLE_ " << vt.Name();
+        for (const IValueEncodingDescription& ved : vt.ValueEncodingDescriptions())
+        {
+            os << " " << ved.Value() << " \"" << ved.Description() << "\"";
+        }
         os << ";\n";
     }
     return os;

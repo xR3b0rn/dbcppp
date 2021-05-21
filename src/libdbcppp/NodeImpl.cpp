@@ -2,10 +2,10 @@
 
 using namespace dbcppp;
 
-std::unique_ptr<Node> Node::create(
+std::unique_ptr<INode> INode::Create(
     std::string&& name,
     std::string&& comment,
-    std::vector<std::unique_ptr<Attribute>>&& attribute_values)
+    std::vector<std::unique_ptr<IAttribute>>&& attribute_values)
 {
     std::vector<AttributeImpl> avs;
     for (auto& av : attribute_values)
@@ -20,64 +20,40 @@ NodeImpl::NodeImpl(std::string&& name, std::string&& comment, std::vector<Attrib
     , _comment(std::move(comment))
     , _attribute_values(std::move(attribute_values))
 {}
-std::unique_ptr<Node> NodeImpl::clone() const
+std::unique_ptr<INode> NodeImpl::Clone() const
 {
     return std::make_unique<NodeImpl>(*this);
 }
-const std::string& NodeImpl::getName() const
+const std::string& NodeImpl::Name() const
 {
     return _name;
 }
-const std::string& NodeImpl::getComment() const
+const std::string& NodeImpl::Comment() const
 {
     return _comment;
 }
-const Attribute* NodeImpl::getAttributeValueByName(const std::string& name) const
+const IAttribute& NodeImpl::AttributeValues_Get(std::size_t i) const
 {
-    const Attribute* result = nullptr;
-    auto iter = std::find_if(_attribute_values.begin(), _attribute_values.end(),
-        [&](const AttributeImpl& attr) { return attr.getName() == name; });
-    if (iter != _attribute_values.end())
+    return _attribute_values[i];
+}
+uint64_t NodeImpl::AttributeValues_Size() const
+{
+    return _attribute_values.size();
+}
+bool NodeImpl::operator==(const INode& rhs) const
+{
+    bool equal = true;
+    equal &= _name == rhs.Name();
+    equal &= _comment == rhs.Comment();
+    for (const auto& attr : rhs.AttributeValues())
     {
-        result = &*iter;
+        auto beg = _attribute_values.begin();
+        auto end = _attribute_values.end();
+        equal &= std::find(beg, end, attr) != end;
     }
-    return result;
+    return equal;
 }
-const Attribute* NodeImpl::findAttributeValue(std::function<bool(const Attribute&)> pred) const
-{
-    const Attribute* result = nullptr;
-    for (auto& av : _attribute_values)
-    {
-        if (pred(av))
-        {
-            result = &av;
-            break;
-        }
-    }
-    return result;
-}
-void NodeImpl::forEachAttributeValue(std::function<void(const Attribute&)> cb) const
-{
-    for (const auto& av : _attribute_values)
-    {
-        cb(av);
-    }
-}
-bool NodeImpl::operator==(const dbcppp::Node& rhs) const
-{
-    bool result = true;
-    result &= _name == rhs.getName();
-    result &= _comment == rhs.getComment();
-    rhs.forEachAttributeValue(
-        [&](const Attribute& attr)
-        {
-            auto beg = _attribute_values.begin();
-            auto end = _attribute_values.end();
-            result &= std::find(beg, end, attr) != end;
-        });
-    return result;
-}
-bool NodeImpl::operator!=(const dbcppp::Node& rhs) const
+bool NodeImpl::operator!=(const INode& rhs) const
 {
     return !(*this == rhs);
 }
