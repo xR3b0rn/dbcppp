@@ -8,29 +8,29 @@ extern "C"
 {
     DBCPPP_API const dbcppp_Attribute* dbcppp_AttributeCreate(
         const char* name,
-        dbcppp_ObjectType object_type,
-        dbcppp_AttributeValueType value_type,
+        dbcppp_EObjectType object_type,
+        dbcppp_EAttributeValueType value_type,
         const void* value)
     {
         IAttributeDefinition::EObjectType ot;
         switch (object_type)
         {
-        case dbcppp_ObjectType::dbcppp_ObjectType_Network:  ot = IAttributeDefinition::EObjectType::Network; break;
-        case dbcppp_ObjectType::dbcppp_ObjectType_Node:     ot = IAttributeDefinition::EObjectType::Node; break;
-        case dbcppp_ObjectType::dbcppp_ObjectType_Message:  ot = IAttributeDefinition::EObjectType::Message; break;
-        case dbcppp_ObjectType::dbcppp_ObjectType_Signal:   ot = IAttributeDefinition::EObjectType::Signal; break;
+        case dbcppp_EObjectType::dbcppp_ObjectType_Network:  ot = IAttributeDefinition::EObjectType::Network; break;
+        case dbcppp_EObjectType::dbcppp_ObjectType_Node:     ot = IAttributeDefinition::EObjectType::Node; break;
+        case dbcppp_EObjectType::dbcppp_ObjectType_Message:  ot = IAttributeDefinition::EObjectType::Message; break;
+        case dbcppp_EObjectType::dbcppp_ObjectType_Signal:   ot = IAttributeDefinition::EObjectType::Signal; break;
         default: ot = IAttributeDefinition::EObjectType::EnvironmentVariable; break;
         }
         std::unique_ptr<IAttribute> attribute;
         switch (value_type)
         {
-        case dbcppp_AttributeValueType::dbcppp_AttributeValueType_Int:
+        case dbcppp_EAttributeValueType::dbcppp_AttributeValueType_Int:
             attribute = IAttribute::Create(std::string(name), ot, *reinterpret_cast<const int64_t*>(value));
             break;
-        case dbcppp_AttributeValueType::dbcppp_AttributeValueType_Double:
+        case dbcppp_EAttributeValueType::dbcppp_AttributeValueType_Double:
             attribute = IAttribute::Create(std::string(name), ot, *reinterpret_cast<const double*>(value));
             break;
-        case dbcppp_AttributeValueType::dbcppp_AttributeValueType_String:
+        case dbcppp_EAttributeValueType::dbcppp_AttributeValueType_String:
             attribute = IAttribute::Create(std::string(name), ot, std::string(reinterpret_cast<const char*>(value)));
             break;
         }
@@ -45,32 +45,32 @@ extern "C"
         auto ai = reinterpret_cast<const AttributeImpl*>(attribute);
         return ai->Name().c_str();
     }
-    DBCPPP_API dbcppp_ObjectType dbcppp_AttributeObjectType(const dbcppp_Attribute* attribute)
+    DBCPPP_API dbcppp_EObjectType dbcppp_AttributeObjectType(const dbcppp_Attribute* attribute)
     {
         auto ai = reinterpret_cast<const AttributeImpl*>(attribute);
         switch (ai->ObjectType())
         {
-        case IAttributeDefinition::EObjectType::Network: return dbcppp_ObjectType::dbcppp_ObjectType_Network;
-        case IAttributeDefinition::EObjectType::Node: return dbcppp_ObjectType::dbcppp_ObjectType_Node;
-        case IAttributeDefinition::EObjectType::Message: return dbcppp_ObjectType::dbcppp_ObjectType_Message;
-        case IAttributeDefinition::EObjectType::Signal: return dbcppp_ObjectType::dbcppp_ObjectType_Signal;
-        default: return dbcppp_ObjectType::dbcppp_ObjectType_EnvironmentVariable; 
+        case IAttributeDefinition::EObjectType::Network: return dbcppp_EObjectType::dbcppp_ObjectType_Network;
+        case IAttributeDefinition::EObjectType::Node: return dbcppp_EObjectType::dbcppp_ObjectType_Node;
+        case IAttributeDefinition::EObjectType::Message: return dbcppp_EObjectType::dbcppp_ObjectType_Message;
+        case IAttributeDefinition::EObjectType::Signal: return dbcppp_EObjectType::dbcppp_ObjectType_Signal;
+        default: return dbcppp_EObjectType::dbcppp_ObjectType_EnvironmentVariable; 
         }
     }
-    DBCPPP_API dbcppp_AttributeValueType dbcppp_AttributeValue_Type(const dbcppp_Attribute* attribute)
+    DBCPPP_API dbcppp_EAttributeValueType dbcppp_AttributeValueType(const dbcppp_Attribute* attribute)
     {
         auto ai = reinterpret_cast<const AttributeImpl*>(attribute);
         if (std::get_if<int64_t>(&ai->Value()))
         {
-            return dbcppp_AttributeValueType::dbcppp_AttributeValueType_Int;
+            return dbcppp_EAttributeValueType::dbcppp_AttributeValueType_Int;
         }
         else if (std::get_if<double>(&ai->Value()))
         {
-            return dbcppp_AttributeValueType::dbcppp_AttributeValueType_Double;
+            return dbcppp_EAttributeValueType::dbcppp_AttributeValueType_Double;
         }
         else
         {
-            return dbcppp_AttributeValueType::dbcppp_AttributeValueType_String;
+            return dbcppp_EAttributeValueType::dbcppp_AttributeValueType_String;
         }
     }
     DBCPPP_API int64_t dbcppp_AttributeValueAsInt(const dbcppp_Attribute* attribute)
@@ -91,23 +91,23 @@ extern "C"
     
     DBCPPP_API dbcppp_AttributeDefinition* dbcppp_AttributeDefinitionCreate(
           const char* name
-        , dbcppp_ObjectType object_type
-        , dbcppp_AttributeDefinitionValueType value_type
+        , dbcppp_EObjectType object_type
+        , dbcppp_EAttributeDefinitionValueType value_type
         , const void* value)
     {
         IAttributeDefinition::EObjectType ot;
         switch (object_type)
         {
-        case dbcppp_ObjectType::dbcppp_ObjectType_Network:  ot = IAttributeDefinition::EObjectType::Network; break;
-        case dbcppp_ObjectType::dbcppp_ObjectType_Node:     ot = IAttributeDefinition::EObjectType::Node; break;
-        case dbcppp_ObjectType::dbcppp_ObjectType_Message:  ot = IAttributeDefinition::EObjectType::Message; break;
-        case dbcppp_ObjectType::dbcppp_ObjectType_Signal:   ot = IAttributeDefinition::EObjectType::Signal; break;
+        case dbcppp_EObjectType::dbcppp_ObjectType_Network:  ot = IAttributeDefinition::EObjectType::Network; break;
+        case dbcppp_EObjectType::dbcppp_ObjectType_Node:     ot = IAttributeDefinition::EObjectType::Node; break;
+        case dbcppp_EObjectType::dbcppp_ObjectType_Message:  ot = IAttributeDefinition::EObjectType::Message; break;
+        case dbcppp_EObjectType::dbcppp_ObjectType_Signal:   ot = IAttributeDefinition::EObjectType::Signal; break;
         default: ot = IAttributeDefinition::EObjectType::EnvironmentVariable; break;
         }
         IAttributeDefinition::value_type_t vt;
         switch (value_type)
         {
-        case dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeInt:
+        case dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeInt:
         {
             IAttributeDefinition::ValueTypeInt vti;
             vti.minimum = reinterpret_cast<const int64_t*>(value)[0];
@@ -115,7 +115,7 @@ extern "C"
             vt = vti;
             break;
         }
-        case dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeHex:
+        case dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeHex:
         {
             IAttributeDefinition::ValueTypeHex vtui;
             vtui.minimum = reinterpret_cast<const uint64_t*>(value)[0];
@@ -123,7 +123,7 @@ extern "C"
             vt = vtui;
             break;
         }
-        case dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeFloat:
+        case dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeFloat:
         {
             IAttributeDefinition::ValueTypeFloat vtd;
             vtd.minimum = reinterpret_cast<const double*>(value)[0];
@@ -131,13 +131,13 @@ extern "C"
             vt = vtd;
             break;
         }
-        case dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeString:
+        case dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeString:
         {
             IAttributeDefinition::ValueTypeString vts;
             vt = vts;
             break;
         }
-        case dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeEnum:
+        case dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeEnum:
         {
             IAttributeDefinition::ValueTypeEnum vte;
             const char* const* values = reinterpret_cast<const char* const*>(value);
@@ -156,16 +156,16 @@ extern "C"
     {
         std::unique_ptr<const AttributeDefinitionImpl>(reinterpret_cast<const AttributeDefinitionImpl*>(attribute_defintion));
     }
-    DBCPPP_API dbcppp_ObjectType dbcppp_AttributeDefinitionObjectType(const dbcppp_AttributeDefinition* attribute_definition)
+    DBCPPP_API dbcppp_EObjectType dbcppp_AttributeDefinitionObjectType(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
         switch (ad->ObjectType())
         {
-        case IAttributeDefinition::EObjectType::Network:  return dbcppp_ObjectType::dbcppp_ObjectType_Network;
-        case IAttributeDefinition::EObjectType::Node:     return dbcppp_ObjectType::dbcppp_ObjectType_Node;
-        case IAttributeDefinition::EObjectType::Message:  return dbcppp_ObjectType::dbcppp_ObjectType_Message;
-        case IAttributeDefinition::EObjectType::Signal:   return dbcppp_ObjectType::dbcppp_ObjectType_Signal;
-        default: return dbcppp_ObjectType::dbcppp_ObjectType_EnvironmentVariable;
+        case IAttributeDefinition::EObjectType::Network:  return dbcppp_EObjectType::dbcppp_ObjectType_Network;
+        case IAttributeDefinition::EObjectType::Node:     return dbcppp_EObjectType::dbcppp_ObjectType_Node;
+        case IAttributeDefinition::EObjectType::Message:  return dbcppp_EObjectType::dbcppp_ObjectType_Message;
+        case IAttributeDefinition::EObjectType::Signal:   return dbcppp_EObjectType::dbcppp_ObjectType_Signal;
+        default: return dbcppp_EObjectType::dbcppp_ObjectType_EnvironmentVariable;
         }
     }
     DBCPPP_API const char* dbcppp_AttributeDefinitionName(const dbcppp_AttributeDefinition* attribute_definition)
@@ -173,28 +173,28 @@ extern "C"
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
         return ad->Name().c_str();
     }
-    DBCPPP_API dbcppp_AttributeDefinitionValueType dbcppp_AttributeDefinitionValue_Type(const dbcppp_AttributeDefinition* attribute_definition)
+    DBCPPP_API dbcppp_EAttributeDefinitionValueType dbcppp_AttributeDefinitionValue_Type(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
         if (std::get_if<IAttributeDefinition::ValueTypeInt>(&ad->ValueType()))
         {
-            return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeInt;
+            return dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeInt;
         }
         else if (std::get_if<IAttributeDefinition::ValueTypeHex>(&ad->ValueType()))
         {
-            return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeHex;
+            return dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeHex;
         }
         else if (std::get_if<IAttributeDefinition::ValueTypeFloat>(&ad->ValueType()))
         {
-            return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeFloat;
+            return dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeFloat;
         }
         else if (std::get_if<IAttributeDefinition::ValueTypeString>(&ad->ValueType()))
         {
-            return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeString;
+            return dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeString;
         }
         else
         {
-            return dbcppp_AttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeEnum;
+            return dbcppp_EAttributeDefinitionValueType::dbcppp_AttributeDefinitionValueTypeEnum;
         }
     }
     DBCPPP_API int64_t dbcppp_AttributeDefinitionValueTypeAsInt_Minimum(const dbcppp_AttributeDefinition* attribute_definition)
@@ -267,13 +267,13 @@ extern "C"
 
     DBCPPP_API const dbcppp_EnvironmentVariable* dbcppp_EnvironmentVariableCreate(
           const char* name
-        , dbcppp_EnvironmentVariableVarType var_type
+        , dbcppp_EEnvironmentVariableVarType var_type
         , double minimum
         , double maximum
         , const char* unit
         , double initial_value
         , uint64_t ev_id
-        , dbcppp_EnvironmentVariableAccessType access_type
+        , dbcppp_EEnvironmentVariableAccessType access_type
         , const char** access_nodes
         , dbcppp_ValueEncodingDescription** value_encoding_descriptions
         , uint64_t data_size
@@ -287,13 +287,13 @@ extern "C"
         std::vector<std::unique_ptr<IAttribute>> avs;
         switch (var_type)
         {
-        case dbcppp_EnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeInteger:
+        case dbcppp_EEnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeInteger:
             vt = IEnvironmentVariable::EVarType::Integer;
             break;
-        case dbcppp_EnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeFloat:
+        case dbcppp_EEnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeFloat:
             vt = IEnvironmentVariable::EVarType::Float;
             break;
-        case dbcppp_EnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeString:
+        case dbcppp_EEnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeString:
             vt = IEnvironmentVariable::EVarType::String;
             break;
         default:
@@ -302,13 +302,13 @@ extern "C"
         }
         switch (access_type)
         {
-        case dbcppp_EnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeUnrestricted:
+        case dbcppp_EEnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeUnrestricted:
             at = IEnvironmentVariable::EAccessType::Unrestricted;
             break;
-        case dbcppp_EnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeRead:
+        case dbcppp_EEnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeRead:
             at = IEnvironmentVariable::EAccessType::Read;
             break;
-        case dbcppp_EnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeWrite:
+        case dbcppp_EEnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeWrite:
             at = IEnvironmentVariable::EAccessType::Write;
             break;
         default:
@@ -357,15 +357,15 @@ extern "C"
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->Name().c_str();
     }
-    DBCPPP_API dbcppp_EnvironmentVariableVarType dbcppp_EnvironmentVariableVar_Type(const dbcppp_EnvironmentVariable* env_var)
+    DBCPPP_API dbcppp_EEnvironmentVariableVarType dbcppp_EnvironmentVariableVarType(const dbcppp_EnvironmentVariable* env_var)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         switch (env_var_i->VarType())
         {
-        case IEnvironmentVariable::EVarType::Integer: return dbcppp_EnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeInteger;
-        case IEnvironmentVariable::EVarType::Float: return dbcppp_EnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeFloat;
-        case IEnvironmentVariable::EVarType::String: return dbcppp_EnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeString;
-        default: return dbcppp_EnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeData;
+        case IEnvironmentVariable::EVarType::Integer: return dbcppp_EEnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeInteger;
+        case IEnvironmentVariable::EVarType::Float: return dbcppp_EEnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeFloat;
+        case IEnvironmentVariable::EVarType::String: return dbcppp_EEnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeString;
+        default: return dbcppp_EEnvironmentVariableVarType::dbcppp_EnvironmentVariableVarTypeData;
         }
     }
     DBCPPP_API double dbcppp_EnvironmentVariableMinimum(const dbcppp_EnvironmentVariable* env_var)
@@ -393,15 +393,15 @@ extern "C"
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->EvId();
     }
-    DBCPPP_API dbcppp_EnvironmentVariableAccessType dbcppp_EnvironmentVariableAccess_Type(const dbcppp_EnvironmentVariable* env_var)
+    DBCPPP_API dbcppp_EEnvironmentVariableAccessType dbcppp_EnvironmentVariableAccessType(const dbcppp_EnvironmentVariable* env_var)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         switch (env_var_i->AccessType())
         {
-        case IEnvironmentVariable::EAccessType::Unrestricted: return dbcppp_EnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeUnrestricted;
-        case IEnvironmentVariable::EAccessType::Read: return dbcppp_EnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeRead;
-        case IEnvironmentVariable::EAccessType::Write: return dbcppp_EnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeWrite;
-        default: return dbcppp_EnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeReadWrite;
+        case IEnvironmentVariable::EAccessType::Unrestricted: return dbcppp_EEnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeUnrestricted;
+        case IEnvironmentVariable::EAccessType::Read: return dbcppp_EEnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeRead;
+        case IEnvironmentVariable::EAccessType::Write: return dbcppp_EEnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeWrite;
+        default: return dbcppp_EEnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeReadWrite;
         }
     }
     DBCPPP_API const char* dbcppp_EnvironmentVariableNodes_Get(const dbcppp_EnvironmentVariable* env_var, uint64_t i)
@@ -774,12 +774,12 @@ extern "C"
     DBCPPP_API const dbcppp_Signal* dbcppp_SignalCreate(
           uint64_t message_size
         , const char* name
-        , dbcppp_SignalMultiplexer multiplexer_indicator
+        , dbcppp_ESignalMultiplexer multiplexer_indicator
         , uint64_t multiplexer_switch_value
         , uint64_t start_bit
         , uint64_t bit_size
-        , dbcppp_SignalByteOrder byte_order
-        , dbcppp_SignalValueType value_type
+        , dbcppp_ESignalByteOrder byte_order
+        , dbcppp_ESignalValueType value_type
         , double factor
         , double offset
         , double minimum
@@ -789,7 +789,7 @@ extern "C"
         , dbcppp_Attribute** attribute_values
         , dbcppp_ValueEncodingDescription** value_encoding_descriptions
         , const char* comment
-        , dbcppp_SignalExtendedValueType extended_value_type)
+        , dbcppp_ESignalExtendedValueType extended_value_type)
     {
         ISignal::EMultiplexer m;
         ISignal::EByteOrder bo;
@@ -800,18 +800,18 @@ extern "C"
         ISignal::EExtendedValueType evt;
         switch (multiplexer_indicator)
         {
-        case dbcppp_SignalMultiplexer::dbcppp_SignalMultiplexerNoMux: m = ISignal::EMultiplexer::NoMux; break;
-        case dbcppp_SignalMultiplexer::dbcppp_SignalMultiplexerMuxSwitch: m = ISignal::EMultiplexer::MuxSwitch; break;
+        case dbcppp_ESignalMultiplexer::dbcppp_SignalMultiplexerNoMux: m = ISignal::EMultiplexer::NoMux; break;
+        case dbcppp_ESignalMultiplexer::dbcppp_SignalMultiplexerMuxSwitch: m = ISignal::EMultiplexer::MuxSwitch; break;
         default: m = ISignal::EMultiplexer::MuxValue; break;
         }
         switch (byte_order)
         {
-        case dbcppp_SignalByteOrder::dbcppp_SignalByteOrderLittleEndian: bo = ISignal::EByteOrder::LittleEndian; break;
+        case dbcppp_ESignalByteOrder::dbcppp_SignalByteOrderLittleEndian: bo = ISignal::EByteOrder::LittleEndian; break;
         default: bo = ISignal::EByteOrder::BigEndian; break;
         }
         switch (value_type)
         {
-        case dbcppp_SignalValueType::dbcppp_SignalValueTypeSigned: vt = ISignal::EValueType::Signed; break;
+        case dbcppp_ESignalValueType::dbcppp_SignalValueTypeSigned: vt = ISignal::EValueType::Signed; break;
         default: vt = ISignal::EValueType::Unsigned; break;
         }
         for (; *receivers; receivers++)
@@ -833,8 +833,8 @@ extern "C"
         }
         switch (extended_value_type)
         {
-        case dbcppp_SignalExtendedValueType::dbcppp_SignalExtendedValueTypeInteger: evt = ISignal::EExtendedValueType::Integer; break;
-        case dbcppp_SignalExtendedValueType::dbcppp_SignalExtendedValueTypeFloat: evt = ISignal::EExtendedValueType::Float; break;
+        case dbcppp_ESignalExtendedValueType::dbcppp_SignalExtendedValueTypeInteger: evt = ISignal::EExtendedValueType::Integer; break;
+        case dbcppp_ESignalExtendedValueType::dbcppp_SignalExtendedValueTypeFloat: evt = ISignal::EExtendedValueType::Float; break;
         default: evt = ISignal::EExtendedValueType::Double; break;
         }
         auto result = ISignal::Create(
@@ -864,14 +864,14 @@ extern "C"
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->Name().c_str();
     }
-    DBCPPP_API dbcppp_SignalMultiplexer dbcppp_SignalMultiplexer_Indicator(const dbcppp_Signal* sig)
+    DBCPPP_API dbcppp_ESignalMultiplexer dbcppp_SignalMultiplexerIndicator(const dbcppp_Signal* sig)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         switch (sigi->MultiplexerIndicator())
         {
-        case ISignal::EMultiplexer::NoMux: return dbcppp_SignalMultiplexer::dbcppp_SignalMultiplexerNoMux;
-        case ISignal::EMultiplexer::MuxSwitch: return dbcppp_SignalMultiplexer::dbcppp_SignalMultiplexerMuxSwitch;
-        default: return dbcppp_SignalMultiplexer::dbcppp_SignalMultiplexerMuxValue;
+        case ISignal::EMultiplexer::NoMux: return dbcppp_ESignalMultiplexer::dbcppp_SignalMultiplexerNoMux;
+        case ISignal::EMultiplexer::MuxSwitch: return dbcppp_ESignalMultiplexer::dbcppp_SignalMultiplexerMuxSwitch;
+        default: return dbcppp_ESignalMultiplexer::dbcppp_SignalMultiplexerMuxValue;
         }
     }
     DBCPPP_API uint64_t dbcppp_SignalMultiplexerSwitchValue(const dbcppp_Signal* sig)
@@ -889,22 +889,22 @@ extern "C"
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->BitSize();
     }
-    DBCPPP_API dbcppp_SignalByteOrder dbcppp_SignalByte_Order(const dbcppp_Signal* sig)
+    DBCPPP_API dbcppp_ESignalByteOrder dbcppp_SignalByteOrder(const dbcppp_Signal* sig)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         switch (sigi->ByteOrder())
         {
-        case ISignal::EByteOrder::LittleEndian: return dbcppp_SignalByteOrder::dbcppp_SignalByteOrderLittleEndian;
-        default: return dbcppp_SignalByteOrder::dbcppp_SignalByteOrderBigEndian;
+        case ISignal::EByteOrder::LittleEndian: return dbcppp_ESignalByteOrder::dbcppp_SignalByteOrderLittleEndian;
+        default: return dbcppp_ESignalByteOrder::dbcppp_SignalByteOrderBigEndian;
         }
     }
-    DBCPPP_API dbcppp_SignalValueType dbcppp_SignalValue_Type(const dbcppp_Signal* sig)
+    DBCPPP_API dbcppp_ESignalValueType dbcppp_SignalValueType(const dbcppp_Signal* sig)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         switch (sigi->ValueType())
         {
-        case ISignal::EValueType::Signed: return dbcppp_SignalValueType::dbcppp_SignalValueTypeSigned;
-        default: return dbcppp_SignalValueType::dbcppp_SignalValueTypeUnsigned;
+        case ISignal::EValueType::Signed: return dbcppp_ESignalValueType::dbcppp_SignalValueTypeSigned;
+        default: return dbcppp_ESignalValueType::dbcppp_SignalValueTypeUnsigned;
         }
     }
     DBCPPP_API double dbcppp_SignalFactor(const dbcppp_Signal* sig)
@@ -967,14 +967,14 @@ extern "C"
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->Comment().c_str();
     }
-    DBCPPP_API dbcppp_SignalExtendedValueType dbcppp_SignalExtended_Value_Type(const dbcppp_Signal* sig)
+    DBCPPP_API dbcppp_ESignalExtendedValueType dbcppp_SignalExtended_ValueType(const dbcppp_Signal* sig)
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         switch (sigi->ExtendedValueType())
         {
-        case ISignal::EExtendedValueType::Integer: return dbcppp_SignalExtendedValueType::dbcppp_SignalExtendedValueTypeInteger;
-        case ISignal::EExtendedValueType::Float: return dbcppp_SignalExtendedValueType::dbcppp_SignalExtendedValueTypeFloat;
-        default: return dbcppp_SignalExtendedValueType::dbcppp_SignalExtendedValueTypeDouble;
+        case ISignal::EExtendedValueType::Integer: return dbcppp_ESignalExtendedValueType::dbcppp_SignalExtendedValueTypeInteger;
+        case ISignal::EExtendedValueType::Float: return dbcppp_ESignalExtendedValueType::dbcppp_SignalExtendedValueTypeFloat;
+        default: return dbcppp_ESignalExtendedValueType::dbcppp_SignalExtendedValueTypeDouble;
         }
     }
     DBCPPP_API uint64_t dbcppp_SignalDecode(const dbcppp_Signal* sig, const void* bytes)
@@ -1001,8 +1001,8 @@ extern "C"
     DBCPPP_API const dbcppp_SignalType* dbcppp_SignalTypeCreate(
           const char* name
         , uint64_t signal_size
-        , dbcppp_SignalByteOrder byte_order
-        , dbcppp_SignalValueType value_type
+        , dbcppp_ESignalByteOrder byte_order
+        , dbcppp_ESignalValueType value_type
         , double factor
         , double offset
         , double minimum
@@ -1015,12 +1015,12 @@ extern "C"
         ISignal::EValueType vt;
         switch (byte_order)
         {
-        case dbcppp_SignalByteOrder::dbcppp_SignalByteOrderLittleEndian: bo = ISignal::EByteOrder::LittleEndian; break;
+        case dbcppp_ESignalByteOrder::dbcppp_SignalByteOrderLittleEndian: bo = ISignal::EByteOrder::LittleEndian; break;
         default: bo = ISignal::EByteOrder::BigEndian; break;
         }
         switch (value_type)
         {
-        case dbcppp_SignalValueType::dbcppp_SignalValueTypeSigned: vt = ISignal::EValueType::Signed; break;
+        case dbcppp_ESignalValueType::dbcppp_SignalValueTypeSigned: vt = ISignal::EValueType::Signed; break;
         default: vt = ISignal::EValueType::Unsigned; break;
         }
         auto result = ISignalType::Create(
@@ -1047,22 +1047,22 @@ extern "C"
         auto sti = reinterpret_cast<const SignalTypeImpl*>(sig_type);
         return sti->SignalSize();
     }
-    DBCPPP_API dbcppp_SignalByteOrder dbcppp_SignalTypeByteOrder(const dbcppp_SignalType* sig_type)
+    DBCPPP_API dbcppp_ESignalByteOrder dbcppp_SignalTypeByteOrder(const dbcppp_SignalType* sig_type)
     {
         auto sti = reinterpret_cast<const SignalTypeImpl*>(sig_type);
         switch (sti->ByteOrder())
         {
-        case ISignal::EByteOrder::LittleEndian: return dbcppp_SignalByteOrder::dbcppp_SignalByteOrderLittleEndian;
-        default: return dbcppp_SignalByteOrder::dbcppp_SignalByteOrderBigEndian;
+        case ISignal::EByteOrder::LittleEndian: return dbcppp_ESignalByteOrder::dbcppp_SignalByteOrderLittleEndian;
+        default: return dbcppp_ESignalByteOrder::dbcppp_SignalByteOrderBigEndian;
         }
     }
-    DBCPPP_API dbcppp_SignalValueType dbcppp_SignalTypeValueType(const dbcppp_SignalType* sig_type)
+    DBCPPP_API dbcppp_ESignalValueType dbcppp_SignalTypeValueType(const dbcppp_SignalType* sig_type)
     {
         auto sti = reinterpret_cast<const SignalTypeImpl*>(sig_type);
         switch (sti->ValueType())
         {
-        case ISignal::EValueType::Signed: return dbcppp_SignalValueType::dbcppp_SignalValueTypeSigned;
-        default: return dbcppp_SignalValueType::dbcppp_SignalValueTypeUnsigned;
+        case ISignal::EValueType::Signed: return dbcppp_ESignalValueType::dbcppp_SignalValueTypeSigned;
+        default: return dbcppp_ESignalValueType::dbcppp_SignalValueTypeUnsigned;
         }
     }
     DBCPPP_API double dbcppp_SignalTypeFactor(const dbcppp_SignalType* sig_type)

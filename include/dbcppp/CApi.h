@@ -15,13 +15,13 @@ extern "C"
         dbcppp_ObjectType_Message,
         dbcppp_ObjectType_Signal,
         dbcppp_ObjectType_EnvironmentVariable
-    } dbcppp_ObjectType;
+    } dbcppp_EObjectType;
     typedef enum
     {
         dbcppp_AttributeValueType_Int,
         dbcppp_AttributeValueType_Double,
         dbcppp_AttributeValueType_String
-    } dbcppp_AttributeValueType;
+    } dbcppp_EAttributeValueType;
     typedef enum
     {
         dbcppp_AttributeDefinitionValueTypeInt,
@@ -29,43 +29,43 @@ extern "C"
         dbcppp_AttributeDefinitionValueTypeFloat,
         dbcppp_AttributeDefinitionValueTypeString,
         dbcppp_AttributeDefinitionValueTypeEnum
-    } dbcppp_AttributeDefinitionValueType;
+    } dbcppp_EAttributeDefinitionValueType;
     typedef enum
     {
         dbcppp_EnvironmentVariableVarTypeInteger,
         dbcppp_EnvironmentVariableVarTypeFloat,
         dbcppp_EnvironmentVariableVarTypeString,
         dbcppp_EnvironmentVariableVarTypeData
-    } dbcppp_EnvironmentVariableVarType;
+    } dbcppp_EEnvironmentVariableVarType;
     typedef enum
     {
         dbcppp_EnvironmentVariableAccessTypeUnrestricted,
         dbcppp_EnvironmentVariableAccessTypeRead,
         dbcppp_EnvironmentVariableAccessTypeWrite,
         dbcppp_EnvironmentVariableAccessTypeReadWrite
-    } dbcppp_EnvironmentVariableAccessType;
+    } dbcppp_EEnvironmentVariableAccessType;
     typedef enum
     {
         dbcppp_SignalMultiplexerNoMux,
         dbcppp_SignalMultiplexerMuxSwitch,
         dbcppp_SignalMultiplexerMuxValue
-    } dbcppp_SignalMultiplexer;
+    } dbcppp_ESignalMultiplexer;
     typedef enum
     {
         dbcppp_SignalByteOrderLittleEndian,
         dbcppp_SignalByteOrderBigEndian
-    } dbcppp_SignalByteOrder;
+    } dbcppp_ESignalByteOrder;
     typedef enum
     {
         dbcppp_SignalValueTypeSigned,
         dbcppp_SignalValueTypeUnsigned
-    } dbcppp_SignalValueType;
+    } dbcppp_ESignalValueType;
     typedef enum
     {
         dbcppp_SignalExtendedValueTypeInteger,
         dbcppp_SignalExtendedValueTypeFloat, 
         dbcppp_SignalExtendedValueTypeDouble
-    } dbcppp_SignalExtendedValueType;
+    } dbcppp_ESignalExtendedValueType;
 
     typedef struct {} dbcppp_Network;
     typedef struct {} dbcppp_BitTiming;
@@ -81,26 +81,26 @@ extern "C"
     
     DBCPPP_API const dbcppp_Attribute* dbcppp_AttributeCreate(
         const char* name,
-        dbcppp_ObjectType object_type,
-        dbcppp_AttributeValueType value_type,
+        dbcppp_EObjectType object_type,
+        dbcppp_EAttributeValueType value_type,
         const void* value);
     DBCPPP_API void dbcppp_AttributeFree(const dbcppp_Attribute* attribute);
     DBCPPP_API const char* dbcppp_AttributeName(const dbcppp_Attribute* attribute);
-    DBCPPP_API dbcppp_ObjectType dbcppp_AttributeObjectType(const dbcppp_Attribute* attribute);
-    DBCPPP_API dbcppp_AttributeValueType dbcppp_AttributeValue_Type(const dbcppp_Attribute* attribute);
+    DBCPPP_API dbcppp_EObjectType dbcppp_AttributeObjectType(const dbcppp_Attribute* attribute);
+    DBCPPP_API dbcppp_EAttributeValueType dbcppp_AttributeValueType(const dbcppp_Attribute* attribute);
     DBCPPP_API int64_t dbcppp_AttributeValueAsInt(const dbcppp_Attribute* attribute);
     DBCPPP_API double dbcppp_AttributeValueAsDouble(const dbcppp_Attribute* attribute);
     DBCPPP_API const char* dbcppp_AttributeValueAsString(const dbcppp_Attribute* attribute);
     
     DBCPPP_API dbcppp_AttributeDefinition* dbcppp_AttributeDefinitionCreate(
           const char* name
-        , dbcppp_ObjectType object_type
-        , dbcppp_AttributeDefinitionValueType value_type
+        , dbcppp_EObjectType object_type
+        , dbcppp_EAttributeDefinitionValueType value_type
         , const void* value);
     DBCPPP_API void dbcppp_AttributeDefinitionFree(const dbcppp_AttributeDefinition* attribute_defintion);
-    DBCPPP_API dbcppp_ObjectType dbcppp_AttributeDefinitionObjectType(const dbcppp_AttributeDefinition* attribute_definition);
+    DBCPPP_API dbcppp_EObjectType dbcppp_AttributeDefinitionObjectType(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API const char* dbcppp_AttributeDefinitionName(const dbcppp_AttributeDefinition* attribute_definition);
-    DBCPPP_API dbcppp_AttributeDefinitionValueType dbcppp_AttributeDefinitionValue_Type(const dbcppp_AttributeDefinition* attribute_definition);
+    DBCPPP_API dbcppp_EAttributeDefinitionValueType dbcppp_AttributeDefinitionValue_Type(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API int64_t dbcppp_AttributeDefinitionValueTypeAsInt_Minimum(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API int64_t dbcppp_AttributeDefinitionValueTypeAsInt_Maximum(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API uint64_t dbcppp_AttributeDefinitionValueTypeAsHex_Minimum(const dbcppp_AttributeDefinition* attribute_definition);
@@ -118,13 +118,13 @@ extern "C"
 
     DBCPPP_API const dbcppp_EnvironmentVariable* dbcppp_EnvironmentVariableCreate(
           const char* name
-        , dbcppp_EnvironmentVariableVarType var_type
+        , dbcppp_EEnvironmentVariableVarType var_type
         , double minimum
         , double maximum
         , const char* unit
         , double initial_value
         , uint64_t ev_id
-        , dbcppp_EnvironmentVariableAccessType access_type
+        , dbcppp_EEnvironmentVariableAccessType access_type
         , const char** access_nodes
         , dbcppp_ValueEncodingDescription** value_encoding_descriptions
         , uint64_t data_size
@@ -132,13 +132,13 @@ extern "C"
         , const char* comment);
     DBCPPP_API void dbcppp_EnvironmentVariableFree(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API const char* dbcppp_EnvironmentVariableName(const dbcppp_EnvironmentVariable* env_var);
-    DBCPPP_API dbcppp_EnvironmentVariableVarType dbcppp_EnvironmentVariableVar_Type(const dbcppp_EnvironmentVariable* env_var);
+    DBCPPP_API dbcppp_EEnvironmentVariableVarType dbcppp_EnvironmentVariableVarType(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API double dbcppp_EnvironmentVariableMinimum(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API double dbcppp_EnvironmentVariableMaximum(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API const char* dbcppp_EnvironmentVariableUnit(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API double dbcppp_EnvironmentVariableInitialValue(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableEvId(const dbcppp_EnvironmentVariable* env_var);
-    DBCPPP_API dbcppp_EnvironmentVariableAccessType dbcppp_EnvironmentVariableAccess_Type(const dbcppp_EnvironmentVariable* env_var);
+    DBCPPP_API dbcppp_EEnvironmentVariableAccessType dbcppp_EnvironmentVariableAccessType(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API const char* dbcppp_EnvironmentVariableNodes_Get(const dbcppp_EnvironmentVariable* env_var, uint64_t i);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableNodes_Size(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableValueEncodingDescriptions_GetValue(const dbcppp_EnvironmentVariable* env_var, int64_t i);
@@ -215,12 +215,12 @@ extern "C"
     DBCPPP_API const dbcppp_Signal* dbcppp_SignalCreate(
           uint64_t message_size
         , const char* name
-        , dbcppp_SignalMultiplexer multiplexer_indicator
+        , dbcppp_ESignalMultiplexer multiplexer_indicator
         , uint64_t multiplexer_switch_value
         , uint64_t start_bit
         , uint64_t bit_size
-        , dbcppp_SignalByteOrder byte_order
-        , dbcppp_SignalValueType value_type
+        , dbcppp_ESignalByteOrder byte_order
+        , dbcppp_ESignalValueType value_type
         , double factor
         , double offset
         , double minimum
@@ -230,14 +230,14 @@ extern "C"
         , dbcppp_Attribute** attribute_values
         , dbcppp_ValueEncodingDescription** value_descriptions
         , const char* comment
-        , dbcppp_SignalExtendedValueType extended_value_type);
+        , dbcppp_ESignalExtendedValueType extended_value_type);
     DBCPPP_API const char* dbcppp_SignalName(const dbcppp_Signal* sig);
-    DBCPPP_API dbcppp_SignalMultiplexer dbcppp_SignalMultiplexer_Indicator(const dbcppp_Signal* sig);
+    DBCPPP_API dbcppp_ESignalMultiplexer dbcppp_SignalMultiplexerIndicator(const dbcppp_Signal* sig);
     DBCPPP_API uint64_t dbcppp_SignalMultiplexerSwitchValue(const dbcppp_Signal* sig);
     DBCPPP_API uint64_t dbcppp_SignalStartBit(const dbcppp_Signal* sig);
     DBCPPP_API uint64_t dbcppp_SignalBitSize(const dbcppp_Signal* sig);
-    DBCPPP_API dbcppp_SignalByteOrder dbcppp_SignalByte_Order(const dbcppp_Signal* sig);
-    DBCPPP_API dbcppp_SignalValueType dbcppp_SignalValue_Type(const dbcppp_Signal* sig);
+    DBCPPP_API dbcppp_ESignalByteOrder dbcppp_SignalByteOrder(const dbcppp_Signal* sig);
+    DBCPPP_API dbcppp_ESignalValueType dbcppp_SignalValueType(const dbcppp_Signal* sig);
     DBCPPP_API double dbcppp_SignalFactor(const dbcppp_Signal* sig);
     DBCPPP_API double dbcppp_SignalOffset(const dbcppp_Signal* sig);
     DBCPPP_API double dbcppp_SignalMinimum(const dbcppp_Signal* sig);
@@ -250,7 +250,7 @@ extern "C"
     DBCPPP_API const dbcppp_Attribute* dbcppp_SignalAttributeValues_Get(const dbcppp_Signal* signal, uint64_t i);
     DBCPPP_API uint64_t dbcppp_SignalAttributeValues_Size(const dbcppp_Signal* signal);
     DBCPPP_API const char* dbcppp_SignalComment(const dbcppp_Signal* sig);
-    DBCPPP_API dbcppp_SignalExtendedValueType dbcppp_SignalExtended_Value_Type(const dbcppp_Signal* sig);
+    DBCPPP_API dbcppp_ESignalExtendedValueType dbcppp_SignalExtended_ValueType(const dbcppp_Signal* sig);
     DBCPPP_API uint64_t dbcppp_SignalDecode(const dbcppp_Signal* sig, const void* bytes);
     DBCPPP_API void dbcppp_SignalEncode(const dbcppp_Signal* sig, uint64_t raw, void* buffer);
     DBCPPP_API double dbcppp_SignalRawToPhys(const dbcppp_Signal* sig, uint64_t raw);
@@ -259,8 +259,8 @@ extern "C"
     DBCPPP_API const dbcppp_SignalType* dbcppp_SignalTypeCreate(
           const char* name
         , uint64_t signal_size
-        , dbcppp_SignalByteOrder byte_order
-        , dbcppp_SignalValueType value_type
+        , dbcppp_ESignalByteOrder byte_order
+        , dbcppp_ESignalValueType value_type
         , double factor
         , double offset
         , double minimum
@@ -270,8 +270,8 @@ extern "C"
         , const char* value_table);
     DBCPPP_API const char* dbcppp_SignalTypeName(const dbcppp_SignalType* sig_type);
     DBCPPP_API uint64_t dbcppp_SignalTypeSignalSize(const dbcppp_SignalType* sig_type);
-    DBCPPP_API dbcppp_SignalByteOrder dbcppp_SignalTypeByteOrder(const dbcppp_SignalType* sig_type);
-    DBCPPP_API dbcppp_SignalValueType dbcppp_SignalTypeValueType(const dbcppp_SignalType* sig_type);
+    DBCPPP_API dbcppp_ESignalByteOrder dbcppp_SignalTypeByteOrder(const dbcppp_SignalType* sig_type);
+    DBCPPP_API dbcppp_ESignalValueType dbcppp_SignalTypeValueType(const dbcppp_SignalType* sig_type);
     DBCPPP_API double dbcppp_SignalTypeFactor(const dbcppp_SignalType* sig_type);
     DBCPPP_API double dbcppp_SignalTypeOffset(const dbcppp_SignalType* sig_type);
     DBCPPP_API double dbcppp_SignalTypeMinimum(const dbcppp_SignalType* sig_type);
