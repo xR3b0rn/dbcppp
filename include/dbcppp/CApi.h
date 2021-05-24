@@ -100,7 +100,7 @@ extern "C"
     DBCPPP_API void dbcppp_AttributeDefinitionFree(const dbcppp_AttributeDefinition* attribute_defintion);
     DBCPPP_API dbcppp_EObjectType dbcppp_AttributeDefinitionObjectType(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API const char* dbcppp_AttributeDefinitionName(const dbcppp_AttributeDefinition* attribute_definition);
-    DBCPPP_API dbcppp_EAttributeDefinitionValueType dbcppp_AttributeDefinitionValue_Type(const dbcppp_AttributeDefinition* attribute_definition);
+    DBCPPP_API dbcppp_EAttributeDefinitionValueType dbcppp_AttributeDefinitionValueType(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API int64_t dbcppp_AttributeDefinitionValueTypeAsInt_Minimum(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API int64_t dbcppp_AttributeDefinitionValueTypeAsInt_Maximum(const dbcppp_AttributeDefinition* attribute_definition);
     DBCPPP_API uint64_t dbcppp_AttributeDefinitionValueTypeAsHex_Minimum(const dbcppp_AttributeDefinition* attribute_definition);
@@ -139,8 +139,8 @@ extern "C"
     DBCPPP_API double dbcppp_EnvironmentVariableInitialValue(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableEvId(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API dbcppp_EEnvironmentVariableAccessType dbcppp_EnvironmentVariableAccessType(const dbcppp_EnvironmentVariable* env_var);
-    DBCPPP_API const char* dbcppp_EnvironmentVariableNodes_Get(const dbcppp_EnvironmentVariable* env_var, uint64_t i);
-    DBCPPP_API uint64_t dbcppp_EnvironmentVariableNodes_Size(const dbcppp_EnvironmentVariable* env_var);
+    DBCPPP_API const char* dbcppp_EnvironmentVariableAccessNodes_Get(const dbcppp_EnvironmentVariable* env_var, uint64_t i);
+    DBCPPP_API uint64_t dbcppp_EnvironmentVariableAccessNodes_Size(const dbcppp_EnvironmentVariable* env_var);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableValueEncodingDescriptions_GetValue(const dbcppp_EnvironmentVariable* env_var, int64_t i);
     DBCPPP_API const char* dbcppp_EnvironmentVariableValueEncodingDescriptions_GetDescription(const dbcppp_EnvironmentVariable* env_var, int64_t i);
     DBCPPP_API uint64_t dbcppp_EnvironmentVariableValueEncodingDescriptions_Size(const dbcppp_EnvironmentVariable* env_var);
@@ -170,8 +170,9 @@ extern "C"
     DBCPPP_API const dbcppp_Attribute* dbcppp_MessageAttributeValues_Get(const dbcppp_Message* msg, uint64_t i);
     DBCPPP_API uint64_t dbcppp_MessageAttributeValues_Size(const dbcppp_Message* msg);
     DBCPPP_API const char* dbcppp_MessageComment(const dbcppp_Message* msg);
-
+    
     DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromFile(const char* filename);
+    DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromMemory(const char* data);
     DBCPPP_API const dbcppp_Network* dbcppp_NetworkCreate(
           const char* version
         , const char** new_symbols

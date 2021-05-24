@@ -42,6 +42,9 @@ BO_ 2147483649 ext_MUX_cascaded: 8 Vector__XXX
  SG_ muxed_A_2_MUX_B m2M : 8|8@1- (1,0) [0|0] "" Vector__XXX
  SG_ muxed_A_1 m1 : 8|8@1- (1,0) [0|0] "" Vector__XXX
  SG_ MUX_A M : 0|8@1- (1,0) [0|0] "" Vector__XXX
+ SG_ muxed_A_2_MUX_B_MUX_C m2M : 32|8@1- (1,0) [0|0] "" Vector__XXX
+ SG_ muxed_C_0 m0 : 40|8@1- (1,0) [0|0] "" Vector__XXX
+ SG_ muxed_C_1 m1 : 40|8@1- (1,0) [0|0] "" Vector__XXX
 
 
 
@@ -116,3 +119,6 @@ SG_MUL_VAL_ 2147483649 muxed_B_1 muxed_A_2_MUX_B 1-1;
 SG_MUL_VAL_ 2147483649 muxed_B_0 muxed_A_2_MUX_B 0-0;
 SG_MUL_VAL_ 2147483649 muxed_A_2_MUX_B MUX_A 2-2;
 SG_MUL_VAL_ 2147483649 muxed_A_1 MUX_A 1-1;
+SG_MUL_VAL_ 2147483649 muxed_A_2_MUX_B_MUX_C muxed_A_2_MUX_B 2-2;
+SG_MUL_VAL_ 2147483649 muxed_C_0 muxed_A_2_MUX_B_MUX_C 0-0;
+SG_MUL_VAL_ 2147483649 muxed_C_1 muxed_A_2_MUX_B_MUX_C 1-1;

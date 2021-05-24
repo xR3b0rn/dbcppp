@@ -2,6 +2,7 @@
 #include <regex>
 #include <fstream>
 #include <variant>
+#include <sstream>
 
 #include <boost/variant.hpp>
 
@@ -498,22 +499,15 @@ static auto getEnvironmentVariables(const G_Network& gnet)
         case 1: var_type = IEnvironmentVariable::EVarType::Float; break;
         case 2: var_type = IEnvironmentVariable::EVarType::String; break;
         }
-        if (ev.access_type == "DUMMY_NODE_VECTOR0")
-        {
-            access_type = IEnvironmentVariable::EAccessType::Unrestricted;
-        }
-        else if (ev.access_type == "DUMMY_NODE_VECTOR1")
-        {
-            access_type = IEnvironmentVariable::EAccessType::Read;
-        }
-        else if (ev.access_type == "DUMMY_NODE_VECTOR2")
-        {
-            access_type = IEnvironmentVariable::EAccessType::Write;
-        }
-        else
-        {
-            access_type = IEnvironmentVariable::EAccessType::ReadWrite;
-        }
+        access_type = IEnvironmentVariable::EAccessType::Unrestricted;
+        if (ev.access_type == "DUMMY_NODE_VECTOR0")         access_type = IEnvironmentVariable::EAccessType::Unrestricted;
+        else if (ev.access_type == "DUMMY_NODE_VECTOR1")    access_type = IEnvironmentVariable::EAccessType::Read;
+        else if (ev.access_type == "DUMMY_NODE_VECTOR2")    access_type = IEnvironmentVariable::EAccessType::Write;
+        else if (ev.access_type == "DUMMY_NODE_VECTOR3")    access_type = IEnvironmentVariable::EAccessType::ReadWrite;
+        else if (ev.access_type == "DUMMY_NODE_VECTOR8000") access_type = IEnvironmentVariable::EAccessType::Unrestricted_;
+        else if (ev.access_type == "DUMMY_NODE_VECTOR8001") access_type = IEnvironmentVariable::EAccessType::Read_;
+        else if (ev.access_type == "DUMMY_NODE_VECTOR8002") access_type = IEnvironmentVariable::EAccessType::Write_;
+        else if (ev.access_type == "DUMMY_NODE_VECTOR8003") access_type = IEnvironmentVariable::EAccessType::ReadWrite_;
         for (auto& evd : gnet.environment_variable_datas)
         {
             if (evd.name == ev.name)
@@ -689,7 +683,13 @@ extern "C"
     DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromFile(const char* filename)
     {
         std::ifstream is(filename);
-        std::unique_ptr<INetwork> result = INetwork::LoadDBCFromIs(is);
-        return reinterpret_cast<const dbcppp_Network*>(result.release());
+        auto net = INetwork::LoadDBCFromIs(is);
+        return reinterpret_cast<const dbcppp_Network*>(net.release());
+    }
+    DBCPPP_API const dbcppp_Network* dbcppp_NetworkLoadDBCFromMemory(const char* data)
+    {
+        std::istringstream iss(data);
+        auto net = INetwork::LoadDBCFromIs(iss);
+        return reinterpret_cast<const dbcppp_Network*>(net.release());
     }
 }

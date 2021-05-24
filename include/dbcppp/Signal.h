@@ -33,7 +33,8 @@ namespace dbcppp
         };
         enum class EByteOrder
         {
-            LittleEndian, BigEndian
+            BigEndian = 0,
+            LittleEndian = 1
         };
         enum class EValueType
         {
