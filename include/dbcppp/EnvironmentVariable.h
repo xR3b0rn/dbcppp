@@ -24,7 +24,14 @@ namespace dbcppp
         };
         enum class EAccessType
         {
-            Unrestricted, Read, Write, ReadWrite
+            Unrestricted    = 0x0000,
+            Read            = 0x0001,
+            Write           = 0x0002,
+            ReadWrite       = 0x0003,
+            Unrestricted_   = 0x8000,
+            Read_           = 0x8001,
+            Write_          = 0x8002,
+            ReadWrite_      = 0x8003
         };
 
         static std::unique_ptr<IEnvironmentVariable> Create(
