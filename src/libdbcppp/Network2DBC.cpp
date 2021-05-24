@@ -237,6 +237,10 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
     case IEnvironmentVariable::EAccessType::Read: os << "DUMMY_NODE_VECTOR1"; break;
     case IEnvironmentVariable::EAccessType::Write: os << "DUMMY_NODE_VECTOR2"; break;
     case IEnvironmentVariable::EAccessType::ReadWrite: os << "DUMMY_NODE_VECTOR3"; break;
+    case IEnvironmentVariable::EAccessType::Unrestricted_: os << "DUMMY_NODE_VECTOR8000"; break;
+    case IEnvironmentVariable::EAccessType::Read_: os << "DUMMY_NODE_VECTOR8001"; break;
+    case IEnvironmentVariable::EAccessType::Write_: os << "DUMMY_NODE_VECTOR8002"; break;
+    case IEnvironmentVariable::EAccessType::ReadWrite_: os << "DUMMY_NODE_VECTOR8003"; break;
     }
     bool first = true;
     for (const std::string& n : ev.AccessNodes())

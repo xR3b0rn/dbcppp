@@ -173,7 +173,7 @@ extern "C"
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
         return ad->Name().c_str();
     }
-    DBCPPP_API dbcppp_EAttributeDefinitionValueType dbcppp_AttributeDefinitionValue_Type(const dbcppp_AttributeDefinition* attribute_definition)
+    DBCPPP_API dbcppp_EAttributeDefinitionValueType dbcppp_AttributeDefinitionValueType(const dbcppp_AttributeDefinition* attribute_definition)
     {
         auto ad = reinterpret_cast<const AttributeDefinitionImpl*>(attribute_definition);
         if (std::get_if<IAttributeDefinition::ValueTypeInt>(&ad->ValueType()))
@@ -404,12 +404,12 @@ extern "C"
         default: return dbcppp_EEnvironmentVariableAccessType::dbcppp_EnvironmentVariableAccessTypeReadWrite;
         }
     }
-    DBCPPP_API const char* dbcppp_EnvironmentVariableNodes_Get(const dbcppp_EnvironmentVariable* env_var, uint64_t i)
+    DBCPPP_API const char* dbcppp_EnvironmentVariableAccessNodes_Get(const dbcppp_EnvironmentVariable* env_var, uint64_t i)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->AccessNodes_Get(i).c_str();
     }
-    DBCPPP_API uint64_t dbcppp_EnvironmentVariableNodes_Size(const dbcppp_EnvironmentVariable* env_var)
+    DBCPPP_API uint64_t dbcppp_EnvironmentVariableAccessNodes_Size(const dbcppp_EnvironmentVariable* env_var)
     {
         auto env_var_i = reinterpret_cast<const EnvironmentVariableImpl*>(env_var);
         return env_var_i->AccessNodes_Size();
