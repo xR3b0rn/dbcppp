@@ -102,12 +102,6 @@ int main()
                 if (dbcppp_MessageId(tmp) == frame.can_id)
                 {
                     printf("Received message: %s\n", dbcppp_MessageGetName(msg));
-                    void print_signal_data(const dbcppp_Signal* sig, void* data)
-                    {
-                        uint64_t raw = dbcppp_SignalDecode(sig, frame->data);
-                        double phys = dbcppp_SignalRawToPhys(sig, raw);
-                        printf("\t%s=%f\n", dbcppp_SignalGetName(sig), phys);
-                    }
                     dbcppp_MessageForEachSignal(msg, print_signal_data, &frame);
                     for (uint64_t i = 0; i < dbcppp_MessageSignals_Size(msg); i++)
                     {
