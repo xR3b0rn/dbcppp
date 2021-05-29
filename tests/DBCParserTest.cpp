@@ -20,7 +20,7 @@ TEST_CASE("DBCParserTest", "[]")
         {
             continue;
         }
-        std::cout << "Testing DBC grammar with file: " << dbc_file << std::endl;
+        std::cout << "Testing DBC grammar with file: " << dbc_file.path() << std::endl;
         auto dbc_file_tmp = dbc_file.path().string() + ".tmp";
         std::unique_ptr<dbcppp::INetwork> spec;
         std::unique_ptr<dbcppp::INetwork> test;

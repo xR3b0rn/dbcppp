@@ -4,7 +4,6 @@
 
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
-#include "../../tests/Config.h"
 
 // from uapi/linux/can.h
 using canid_t = uint32_t;
@@ -53,7 +52,7 @@ int main()
 {
     std::unique_ptr<dbcppp::INetwork> net;
     {
-        std::ifstream idbc(TEST_DBC);
+        std::ifstream idbc("your.dbc");
         net = dbcppp::INetwork::LoadDBCFromIs(idbc);
     }
     std::unordered_map<uint64_t, const dbcppp::IMessage*> messages;
