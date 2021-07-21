@@ -129,6 +129,7 @@ namespace dbcppp::DBCX3::Grammar
         > *signal_group
         > *signal_extended_value_type
         > *signal_multiplexer_value
+        > eoi
         ;
 
     static const auto unsigned_int = uint64;
