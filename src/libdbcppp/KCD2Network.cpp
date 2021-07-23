@@ -7,7 +7,6 @@
 
 #include <libxmlmm.h>
 
-#include "KcdXsd.h"
 #include "../../include/dbcppp/Network.h"
 
 using namespace dbcppp;
@@ -43,7 +42,6 @@ public:
     {
         xml::Document doc;
         doc.read_from_stream(is);
-        doc.validate(g_kcd_xsd, (int)strlen(g_kcd_xsd));
         parseNetworkDefinition(doc.get_root_element());
         auto nodes = parseNodes(doc.get_root_element());
         _networks = std::move(parseNetworks(doc.get_root_element(), nodes));
