@@ -174,6 +174,3 @@ double template_decode(const Signal* sig, const void* nbytes) noexcept
 # Similar projects
   * [Vector_DBC](https://bitbucket.org/tobylorenz/vector_dbc/src/master/) Does basically the same, the biggest difference is that it uses `bison` instead of `boost::spirit` for grammar parsing
   * [CAN BUS tools in Python 3 (cantools)](https://github.com/eerimoq/cantools) 
-
-# Licence
-In order to make the distribution and integration of this project as easy as possible, this software shall stay accessable under the MIT licence conditions. However, currently some parts of the KCD parsing logic is linked directly into the `libdbcppp` library what is in direct conflict with the LGPL licence of the KCD XSD specification. Please consider this when using the `libdbcppp` library. For more related information see [#78](https://github.com/xR3b0rn/dbcppp/issues/78).
