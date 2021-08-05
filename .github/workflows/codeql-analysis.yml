@@ -38,6 +38,14 @@ jobs:
         # https://docs.github.com/en/free-pro-team@latest/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#changing-the-languages-that-are-analyzed
 
     steps:
+    - name: Checkout submodules using a PAT
+      run: |
+        git config --file .gitmodules --get-regexp url | while read url; do
+          git config --file=.gitmodules $(echo "$url" | sed -E "s/git@github.com:|https:\/\/github.com\//https:\/\/${{ secrets.CI_PAT }}:${{ secrets.CI_PAT }}@github.com\//")
+        done
+        git submodule sync
+        git submodule update --init --recursive
+        
     - name: Checkout repository
       uses: actions/checkout@v2
 
