@@ -1,4 +1,3 @@
-
 #include <regex>
 #include <array>
 #include <string>
@@ -6,10 +5,11 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <filesystem>
-#include <boost/program_options.hpp>
+#include <experimental/filesystem>
+#include <memory>
 
-#include <robin-map/tsl/robin_map.h>
+#include <cxxopts.hpp>
+
 #include "../../include/dbcppp/Network.h"
 #include "../../include/dbcppp/Network2Functions.h"
 
@@ -19,62 +19,53 @@ void print_help()
         << "Sub programs: dbc2, decode\n";
 }
 
-int main(int argc, char** args)
+int main(int argc, char** argv)
 {
-    namespace po = boost::program_options;
-    if (argc < 2 || std::string("help") == args[1])
+    cxxopts::Options options("dbcppp", "");
+    if (argc < 2 || std::string("help") == argv[1])
     {
         print_help();
         return 1;
     }
-    po::positional_options_description p;
-    p.add("subprogram", -1);
-    po::options_description desc_subprogram("Options");
-    desc_subprogram.add_options()
-        ("subprogram", po::value<std::string>()->required(), "sub program");
 
-    po::options_description desc_dbc2("Options");
-    desc_dbc2.add_options()
-        ("help", "produce help message")
-        ("format,f", po::value<std::string>()->required(), "output format (C, DBC, human)")
-        ("dbc", po::value<std::vector<std::string>>()->multitoken()->required(), "list of DBC files");
-    
-    po::options_description desc_decode("Options");
-    desc_decode.add_options()
-        ("help", "produce help message")
-        ("bus", po::value<std::vector<std::string>>()->required(), "list of buses in format (<bus name, DBC filename>)");
-
-    if (std::string("dbc2") == args[1])
+    if (std::string("dbc2") == argv[1])
     {
-        po::options_description desc("Allowed options");
-        desc.add(desc_subprogram).add(desc_dbc2);
+        options.add_options()
+            ("h,help", "Produce help message")
+            ("f,format", "Output format (C, DBC, human)", cxxopts::value<std::string>())
+            ("dbc", "List of DBC files", cxxopts::value<std::vector<std::string>>());
 
-        po::variables_map vm;
-        po::store(po::command_line_parser(argc, args).options(desc).positional(p).run(), vm);
+        for (std::size_t i = 1; i < argc - 1; i++)
+        {
+            argv[i] = argv[i + 1];
+        }
+        auto vm = options.parse(argc - 1, argv);
+
         if (vm.count("help"))
         {
             std::cout << "Usage:\ndbcppp dbc2c [--help] --format=<format>... --dbc=<dbc filename>...\n";
-            std::cout << desc_dbc2;
+            std::cout << options.help();
             return 1;
         }
-        try
+        if (!vm.count("format"))
         {
-            po::notify(vm);
+            std::cout << "Argument error: Argument --format=<format> missing\n";
+            return 1;
         }
-        catch (const boost::wrapexcept<boost::program_options::required_option>& e)
+        if (!vm.count("dbc"))
         {
-            std::cout << e.what() << std::endl;
+            std::cout << "Argument error: At least one --dbc=<dbc> argument required\n";
             return 1;
         }
         const auto& format = vm["format"].as<std::string>();
         auto dbcs = vm["dbc"].as<std::vector<std::string>>();
-        auto net = dbcppp::Network::create({}, {}, dbcppp::BitTiming::create(0, 0, 0), {}, {}, {}, {}, {}, {}, {}, {});
+        auto net = dbcppp::INetwork::Create({}, {}, dbcppp::IBitTiming::Create(0, 0, 0), {}, {}, {}, {}, {}, {}, {}, {});
         for (const auto& dbc : dbcs)
         {
-            auto nets = dbcppp::Network::loadNetworkFromFile(dbc);
+            auto nets = dbcppp::INetwork::LoadNetworkFromFile(dbc);
             for (auto& other : nets)
             {
-                net->merge(std::move(other.second));
+                net->Merge(std::move(other.second));
             }
         }
         if (format == "C")
@@ -93,35 +84,34 @@ int main(int argc, char** args)
             std::cout << *net;
         }
     }
-    else if (std::string("decode") == args[1])
+    else if (std::string("decode") == argv[1])
     {
-        po::options_description desc("Allowed options");
-        desc.add(desc_subprogram).add(desc_decode);
-
-        po::variables_map vm;
-        po::store(po::command_line_parser(argc, args).options(desc).positional(p).run(), vm);
+        options.add_options()
+            ("h,help", "Produce help message")
+            ("bus", "List of buses in format (<bus name, DBC filename>)", cxxopts::value<std::vector<std::string>>());
+        for (std::size_t i = 1; i < argc - 1; i++)
+        {
+            argv[i] = argv[i + 1];
+        }
+        auto vm = options.parse(argc, argv);
         if (vm.count("help"))
         {
-            std::cout << "Usage:\ndbcppp decode [--help] --dbc=<bus name,DBC filename>...\n";
-            std::cout << desc_decode;
+            std::cout << "Usage:\ndbcppp decode [--help] --bus=<bus name,DBC filename>...\n";
+            std::cout << options.help();
             return 1;
         }
-        try
+        if (!vm.count("bus"))
         {
-            po::notify(vm);
-        }
-        catch (const boost::wrapexcept<boost::program_options::required_option>& e)
-        {
-            std::cout << e.what() << std::endl;
+            std::cout << "Argument error: At least one --bus=<bus name,DBC filename> argument required\n";
             return 1;
         }
         const auto& opt_buses = vm["bus"].as<std::vector<std::string>>();
         struct Bus
         {
             std::string name;
-            std::unique_ptr<dbcppp::Network> net;
+            std::unique_ptr<dbcppp::INetwork> net;
         };
-        tsl::robin_map<std::string, Bus> buses;
+        std::unordered_map<std::string, Bus> buses;
         for (const auto& opt_bus : opt_buses)
         {
             std::istringstream ss(opt_bus);
@@ -138,7 +128,7 @@ int main(int argc, char** args)
             if (std::getline(ss, opt))
             {
                 std::ifstream fdbc(opt);
-                b.net = dbcppp::Network::loadDBCFromIs(fdbc);
+                b.net = dbcppp::INetwork::LoadDBCFromIs(fdbc);
             }
             else
             {
@@ -181,32 +171,37 @@ int main(int argc, char** args)
                 {
                     data[i] = uint8_t(std::strtol(cm[4 + i].str().c_str(), nullptr, 16));
                 }
-                const dbcppp::Message* msg = bus->second.net->getMessageById(msg_id);
-                if (msg)
+                auto beg_msg = bus->second.net->Messages().begin();
+                auto end_msg = bus->second.net->Messages().end();
+                auto iter = std::find_if(beg_msg, end_msg, [&](const dbcppp::IMessage& msg) { return msg.Id() == msg_id; });
+                if (iter != end_msg)
                 {
-                    std::cout << line << " :: " << msg->getName() << "(";
+                    const dbcppp::IMessage* msg = &*iter;
+                    std::cout << line << " :: " << msg->Name() << "(";
                     bool first = true;
-                    const auto* mux_sig = msg->getMuxSignal();
-                    msg->forEachSignal(
-                        [&](const dbcppp::Signal& sig)
+                    const auto* mux_sig = msg->MuxSignal();
+
+                    for (const dbcppp::ISignal& sig : msg->Signals())
+                    {
+                        if (sig.MultiplexerIndicator() != dbcppp::ISignal::EMultiplexer::MuxValue ||
+                            mux_sig && sig.MultiplexerSwitchValue() == mux_sig->Decode(&data[0]))
                         {
-                            if (sig.getMultiplexerIndicator() != dbcppp::Signal::Multiplexer::MuxValue ||
-                                mux_sig && sig.getMultiplexerSwitchValue() == mux_sig->decode(&data[0]))
+                            if (first) first = false; else std::cout << ", ";
+                            auto raw = sig.Decode(&data[0]);
+                            auto beg_ved = sig.ValueEncodingDescriptions().begin();
+                            auto end_ved = sig.ValueEncodingDescriptions().end();
+                            auto iter = std::find_if(beg_ved, end_ved, [&](const dbcppp::IValueEncodingDescription& ved) { return ved.Value() == raw; });
+                            if (iter != end_ved)
                             {
-                                if (first) first = false; else std::cout << ", ";
-                                auto raw = sig.decode(&data[0]);
-                                auto desc = sig.getValueDescriptionByValue(raw);
-                                if (desc != nullptr)
-                                {
-                                    std::cout << sig.getName() << ": " << desc << " " << sig.getUnit();
-                                }
-                                else
-                                {
-                                    auto val = sig.rawToPhys(raw);
-                                    std::cout << sig.getName() << ": " << val << " " << sig.getUnit();
-                                }
+                                std::cout << sig.Name() << ": " << iter->Description() << " " << sig.Unit();
                             }
-                        });
+                            else
+                            {
+                                auto val = sig.RawToPhys(raw);
+                                std::cout << sig.Name() << ": " << val << " " << sig.Unit();
+                            }
+                        }
+                    }
                     std::cout << ")\n";
                 }
             }

@@ -1,22 +1,21 @@
-
 #pragma once
 
 #include <cstddef>
 #include <string>
 #include <vector>
 #include <functional>
-#include <boost/variant.hpp>
+#include <variant>
 #include <memory>
 
 #include "Export.h"
+#include "Iterator.h"
 
 namespace dbcppp
 {
-    class Network;
-    class DBCPPP_API AttributeDefinition
+    class DBCPPP_API IAttributeDefinition
     {
     public:
-        enum class ObjectType
+        enum class EObjectType
         {
             Network,
             Node,
@@ -46,20 +45,21 @@ namespace dbcppp
         {
             std::vector<std::string> values;
         };
-        using value_type_t = boost::variant<ValueTypeInt, ValueTypeHex, ValueTypeFloat, ValueTypeString, ValueTypeEnum>;
+        using value_type_t = std::variant<ValueTypeInt, ValueTypeHex, ValueTypeFloat, ValueTypeString, ValueTypeEnum>;
         
-        static std::unique_ptr<AttributeDefinition> create(
+        static std::unique_ptr<IAttributeDefinition> Create(
               std::string&& name
-            , ObjectType object_type
+            , EObjectType object_type
             , value_type_t&& value_type);
             
-        virtual std::unique_ptr<AttributeDefinition> clone() const = 0;
+        virtual std::unique_ptr<IAttributeDefinition> Clone() const = 0;
 
-        virtual ~AttributeDefinition() = default;
-        virtual ObjectType getObjectType() const = 0;
-        virtual const std::string& getName() const = 0;
-        virtual const value_type_t& getValueType() const = 0;
-        virtual void forEachValueTypeEnum(std::function<void(const std::string&)>&& cb) const = 0;
-        virtual const std::string* findValueTypeEnum(std::function<bool(const std::string&)>&& pred) const = 0;
+        virtual ~IAttributeDefinition() = default;
+        virtual EObjectType ObjectType() const = 0;
+        virtual const std::string& Name() const = 0;
+        virtual const value_type_t& ValueType() const = 0;
+        
+        virtual bool operator==(const IAttributeDefinition& rhs) const = 0;
+        virtual bool operator!=(const IAttributeDefinition& rhs) const = 0;
     };
 }

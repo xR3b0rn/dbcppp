@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <map>
@@ -7,25 +6,30 @@
 #include <functional>
 
 #include "Export.h"
+#include "Iterator.h"
 #include "Attribute.h"
 
 namespace dbcppp
 {
-    class DBCPPP_API Node
+    class DBCPPP_API INode
     {
     public:
-        static std::unique_ptr<Node> create(
+        static std::unique_ptr<INode> Create(
             std::string&& name,
             std::string&& comment,
-            std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values);
+            std::vector<std::unique_ptr<IAttribute>>&& attribute_values);
             
-        virtual std::unique_ptr<Node> clone() const = 0;
+        virtual std::unique_ptr<INode> Clone() const = 0;
 
-        virtual ~Node() = default;
-        virtual const std::string& getName() const = 0;
-        virtual const Attribute* getAttributeValueByName(const std::string& name) const = 0;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const = 0;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const = 0;
-        virtual const std::string& getComment() const = 0;
+        virtual ~INode() = default;
+        virtual const std::string& Name() const = 0;
+        virtual const IAttribute& AttributeValues_Get(std::size_t i) const = 0;
+        virtual uint64_t AttributeValues_Size() const = 0;
+        virtual const std::string& Comment() const = 0;
+
+        DBCPPP_MAKE_ITERABLE(INode, AttributeValues, IAttribute);
+        
+        virtual bool operator==(const dbcppp::INode& rhs) const = 0;
+        virtual bool operator!=(const dbcppp::INode& rhs) const = 0;
     };
 }

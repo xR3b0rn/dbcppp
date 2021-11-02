@@ -1,67 +1,66 @@
-
+#include <fstream>
 #include <iomanip>
 #include "../../include/dbcppp/Network.h"
 #include "NetworkImpl.h"
-#include "DBC_Grammar.h"
 
 using namespace dbcppp;
 
-std::unique_ptr<Network> Network::create(
+std::unique_ptr<INetwork> INetwork::Create(
       std::string&& version
-    , std::set<std::string>&& new_symbols
-    , std::unique_ptr<BitTiming>&& bit_timing
-    , std::map<std::string, std::unique_ptr<Node>>&& nodes
-    , std::map<std::string, std::unique_ptr<ValueTable>>&& value_tables
-    , std::unordered_map<uint64_t, std::unique_ptr<Message>>&& messages
-    , std::map<std::string, std::unique_ptr<EnvironmentVariable>>&& environment_variables
-    , std::map<std::string, std::unique_ptr<AttributeDefinition>>&& attribute_definitions
-    , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_defaults
-    , std::map<std::string, std::unique_ptr<Attribute>>&& attribute_values
+    , std::vector<std::string>&& new_symbols
+    , std::unique_ptr<IBitTiming>&& bit_timing
+    , std::vector<std::unique_ptr<INode>>&& nodes
+    , std::vector<std::unique_ptr<IValueTable>>&& value_tables
+    , std::vector<std::unique_ptr<IMessage>>&& messages
+    , std::vector<std::unique_ptr<IEnvironmentVariable>>&& environment_variables
+    , std::vector<std::unique_ptr<IAttributeDefinition>>&& attribute_definitions
+    , std::vector<std::unique_ptr<IAttribute>>&& attribute_defaults
+    , std::vector<std::unique_ptr<IAttribute>>&& attribute_values
     , std::string&& comment)
 {
     BitTimingImpl bt = std::move(static_cast<BitTimingImpl&>(*bit_timing));
     bit_timing.reset(nullptr);
-    std::map<std::string, NodeImpl> ns;
-    std::map<std::string, ValueTableImpl> vts;
-    tsl::robin_map<uint64_t, MessageImpl> ms;
-    std::map<std::string, EnvironmentVariableImpl> evs;
-    std::map<std::string, AttributeDefinitionImpl> ads;
-    std::map<std::string, AttributeImpl> avds;
-    std::map<std::string, AttributeImpl> avs;
+    std::vector<NodeImpl> ns;
+    std::vector<ValueTableImpl> vts;
+    std::vector<MessageImpl> ms;
+    std::vector<EnvironmentVariableImpl> evs;
+    std::vector<AttributeDefinitionImpl> ads;
+    std::vector<AttributeImpl> avds;
+    std::vector<AttributeImpl> avs;
     for (auto& n : nodes)
     {
-        ns.insert(std::make_pair(n.first, std::move(static_cast<NodeImpl&>(*n.second))));
-        n.second.reset(nullptr);
+        ns.push_back(std::move(static_cast<NodeImpl&>(*n)));
+        n.reset(nullptr);
     }
     for (auto& vt : value_tables)
     {
-        vts.insert(std::make_pair(vt.first, std::move(static_cast<ValueTableImpl&>(*vt.second))));
-        vt.second.reset(nullptr);
+        vts.push_back(std::move(static_cast<ValueTableImpl&>(*vt)));
+        vt.reset(nullptr);
     }
     for (auto& m : messages)
     {
-        ms.insert(std::make_pair(m.first, std::move(static_cast<MessageImpl&>(*m.second))));
-        m.second.reset(nullptr);
+        ms.push_back(std::move(static_cast<MessageImpl&>(*m)));
+        m.reset(nullptr);
     }
     for (auto& ev : environment_variables)
     {
-        evs.insert(std::make_pair(ev.first, std::move(static_cast<EnvironmentVariableImpl&>(*ev.second))));
-        ev.second.reset(nullptr);
+        evs.push_back(std::move(static_cast<EnvironmentVariableImpl&>(*ev)));
+        ev.reset(nullptr);
     }
     for (auto& ad : attribute_definitions)
     {
-        ads.insert(std::make_pair(ad.first, std::move(static_cast<AttributeDefinitionImpl&>(*ad.second))));
-        ad.second.reset(nullptr);
+        ads.push_back(std::move(static_cast<AttributeDefinitionImpl&>(*ad)));
+        ad.reset(nullptr);
     }
     for (auto& ad : attribute_defaults)
     {
-        avds.insert(std::make_pair(ad.first, std::move(static_cast<AttributeImpl&>(*ad.second))));
-        ad.second.reset(nullptr);
+        avds.push_back(std::move(static_cast<AttributeImpl&>(*ad)));
+        ad.reset(nullptr);
     }
     for (auto& av : attribute_values)
     {
-        avs.insert(std::make_pair(av.first, std::move(static_cast<AttributeImpl&>(*av.second))));
-        av.second.reset(nullptr);
+        avs.push_back(std::move(static_cast<AttributeImpl&>(*av)));
+        av.reset(nullptr);
     }
     return std::make_unique<NetworkImpl>(
           std::move(version)
@@ -79,15 +78,15 @@ std::unique_ptr<Network> Network::create(
 
 NetworkImpl::NetworkImpl(
       std::string&& version
-    , std::set<std::string>&& new_symbols
+    , std::vector<std::string>&& new_symbols
     , BitTimingImpl&& bit_timing
-    , std::map<std::string, NodeImpl>&& nodes
-    , std::map<std::string, ValueTableImpl>&& value_tables
-    , tsl::robin_map<uint64_t, MessageImpl>&& messages
-    , std::map<std::string, EnvironmentVariableImpl>&& environment_variables
-    , std::map<std::string, AttributeDefinitionImpl>&& attribute_definitions
-    , std::map<std::string, AttributeImpl>&& attribute_defaults
-    , std::map<std::string, AttributeImpl>&& attribute_values
+    , std::vector<NodeImpl>&& nodes
+    , std::vector<ValueTableImpl>&& value_tables
+    , std::vector<MessageImpl>&& messages
+    , std::vector<EnvironmentVariableImpl>&& environment_variables
+    , std::vector<AttributeDefinitionImpl>&& attribute_definitions
+    , std::vector<AttributeImpl>&& attribute_defaults
+    , std::vector<AttributeImpl>&& attribute_values
     , std::string&& comment)
 
     : _version(std::move(version))
@@ -102,263 +101,106 @@ NetworkImpl::NetworkImpl(
     , _attribute_values(std::move(attribute_values))
     , _comment(std::move(comment))
 {}
-std::unique_ptr<Network> NetworkImpl::clone() const
+std::unique_ptr<INetwork> NetworkImpl::Clone() const
 {
     return std::make_unique<NetworkImpl>(*this);
 }
-const std::string& NetworkImpl::getVersion() const
+const std::string& NetworkImpl::Version() const
 {
     return _version;
 }
-bool NetworkImpl::hasNewSymbol(const std::string& name) const
+const std::string& NetworkImpl::NewSymbols_Get(std::size_t i) const
 {
-    return std::find(_new_symbols.begin(), _new_symbols.end(), name) != _new_symbols.end();
+    return _new_symbols[i];
 }
-void NetworkImpl::forEachNewSymbol(std::function<void(const std::string&)> cb) const
+uint64_t NetworkImpl::NewSymbols_Size() const
 {
-    for (const auto& ns : _new_symbols)
-    {
-        cb(ns);
-    }
+    return _new_symbols.size();
 }
-const BitTiming& NetworkImpl::getBitTiming() const
+const IBitTiming& NetworkImpl::BitTiming() const
 {
     return _bit_timing;
 }
-const Node* NetworkImpl::getNodeByName(const std::string& name) const
+const INode& NetworkImpl::Nodes_Get(std::size_t i) const
 {
-    const Node* result = nullptr;
-    auto iter = _nodes.find(name);
-    if (iter != _nodes.end())
-    {
-        result = &iter->second;
-    }
-    return result;
+    return _nodes[i];
 }
-const Node* NetworkImpl::findNode(std::function<bool(const Node&)>&& pred) const
+uint64_t NetworkImpl::Nodes_Size() const
 {
-    const Node* result = nullptr;
-    for (const auto& n : _nodes)
-    {
-        if (pred(n.second))
-        {
-            result = &n.second;
-            break;
-        }
-    }
-    return result;
+    return _nodes.size();
 }
-void NetworkImpl::forEachNode(std::function<void(const Node&)>&& cb) const
+const IValueTable& NetworkImpl::ValueTables_Get(std::size_t i) const
 {
-    for (const auto& n : _nodes)
-    {
-        cb(n.second);
-    }
+    return _value_tables[i];
 }
-const ValueTable* NetworkImpl::getValueTableByName(const std::string& name) const
+uint64_t NetworkImpl::ValueTables_Size() const
 {
-    const ValueTable* result = nullptr;
-    auto iter = _value_tables.find(name);
-    if (iter != _value_tables.end())
-    {
-        result = &iter->second;
-    }
-    return result;
+    return _value_tables.size();
 }
-const ValueTable* NetworkImpl::findValueTable(std::function<bool(const ValueTable&)>&& pred) const
+const IMessage& NetworkImpl::Messages_Get(std::size_t i) const
 {
-    const ValueTable* result = nullptr;
-    for (const auto& vt : _value_tables)
-    {
-        if (pred(vt.second))
-        {
-            result = &vt.second;
-            break;
-        }
-    }
-    return result;
+    return _messages[i];
 }
-void NetworkImpl::forEachValueTable(std::function<void(const ValueTable&)>&& cb) const
+uint64_t NetworkImpl::Messages_Size() const
 {
-    for (const auto& vt : _value_tables)
-    {
-        cb(vt.second);
-    }
+    return _messages.size();
 }
-const Message* NetworkImpl::getMessageById(uint64_t id) const
+const IEnvironmentVariable& NetworkImpl::EnvironmentVariables_Get(std::size_t i) const
 {
-    const Message* result = nullptr;
-    auto iter = _messages.find(id);
-    if (iter != _messages.end())
-    {
-        result = &iter->second;
-    }
-    return result;
+    return _environment_variables[i];
 }
-const Message* NetworkImpl::findMessage(std::function<bool(const Message&)>&& pred) const
+uint64_t NetworkImpl::EnvironmentVariables_Size() const
 {
-    const Message* result = nullptr;
-    for (const auto& m : _messages)
-    {
-        if (pred(m.second))
-        {
-            result = &m.second;
-            break;
-        }
-    }
-    return result;
+    return _environment_variables.size();
 }
-void NetworkImpl::forEachMessage(std::function<void(const Message&)>&& cb) const
+const IAttributeDefinition& NetworkImpl::AttributeDefinitions_Get(std::size_t i) const
 {
-    for (const auto& m : _messages)
-    {
-        cb(m.second);
-    }
+    return _attribute_definitions[i];
 }
-const EnvironmentVariable* NetworkImpl::getEnvironmentVariableByName(const std::string& name) const
+uint64_t NetworkImpl::AttributeDefinitions_Size() const
 {
-    const EnvironmentVariable* result = nullptr;
-    auto iter = _environment_variables.find(name);
-    if (iter != _environment_variables.end())
-    {
-        result = &iter->second;
-    }
-    return result;
+    return _attribute_definitions.size();
 }
-const EnvironmentVariable* NetworkImpl::findEnvironmentVariable(std::function<bool(const EnvironmentVariable&)>&& pred) const
+const IAttribute& NetworkImpl::AttributeDefaults_Get(std::size_t i) const
 {
-    const EnvironmentVariable* result = nullptr;
-    for (const auto& ev : _environment_variables)
-    {
-        if (pred(ev.second))
-        {
-            result = &ev.second;
-            break;
-        }
-    }
-    return result;
+    return _attribute_defaults[i];
 }
-void NetworkImpl::forEachEnvironmentVariable(std::function<void(const EnvironmentVariable&)>&& cb) const
+uint64_t NetworkImpl::AttributeDefaults_Size() const
 {
-    for (const auto& ev : _environment_variables)
-    {
-        cb(ev.second);
-    }
+    return _attribute_defaults.size();
 }
-const AttributeDefinition* NetworkImpl::getAttributeDefinitionByName(const std::string& name) const
+const IAttribute& NetworkImpl::AttributeValues_Get(std::size_t i) const
 {
-    const AttributeDefinition* result = nullptr;
-    auto iter = _attribute_definitions.find(name);
-    if (iter != _attribute_definitions.end())
-    {
-        result = &iter->second;
-    }
-    return result;
+    return _attribute_values[i];
 }
-const AttributeDefinition* NetworkImpl::findAttributeDefinition(std::function<bool(const AttributeDefinition&)>&& pred) const
+uint64_t NetworkImpl::AttributeValues_Size() const
 {
-    const AttributeDefinition* result = nullptr;
-    for (const auto& ad : _attribute_definitions)
-    {
-        if (pred(ad.second))
-        {
-            result = &ad.second;
-            break;
-        }
-    }
-    return result;
+    return _attribute_values.size();
 }
-void NetworkImpl::forEachAttributeDefinition(std::function<void(const AttributeDefinition&)>&& cb) const
-{
-    for (const auto& ad : _attribute_definitions)
-    {
-        cb(ad.second);
-    }
-}
-const Attribute* NetworkImpl::getAttributeDefaultByName(const std::string& name) const
-{
-    const Attribute* result = nullptr;
-    auto iter = _attribute_defaults.find(name);
-    if (iter != _attribute_defaults.end())
-    {
-        result = &iter->second;
-    }
-    return result;
-}
-const Attribute* NetworkImpl::findAttributeDefault(std::function<bool(const Attribute&)>&& pred) const
-{
-    const Attribute* result = nullptr;
-    for (const auto& ad : _attribute_defaults)
-    {
-        if (pred(ad.second))
-        {
-            result = &ad.second;
-            break;
-        }
-    }
-    return result;
-}
-void NetworkImpl::forEachAttributeDefault(std::function<void(const Attribute&)>&& cb) const
-{
-    for (const auto& ad : _attribute_defaults)
-    {
-        cb(ad.second);
-    }
-}
-const Attribute* NetworkImpl::getAttributeValueByName(const std::string& name) const
-{
-    const Attribute* result = nullptr;
-    auto iter = _attribute_values.find(name);
-    if (iter != _attribute_values.end())
-    {
-        result = &iter->second;
-    }
-    return result;
-}
-const Attribute* NetworkImpl::findAttributeValue(std::function<bool(const Attribute&)>&& pred) const
-{
-    const Attribute* result = nullptr;
-    for (const auto& av : _attribute_values)
-    {
-        if (pred(av.second))
-        {
-            result = &av.second;
-            break;
-        }
-    }
-    return result;
-}
-void NetworkImpl::forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const
-{
-    for (const auto& av : _attribute_values)
-    {
-        cb(av.second);
-    }
-}
-const std::string& NetworkImpl::getComment() const
+const std::string& NetworkImpl::Comment() const
 {
     return _comment;
 }
-const Message* NetworkImpl::findParentMessage(const Signal* sig) const
+const IMessage* NetworkImpl::ParentMessage(const ISignal* sig) const
 {
-    const Message* result = nullptr;
-    for (const auto& p : _messages)
+    const IMessage* parent = nullptr;
+    for (const auto& msg : _messages)
     {
-        const MessageImpl& msg = p.second;
-        auto iter = msg.signals().find(sig->getName());
-        if (iter != msg.signals().end() && &iter->second == sig)
+        auto iter = std::find_if(msg.signals().begin(), msg.signals().end(),
+            [&](const SignalImpl& other) { return &other == sig; });
+        if (iter != msg.signals().end())
         {
-            result = &msg;
+            parent = &msg;
             break;
         }
     }
-    return result;
+    return parent;
 }
 std::string& NetworkImpl::version()
 {
     return _version;
 }
-std::set<std::string>& NetworkImpl::newSymbols()
+std::vector<std::string>& NetworkImpl::newSymbols()
 {
     return _new_symbols;
 }
@@ -366,31 +208,31 @@ BitTimingImpl& NetworkImpl::bitTiming()
 {
     return _bit_timing;
 }
-std::map<std::string, NodeImpl>& NetworkImpl::nodes()
+std::vector<NodeImpl>& NetworkImpl::nodes()
 {
     return _nodes;
 }
-std::map<std::string, ValueTableImpl>& NetworkImpl::valueTables()
+std::vector<ValueTableImpl>& NetworkImpl::valueTables()
 {
     return _value_tables;
 }
-tsl::robin_map<uint64_t, MessageImpl>& NetworkImpl::messages()
+std::vector<MessageImpl>& NetworkImpl::messages()
 {
     return _messages;
 }
-std::map<std::string, EnvironmentVariableImpl>& NetworkImpl::environmentVariables()
+std::vector<EnvironmentVariableImpl>& NetworkImpl::environmentVariables()
 {
     return _environment_variables;
 }
-std::map<std::string, AttributeDefinitionImpl>& NetworkImpl::attributeDefinitions()
+std::vector<AttributeDefinitionImpl>& NetworkImpl::attributeDefinitions()
 {
     return _attribute_definitions;
 }
-std::map<std::string, AttributeImpl>& NetworkImpl::attributeDefaults()
+std::vector<AttributeImpl>& NetworkImpl::attributeDefaults()
 {
     return _attribute_defaults;
 }
-std::map<std::string, AttributeImpl>& NetworkImpl::attributeValues()
+std::vector<AttributeImpl>& NetworkImpl::attributeValues()
 {
     return _attribute_values;
 }
@@ -398,41 +240,108 @@ std::string& NetworkImpl::comment()
 {
     return _comment;
 }
-void Network::merge(std::unique_ptr<Network>&& other)
+void INetwork::Merge(std::unique_ptr<INetwork>&& other)
 {
     auto& self = static_cast<NetworkImpl&>(*this);
     auto& o = static_cast<NetworkImpl&>(*other);
     for (auto& ns : o.newSymbols())
     {
-        self.newSymbols().insert(std::move(ns));
+        self.newSymbols().push_back(std::move(ns));
     }
     for (auto& n : o.nodes())
     {
-        self.nodes().insert(std::move(n));
+        self.nodes().push_back(std::move(n));
     }
     for (auto& vt : o.valueTables())
     {
-        self.valueTables().insert(std::move(vt));
+        self.valueTables().push_back(std::move(vt));
     }
     for (auto& m : o.messages())
     {
-        self.messages().insert(std::move(m));
+        self.messages().push_back(std::move(m));
     }
     for (auto& ev : o.environmentVariables())
     {
-        self.environmentVariables().insert(std::move(ev));
+        self.environmentVariables().push_back(std::move(ev));
     }
     for (auto& ad : o.attributeDefinitions())
     {
-        self.attributeDefinitions().insert(std::move(ad));
+        self.attributeDefinitions().push_back(std::move(ad));
     }
     for (auto& ad : o.attributeDefaults())
     {
-        self.attributeDefaults().insert(std::move(ad));
+        self.attributeDefaults().push_back(std::move(ad));
     }
     for (auto& av : o.attributeValues())
     {
-        self.attributeValues().insert(std::move(av));
+        self.attributeValues().push_back(std::move(av));
     }
     other.reset(nullptr);
+}
+bool NetworkImpl::operator==(const INetwork& rhs) const
+{
+    bool equal = true;
+    equal &= _version == rhs.Version();
+    for (const auto& new_symbol : _new_symbols)
+    {
+        equal &= std::find(_new_symbols.begin(), _new_symbols.end(), new_symbol) != _new_symbols.end();
+    }
+    equal &= _bit_timing == rhs.BitTiming();
+    for (const auto& node : rhs.Nodes())
+    {
+        equal &= std::find(_nodes.begin(), _nodes.end(), node) != _nodes.end();
+    }
+    for (const auto& value_table : rhs.ValueTables())
+    {
+        equal &= std::find(_value_tables.begin(), _value_tables.end(), value_table) != _value_tables.end();
+    }
+    for (const auto& message : rhs.Messages())
+    {
+        equal &= std::find(_messages.begin(), _messages.end(), message) != _messages.end();
+    }
+    for (const auto& env_var : rhs.EnvironmentVariables())
+    {
+        equal &= std::find(_environment_variables.begin(), _environment_variables.end(), env_var) != _environment_variables.end();
+    }
+    for (const auto& attr_def : rhs.AttributeDefinitions())
+    {
+        equal &= std::find(_attribute_definitions.begin(), _attribute_definitions.end(), attr_def) != _attribute_definitions.end();
+    }
+    for (const auto& attr : rhs.AttributeDefaults())
+    {
+        equal &= std::find(_attribute_defaults.begin(), _attribute_defaults.end(), attr) != _attribute_defaults.end();
+    }
+    for (const auto& attr : rhs.AttributeValues())
+    {
+        equal &= std::find(_attribute_values.begin(), _attribute_values.end(), attr) != _attribute_values.end();
+    }
+    equal &= _comment == rhs.Comment();
+    return equal;
+}
+bool NetworkImpl::operator!=(const INetwork& rhs) const
+{
+    return !(*this == rhs);
+}
+
+std::map<std::string, std::unique_ptr<INetwork>> INetwork::LoadNetworkFromFile(const std::experimental::filesystem::path& filename)
+{
+    auto result = std::map<std::string, std::unique_ptr<INetwork>>();
+    auto is = std::ifstream(filename);
+    if (!is.is_open())
+    {
+        std::cout << "Error: Could not open file " << filename << "\n";
+    }
+    else if (filename.extension() == ".dbc")
+    {
+        auto net = LoadDBCFromIs(is);
+        if (net)
+        {
+            result.insert(std::make_pair("", std::move(net)));
+        }
+    }
+    else if (filename.extension() == ".kcd")
+    {
+        result = LoadKCDFromIs(is);
+    }
+    return std::move(result);
 }
