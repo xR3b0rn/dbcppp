@@ -19,8 +19,8 @@ find_package(LibXml2 REQUIRED)
 include_directories(
     include
     ${LIBXML2_INCLUDE_DIR}
-    third-party/libxmlmm/libxmlmm)
-    third-party/boost)
+    third-party/libxmlmm/libxmlmm
+    third-party/boost
     third-party/cxxopts/include
 )
 
