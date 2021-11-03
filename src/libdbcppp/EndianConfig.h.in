@@ -1,0 +1,11 @@
+#pragma once
+
+namespace dbcppp
+{
+    enum class Endian
+    {
+        Little,
+        Big,
+        Native = @BYTE_ORDER@,
+    };
+}

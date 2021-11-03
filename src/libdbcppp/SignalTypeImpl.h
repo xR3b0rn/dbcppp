@@ -1,21 +1,19 @@
-
 #pragma once
 
 #include <cstdint>
 #include "../../include/dbcppp/SignalType.h"
-#include "../../include/dbcppp/ValueTable.h"
 
 namespace dbcppp
 {
     class SignalTypeImpl final
-        : public SignalType
+        : public ISignalType
     {
     public:
         SignalTypeImpl(
               std::string&& name
             , uint64_t signal_size
-            , Signal::ByteOrder byte_order
-            , Signal::ValueType value_type
+            , ISignal::EByteOrder byte_order
+            , ISignal::EValueType value_type
             , double factor
             , double offset
             , double minimum
@@ -24,25 +22,28 @@ namespace dbcppp
             , double default_value
             , std::string&& value_table);
 
-        virtual std::unique_ptr<SignalType> clone() const override;
+        virtual std::unique_ptr<ISignalType> Clone() const override;
 
-        virtual const std::string& getName() const override;
-        virtual uint64_t getSignalSize() const override;
-        virtual Signal::ByteOrder getByteOrder() const override;
-        virtual Signal::ValueType getValueType() const override;
-        virtual double getFactor() const override;
-        virtual double getOffset() const override;
-        virtual double getMinimum() const override;
-        virtual double getMaximum() const override;
-        virtual const std::string& getUnit() const override;
-        virtual double getDefaultValue() const override;
-        virtual const std::string& getValueTable() const override;
+        virtual const std::string& Name() const override;
+        virtual uint64_t SignalSize() const override;
+        virtual ISignal::EByteOrder ByteOrder() const override;
+        virtual ISignal::EValueType ValueType() const override;
+        virtual double Factor() const override;
+        virtual double Offset() const override;
+        virtual double Minimum() const override;
+        virtual double Maximum() const override;
+        virtual const std::string& Unit() const override;
+        virtual double DefaultValue() const override;
+        virtual const std::string& ValueTable() const override;
+        
+        virtual bool operator==(const ISignalType& rhs) const override;
+        virtual bool operator!=(const ISignalType& rhs) const override;
 
     private:
         std::string _name;
         uint64_t _signal_size;
-        Signal::ByteOrder _byte_order;
-        Signal::ValueType _value_type;
+        ISignal::EByteOrder _byte_order;
+        ISignal::EValueType _value_type;
         double _factor;
         double _offset;
         double _minimum;

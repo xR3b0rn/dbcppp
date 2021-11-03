@@ -1,65 +1,66 @@
-
 #pragma once
 
-#include <robin-map/tsl/robin_map.h>
 #include "../../include/dbcppp/EnvironmentVariable.h"
 #include "NodeImpl.h"
 #include "AttributeImpl.h"
+#include "ValueEncodingDescriptionImpl.h"
 
 namespace dbcppp
 {
     class EnvironmentVariableImpl final
-        : public EnvironmentVariable
+        : public IEnvironmentVariable
     {
     public:
         EnvironmentVariableImpl(
               std::string&& name
-            , VarType var_type
+            , EVarType var_type
             , double minimum
             , double maximum
             , std::string&& unit
             , double initial_value
             , uint64_t ev_id
-            , AccessType access_type
-            , std::set<std::string>&& access_nodes
-            , tsl::robin_map<int64_t, std::string>&& value_descriptions
+            , EAccessType access_type
+            , std::vector<std::string>&& access_nodes
+            , std::vector<ValueEncodingDescriptionImpl>&& value_encoding_descriptions
             , uint64_t data_size
-            , std::map<std::string, AttributeImpl>&& attribute_values
+            , std::vector<AttributeImpl>&& attribute_values
             , std::string&& comment);
             
-        virtual std::unique_ptr<EnvironmentVariable> clone() const override;
-
-        virtual const std::string& getName() const override;
-        virtual VarType getVarType() const override;
-        virtual double getMinimum() const override;
-        virtual double getMaximum() const override;
-        virtual std::string getUnit() const override;
-        virtual double getInitialValue() const override;
-        virtual uint64_t getEvId() const override;
-        virtual AccessType getAccessType() const override;
-        virtual bool hasAccessNode(const std::string& name) const override;
-        virtual void forEachAccessNode(std::function<void(const std::string&)>&& cb) const override;
-        virtual const std::string* getValueDescriptionByValue(int64_t value) const override;
-        virtual void forEachValueDescription(std::function<void(int64_t, const std::string&)>&& cb) const override;
-        virtual uint64_t getDataSize() const override;
-        virtual const Attribute* getAttributeValueByName(const std::string& name) const override;
-        virtual const Attribute* findAttributeValue(std::function<bool(const Attribute&)>&& pred) const override;
-        virtual void forEachAttributeValue(std::function<void(const Attribute&)>&& cb) const override;
-        virtual const std::string& getComment() const override;
+        virtual std::unique_ptr<IEnvironmentVariable> Clone() const override;
+        
+        virtual const std::string& Name() const override;
+        virtual EVarType VarType() const override;
+        virtual double Minimum() const override;
+        virtual double Maximum() const override;
+        virtual const std::string& Unit() const override;
+        virtual double InitialValue() const override;
+        virtual uint64_t EvId() const override;
+        virtual EAccessType AccessType() const override;
+        virtual const std::string& AccessNodes_Get(std::size_t i) const override;
+        virtual uint64_t AccessNodes_Size() const override;
+        virtual const IValueEncodingDescription& ValueEncodingDescriptions_Get(std::size_t i) const override;
+        virtual uint64_t ValueEncodingDescriptions_Size() const override;
+        virtual uint64_t DataSize() const override;
+        virtual const IAttribute& AttributeValues_Get(std::size_t i) const override;
+        virtual uint64_t AttributeValues_Size() const override;
+        virtual const std::string& Comment() const override;
+        
+        virtual bool operator==(const IEnvironmentVariable& rhs) const override;
+        virtual bool operator!=(const IEnvironmentVariable& rhs) const override;
 
     private:
         std::string _name;
-        VarType _var_type;
+        EVarType _var_type;
         double _minimum;
         double _maximum;
         std::string _unit;
         double _initial_value;
         uint64_t _ev_id;
-        AccessType _access_type;
-        std::set<std::string> _access_nodes;
-        tsl::robin_map<int64_t, std::string> _value_descriptions;
+        EAccessType _access_type;
+        std::vector<std::string> _access_nodes;
+        std::vector<ValueEncodingDescriptionImpl> _value_encoding_descriptions;
         uint64_t _data_size;
-        std::map<std::string, AttributeImpl> _attribute_values;
+        std::vector<AttributeImpl> _attribute_values;
         std::string _comment;
     };
 }

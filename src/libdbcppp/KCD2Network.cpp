@@ -1,13 +1,12 @@
-
 #include <map>
 #include <memory>
 #include <vector>
 #include <optional>
 #include <sstream>
+#include <cstring>
 
 #include <libxmlmm.h>
 
-#include "kcd.h"
 #include "../../include/dbcppp/Network.h"
 
 using namespace dbcppp;
@@ -28,8 +27,8 @@ class KCD
 public:
     struct Value
     {
-        Signal::ValueType value_type{Signal::ValueType::Unsigned};
-        Signal::ExtendedValueType extended_value_type{Signal::ExtendedValueType::Integer};
+        ISignal::EValueType value_type{ISignal::EValueType::Unsigned};
+        ISignal::EExtendedValueType extended_value_type{ISignal::EExtendedValueType::Integer};
         double factor{1.};
         double offset{0.};
         std::string unit{""};
@@ -37,13 +36,12 @@ public:
         double max{1.};
     };
 
-    std::map<std::string, std::unique_ptr<Network>> _networks;
+    std::map<std::string, std::unique_ptr<INetwork>> _networks;
 
     KCD(std::istream& is)
     {
         xml::Document doc;
         doc.read_from_stream(is);
-        doc.validate(g_kcd_xsd, (int)strlen(g_kcd_xsd));
         parseNetworkDefinition(doc.get_root_element());
         auto nodes = parseNodes(doc.get_root_element());
         _networks = std::move(parseNetworks(doc.get_root_element(), nodes));
@@ -56,19 +54,19 @@ public:
             throw KCDParserError("could not find root node \"NetworkDefinition\"");
         }
     }
-    std::map<std::string, std::unique_ptr<Node>>
+    std::vector<std::unique_ptr<INode>>
         parseNodes(const xml::Element* net_def)
     {
-        std::map<std::string, std::unique_ptr<Node>> result;
+        std::vector<std::unique_ptr<INode>> result;
         const auto nodes = net_def->find_elements("/*[local-name() = 'NetworkDefinition']/*[local-name() = 'Node']");
         for (const auto* node : nodes)
         {
             auto n = parseNode(node);
-            result[n->getName()] = std::move(n);
+            result.push_back(std::move(n));
         }
         return std::move(result);
     }
-    std::unique_ptr<Node>
+    std::unique_ptr<INode>
         parseNode(const xml::Element* node)
     {
         auto name = std::string();
@@ -82,15 +80,15 @@ public:
         }
         auto id = node->get_attribute<std::size_t>("id");
         _node_id_to_node_name[id] = name;
-        return Node::create(std::move(name), "", {});
+        return INode::Create(std::move(name), "", {});
     }
-    std::unique_ptr<Attribute>
-        parseAttribute(const xml::Element* var, AttributeDefinition::ObjectType object_type)
+    std::unique_ptr<IAttribute>
+        parseAttribute(const xml::Element* var, IAttributeDefinition::EObjectType object_type)
     {
         std::string name = var->get_attribute("name");
-        Attribute::value_t value = var->get_attribute("Value");
+        IAttribute::value_t value = var->get_attribute("Value");
         std::stringstream ss;
-        ss << value;
+        std::visit([&](auto v) { ss << v; }, value);
         {
             int64_t i64value;
             ss >> i64value;
@@ -108,39 +106,39 @@ public:
                 value = i64value;
             }
         }
-        return Attribute::create(std::move(name), object_type, value);
+        return IAttribute::Create(std::move(name), object_type, value);
     }
-    std::map<std::string, std::unique_ptr<Network>>
-        parseNetworks(const xml::Element* net_def, const std::map<std::string, std::unique_ptr<Node>>& nodes)
+    std::map<std::string, std::unique_ptr<INetwork>>
+        parseNetworks(const xml::Element* net_def, const std::vector<std::unique_ptr<INode>>& nodes)
     {
-        std::map<std::string, std::unique_ptr<Network>> result;
+        std::map<std::string, std::unique_ptr<INetwork>> networks;
         const auto buses = net_def->find_elements("/*[local-name() = 'NetworkDefinition']/*[local-name() = 'Bus']");
         for (const auto* bus : buses)
         {
-            result.insert(parseNetwork(bus, nodes));
+            networks.insert(parseNetwork(bus, nodes));
         }
-        return std::move(result);
+        return std::move(networks);
     }
-    std::pair<std::string, std::unique_ptr<Network>>
-        parseNetwork(const xml::Element* bus, const std::map<std::string, std::unique_ptr<Node>>& nodes)
+    std::pair<std::string, std::unique_ptr<INetwork>>
+        parseNetwork(const xml::Element* bus, const std::vector<std::unique_ptr<INode>>& nodes)
     {
         auto name = bus->get_attribute("name");
         auto bit_timing = parseBitTiming(bus);
-        auto msgs = std::unordered_map<uint64_t, std::unique_ptr<Message>>();
+        auto msgs = std::vector<std::unique_ptr<IMessage>>();
         const auto messages = bus->find_elements("./*[local-name() = 'Message']");
         for (const auto* message : messages)
         {
             auto msg = parseMessage(message);
-            msgs[msg->getId()] = std::move(msg);
+            msgs.push_back(std::move(msg));
         }
-        auto ns = std::map<std::string, std::unique_ptr<Node>>();
+        auto ns = std::vector<std::unique_ptr<INode>>();
         for (const auto& node : nodes)
         {
-            ns.insert(std::make_pair(node.first, node.second->clone()));
+            ns.push_back(node->Clone());
         }
         return std::make_pair(
               name
-            , Network::create(
+            , INetwork::Create(
                   ""
                 , {}
                 , std::move(bit_timing)
@@ -149,7 +147,7 @@ public:
                 , std::move(msgs)
                 , {}, {}, {}, {}, ""));
     }
-    std::unique_ptr<BitTiming>
+    std::unique_ptr<IBitTiming>
         parseBitTiming(const xml::Element* bus)
     {
         uint64_t baudrate = 500000;
@@ -157,7 +155,7 @@ public:
         {
             baudrate = bus->get_attribute<uint64_t>("baudrate");
         }
-        return BitTiming::create(baudrate, 0, 0);
+        return IBitTiming::Create(baudrate, 0, 0);
     }
     uint64_t
         getMessageSize(const xml::Element* message)
@@ -179,7 +177,7 @@ public:
         }
         return (max + 7) / 8;
     }
-    std::unique_ptr<Message>
+    std::unique_ptr<IMessage>
         parseMessage(const xml::Element* message)
     {
         auto str_id = message->get_attribute("id");
@@ -214,7 +212,7 @@ public:
         auto nt = parseComment(note);
         auto transmitter = parseTransmitter(message);
         auto signals = parseSignals(message, message_size);
-        return Message::create(
+        return IMessage::Create(
               id
             , std::move(name)
             , message_size
@@ -222,7 +220,8 @@ public:
             , std::move(transmitter)
             , std::move(signals)
             , {}
-            , std::move(comment));
+            , std::move(comment)
+            , {});
     }
     std::string
         parseComment(const xml::Element* note)
@@ -234,10 +233,10 @@ public:
         }
         return result;
     }
-    std::set<std::string>
+    std::vector<std::string>
         parseTransmitter(const xml::Element* message)
     {
-        std::set<std::string> result;
+        std::vector<std::string> result;
         const auto node_refs = message->find_elements("./*[local-name() = 'Producer']/*[local-name() = 'NodeRef']");
         for (const auto* node_ref : node_refs)
         {
@@ -247,19 +246,19 @@ public:
             {
                 throw KCDParserError("could not find node with ID \"" + std::to_string(id) + "\"");
             }
-            result.insert(node_name->second);
+            result.push_back(node_name->second);
         }
         return result;
     }
-    std::map<std::string, std::unique_ptr<Signal>>
+    std::vector<std::unique_ptr<ISignal>>
         parseSignals(const xml::Element* message, uint64_t message_size)
     {
-        std::map<std::string, std::unique_ptr<Signal>> sigs;
+        std::vector<std::unique_ptr<ISignal>> sigs;
         const auto* multiplex = message->find_element("./*[local-name() = 'Multiplex']");
         if (multiplex != nullptr)
         {
-            auto mux_signal = parseSignal(multiplex, message_size, Signal::Multiplexer::MuxSwitch, 0);
-            sigs.insert(std::make_pair(mux_signal->getName(), std::move(mux_signal)));
+            auto mux_signal = parseSignal(multiplex, message_size, ISignal::EMultiplexer::MuxSwitch, 0);
+            sigs.push_back(std::move(mux_signal));
             const auto mux_groups = multiplex->find_elements("./*[local-name() = 'MuxGroup']");
             for (const auto* mux_group : mux_groups)
             {
@@ -267,21 +266,21 @@ public:
                 const auto signals = mux_group->find_elements("./*[local-name() = 'Signal']");
                 for (const auto* signal : signals)
                 {
-                    auto sig = parseSignal(signal, message_size, Signal::Multiplexer::MuxValue, multiplex_indicator);
-                    sigs.insert(std::make_pair(sig->getName(), std::move(sig)));
+                    auto sig = parseSignal(signal, message_size, ISignal::EMultiplexer::MuxValue, multiplex_indicator);
+                    sigs.push_back(std::move(sig));
                 }
             }
         }
         const auto signals = message->find_elements("./*[local-name() = 'Signal']");
         for (const auto* signal : signals)
         {
-            auto sig = parseSignal(signal, message_size, Signal::Multiplexer::NoMux, 0);
-            sigs.insert(std::make_pair(sig->getName(), std::move(sig)));
+            auto sig = parseSignal(signal, message_size, ISignal::EMultiplexer::NoMux, 0);
+            sigs.push_back(std::move(sig));
         }
         return std::move(sigs);
     }
-    std::unique_ptr<Signal>
-        parseSignal(const xml::Element* signal, uint64_t message_size, Signal::Multiplexer mux, uint64_t multiplex_indicator)
+    std::unique_ptr<ISignal>
+        parseSignal(const xml::Element* signal, uint64_t message_size, ISignal::EMultiplexer mux, uint64_t multiplex_indicator)
     {
         auto comment = parseComment(signal->find_element("Notes"));
         auto receivers = parseReceivers(signal);
@@ -292,19 +291,19 @@ public:
         {
             bit_size = signal->get_attribute<uint64_t>("length");
         }
-        auto byte_order = Signal::ByteOrder::LittleEndian;
-        auto value_type = Signal::ValueType::Unsigned;
-        auto extended_value_type = Signal::ExtendedValueType::Integer;
+        auto byte_order = ISignal::EByteOrder::LittleEndian;
+        auto value_type = ISignal::EValueType::Unsigned;
+        auto extended_value_type = ISignal::EExtendedValueType::Integer;
         auto factor = 1.;
         auto offset = 0.;
         auto unit = std::string("");
         auto min = 0.;
         auto max = 1.;
-        auto value_descriptions = std::unordered_map<int64_t, std::string>();
+        auto value_encoding_descriptions = std::vector<std::unique_ptr<IValueEncodingDescription>>();
         if (signal->has_attribute("endianess") &&
             signal->get_attribute("endianess") == "big")
         {
-            byte_order = Signal::ByteOrder::BigEndian;
+            byte_order = ISignal::EByteOrder::BigEndian;
         }
         const auto* value = signal->find_element("./*[local-name() = 'Value']");
         if (value != nullptr)
@@ -324,9 +323,10 @@ public:
         {
             auto value = label->get_attribute<int64_t>("value");
             auto name = label->get_attribute("name");
-            value_descriptions.insert(std::make_pair(value, name));
+            auto ved = IValueEncodingDescription::Create(value, std::move(name));
+            value_encoding_descriptions.push_back(std::move(ved));
         }
-        return Signal::create(
+        return ISignal::Create(
               message_size
             , std::move(name)
             , mux
@@ -342,20 +342,21 @@ public:
             , std::move(unit)
             , std::move(receivers)
             , {}
-            , std::move(value_descriptions)
+            , std::move(value_encoding_descriptions)
             , std::move(comment)
-            , extended_value_type);
+            , extended_value_type
+            , {});
     }
-    std::set<std::string>
+    std::vector<std::string>
         parseReceivers(const xml::Element* signal)
     {
-        std::set<std::string> result;
+        std::vector<std::string> result;
         const auto node_refs = signal->find_elements("./*[local-name() = 'Consumer']/*[local-name() = 'NodeRef']");
         for (const auto* node_ref : node_refs)
         {
             auto id = node_ref->get_attribute<std::size_t>("id");
             const auto node_name = _node_id_to_node_name.find(id);
-            result.insert(node_name->second);
+            result.push_back(node_name->second);
         }
         return result;
     }
@@ -368,15 +369,15 @@ public:
             auto vt = value->get_attribute("type");
             if (vt == "signed")
             {
-                result.value_type = Signal::ValueType::Signed;
+                result.value_type = ISignal::EValueType::Signed;
             }
             else if (vt == "single")
             {
-                result.extended_value_type = Signal::ExtendedValueType::Float;
+                result.extended_value_type = ISignal::EExtendedValueType::Float;
             }
             else if (vt == "double")
             {
-                result.extended_value_type = Signal::ExtendedValueType::Double;
+                result.extended_value_type = ISignal::EExtendedValueType::Double;
             }
         }
         if (value->has_attribute("slope"))
@@ -406,7 +407,7 @@ private:
     std::map<std::size_t, std::string> _node_id_to_node_name;
 };
 
-std::map<std::string, std::unique_ptr<Network>> Network::loadKCDFromIs(std::istream& is)
+std::map<std::string, std::unique_ptr<INetwork>> INetwork::LoadKCDFromIs(std::istream& is)
 {
     KCD kcd(is);
     return std::move(kcd._networks);

@@ -1,9 +1,9 @@
 
 #include <fstream>
+#include <unordered_map>
 
 #include "../../include/dbcppp/CApi.h"
 #include "../../include/dbcppp/Network.h"
-#include "../../tests/Config.h"
 
 // from uapi/linux/can.h
 using canid_t = uint32_t;
@@ -50,24 +50,35 @@ void receive_frame_data(can_frame* frame)
 }
 int main()
 {
-    std::unique_ptr<dbcppp::Network> net;
+    std::unique_ptr<dbcppp::INetwork> net;
     {
-        std::ifstream idbc(TEST_DBC);
-        net = dbcppp::Network::loadDBCFromIs(idbc);
+        std::ifstream idbc("your.dbc");
+        net = dbcppp::INetwork::LoadDBCFromIs(idbc);
+    }
+    std::unordered_map<uint64_t, const dbcppp::IMessage*> messages;
+    for (const dbcppp::IMessage& msg : net->Messages())
+    {
+        messages.insert(std::make_pair(msg.Id(), &msg));
     }
     can_frame frame;
-    receive_frame_data(&frame);
-    const dbcppp::Message* msg = net->getMessageById(frame.can_id);
-    std::cout << "Received Message: " << msg->getName() << "\n";
-    msg->forEachSignal(
-        [&](const dbcppp::Signal& sig)
+    while (1)
+    {
+        receive_frame_data(&frame);
+        auto iter = messages.find(frame.can_id);
+        if (iter != messages.end())
         {
-            const dbcppp::Signal* mux_sig = msg->getMuxSignal();
-            if (sig.getMultiplexerIndicator() != dbcppp::Signal::Multiplexer::MuxValue ||
-                (mux_sig && mux_sig->decode(frame.data) == sig.getMultiplexerSwitchValue()))
+            const dbcppp::IMessage* msg = iter->second;
+            std::cout << "Received Message: " << msg->Name() << "\n";
+            for (const dbcppp::ISignal& sig : msg->Signals())
             {
-                std::cout << "\t" << sig.getName() << "=" << sig.rawToPhys(sig.decode(frame.data)) << sig.getUnit() << "\n";
+                const dbcppp::ISignal* mux_sig = msg->MuxSignal();
+                if (sig.MultiplexerIndicator() != dbcppp::ISignal::EMultiplexer::MuxValue ||
+                    (mux_sig && mux_sig->Decode(frame.data) == sig.MultiplexerSwitchValue()))
+                {
+                    std::cout << "\t" << sig.Name() << "=" << sig.RawToPhys(sig.Decode(frame.data)) << sig.Unit() << "\n";
+                }
             }
-        });
+        }
+    }
     std::cout << std::flush;
 }

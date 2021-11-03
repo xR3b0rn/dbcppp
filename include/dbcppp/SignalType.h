@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <cstddef>
@@ -10,14 +9,14 @@
 
 namespace dbcppp
 {
-    class SignalType
+    class ISignalType
     {
     public:
-        static std::unique_ptr<SignalType> create(
+        static std::unique_ptr<ISignalType> Create(
               std::string&& name
             , uint64_t signal_size
-            , Signal::ByteOrder byte_order
-            , Signal::ValueType value_type
+            , ISignal::EByteOrder byte_order
+            , ISignal::EValueType value_type
             , double factor
             , double offset
             , double minimum
@@ -26,19 +25,22 @@ namespace dbcppp
             , double default_value
             , std::string&& value_table);
             
-        virtual std::unique_ptr<SignalType> clone() const = 0;
+        virtual std::unique_ptr<ISignalType> Clone() const = 0;
 
-        virtual ~SignalType() = default;
-        virtual const std::string& getName() const = 0;
-        virtual uint64_t getSignalSize() const = 0;
-        virtual Signal::ByteOrder getByteOrder() const = 0;
-        virtual Signal::ValueType getValueType() const = 0;
-        virtual double getFactor() const = 0;
-        virtual double getOffset() const = 0;
-        virtual double getMinimum() const = 0;
-        virtual double getMaximum() const = 0;
-        virtual const std::string& getUnit() const = 0;
-        virtual double getDefaultValue() const = 0;
-        virtual const std::string& getValueTable() const = 0;
+        virtual ~ISignalType() = default;
+        virtual const std::string& Name() const = 0;
+        virtual uint64_t SignalSize() const = 0;
+        virtual ISignal::EByteOrder ByteOrder() const = 0;
+        virtual ISignal::EValueType ValueType() const = 0;
+        virtual double Factor() const = 0;
+        virtual double Offset() const = 0;
+        virtual double Minimum() const = 0;
+        virtual double Maximum() const = 0;
+        virtual const std::string& Unit() const = 0;
+        virtual double DefaultValue() const = 0;
+        virtual const std::string& ValueTable() const = 0;
+        
+        virtual bool operator==(const ISignalType& rhs) const = 0;
+        virtual bool operator!=(const ISignalType& rhs) const = 0;
     };
 }
