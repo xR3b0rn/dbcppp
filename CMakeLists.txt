@@ -14,19 +14,16 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
 	add_definitions("/bigobj")
 endif()
 
-include_directories("include")
-include_directories("third-party/libxml2/include")
-include_directories("third-party/libxmlmm/libxmlmm")
-include_directories("third-party/boost")
-include_directories("third-party/cxxopts/include")
+find_package(LibXml2 REQUIRED)
 
-set(LIBXML2_WITH_ICONV OFF)
-set(LIBXML2_WITH_LZMA OFF)
-set(LIBXML2_WITH_PYTHON OFF)
-set(LIBXML2_WITH_ZLIB OFF)
-set(LIBXML2_WITH_TESTS OFF)
+include_directories(
+    include
+    ${LIBXML2_INCLUDE_DIR}
+    third-party/libxmlmm/libxmlmm)
+    third-party/boost)
+    third-party/cxxopts/include
+)
 
-add_subdirectory(third-party/libxml2)
 
 file(GLOB libxmlmm_header
     "third-party/libxmlmm/libxmlmm/*.h"
@@ -36,7 +33,7 @@ file(GLOB libxmlmm_src
 )
 
 add_library(libxmlmm SHARED "")
-target_link_libraries(libxmlmm LibXml2)
+target_link_libraries(libxmlmm ${LIBXML2_LIBRARIES})
 
 target_sources("libxmlmm"
     PRIVATE ${libxmlmm_header}

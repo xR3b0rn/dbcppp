@@ -4,6 +4,3 @@
 [submodule "third-party/libxmlmm"]
 	path = third-party/libxmlmm
 	url = https://github.com/xR3b0rn/libxmlmm.git
-[submodule "third-party/libxml2"]
-	path = third-party/libxml2
-	url = https://github.com/GNOME/libxml2.git
