@@ -18,7 +18,7 @@ namespace dbcppp
             , uint64_t message_size
             , std::string&& transmitter
             , std::vector<std::string>&& message_transmitters
-            , std::vector<SignalImpl>&& signals
+            , std::vector<SignalImpl>&& signals_
             , std::vector<AttributeImpl>&& attribute_values
             , std::string&& comment
             , std::vector<SignalGroupImpl>&& signal_groups);

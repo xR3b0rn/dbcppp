@@ -9,7 +9,7 @@ std::unique_ptr<IMessage> IMessage::Create(
     , uint64_t message_size
     , std::string&& transmitter
     , std::vector<std::string>&& message_transmitters
-    , std::vector<std::unique_ptr<ISignal>>&& signals
+    , std::vector<std::unique_ptr<ISignal>>&& signals_
     , std::vector<std::unique_ptr<IAttribute>>&& attribute_values
     , std::string&& comment
     , std::vector<std::unique_ptr<ISignalGroup>>&& signal_groups)
@@ -17,7 +17,7 @@ std::unique_ptr<IMessage> IMessage::Create(
     std::vector<SignalImpl> ss;
     std::vector<AttributeImpl> avs;
     std::vector<SignalGroupImpl> sgs;
-    for (auto& s : signals)
+    for (auto& s : signals_)
     {
         ss.push_back(std::move(static_cast<SignalImpl&>(*s)));
         s.reset(nullptr);
@@ -49,7 +49,7 @@ MessageImpl::MessageImpl(
     , uint64_t message_size
     , std::string&& transmitter
     , std::vector<std::string>&& message_transmitters
-    , std::vector<SignalImpl>&& signals
+    , std::vector<SignalImpl>&& signals_
     , std::vector<AttributeImpl>&& attribute_values
     , std::string&& comment
     , std::vector<SignalGroupImpl>&& signal_groups)
@@ -59,7 +59,7 @@ MessageImpl::MessageImpl(
     , _message_size(std::move(message_size))
     , _transmitter(std::move(transmitter))
     , _message_transmitters(std::move(message_transmitters))
-    , _signals(std::move(signals))
+    , _signals(std::move(signals_))
     , _attribute_values(std::move(attribute_values))
     , _comment(std::move(comment))
     , _signal_groups(std::move(signal_groups))
