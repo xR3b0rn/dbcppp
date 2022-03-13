@@ -88,7 +88,7 @@ int main(int argc, char** argv)
     {
         options.add_options()
             ("h,help", "Produce help message")
-            ("bus", "List of buses in format (<bus name, DBC filename>)", cxxopts::value<std::vector<std::string>>());
+            ("bus", "List of buses in format <<bus name>:<DBC filename>>", cxxopts::value<std::vector<std::string>>());
         for (std::size_t i = 1; i < argc - 1; i++)
         {
             argv[i] = argv[i + 1];
@@ -96,13 +96,13 @@ int main(int argc, char** argv)
         auto vm = options.parse(argc, argv);
         if (vm.count("help"))
         {
-            std::cout << "Usage:\ndbcppp decode [--help] --bus=<bus name,DBC filename>...\n";
+            std::cout << "Usage:\ndbcppp decode [--help] --bus=<<bus name>:<DBC filename>>...\n";
             std::cout << options.help();
             return 1;
         }
         if (!vm.count("bus"))
         {
-            std::cout << "Argument error: At least one --bus=<bus name,DBC filename> argument required\n";
+            std::cout << "Argument error: At least one --bus=<<bus name>:<DBC filename>> argument required\n";
             return 1;
         }
         const auto& opt_buses = vm["bus"].as<std::vector<std::string>>();
