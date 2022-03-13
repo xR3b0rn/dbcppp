@@ -117,22 +117,29 @@ int main(int argc, char** argv)
             std::istringstream ss(opt_bus);
             std::string opt;
             Bus b;
-            if (std::getline(ss, opt, ','))
+            if (std::getline(ss, opt, ':'))
             {
                 b.name = opt;
             }
             else
             {
-                // TODO error
+                std::cout << "error: could parse bus parameter" << std::endl;
+                return 1;
             }
             if (std::getline(ss, opt))
             {
                 std::ifstream fdbc(opt);
                 b.net = dbcppp::INetwork::LoadDBCFromIs(fdbc);
+                if (!b.net)
+                {
+                    std::cout << "error: could not load DBC '" << opt << "'" << std::endl;
+                    return 1;
+                }
             }
             else
             {
-                // TODO error
+                std::cout << "error: could parse bus parameter" << std::endl;
+                return 1;
             }
             buses.insert(std::make_pair(b.name, std::move(b)));
         }
@@ -181,24 +188,83 @@ int main(int argc, char** argv)
                     bool first = true;
                     const auto* mux_sig = msg->MuxSignal();
 
-                    for (const dbcppp::ISignal& sig : msg->Signals())
-                    {
-                        if (sig.MultiplexerIndicator() != dbcppp::ISignal::EMultiplexer::MuxValue ||
-                            mux_sig && sig.MultiplexerSwitchValue() == mux_sig->Decode(&data[0]))
+                    auto print_signal =
+                        [&data](const dbcppp::ISignal& sig, bool first)
                         {
-                            if (first) first = false; else std::cout << ", ";
+                            if (!first) std::cout << ", ";
                             auto raw = sig.Decode(&data[0]);
                             auto beg_ved = sig.ValueEncodingDescriptions().begin();
                             auto end_ved = sig.ValueEncodingDescriptions().end();
                             auto iter = std::find_if(beg_ved, end_ved, [&](const dbcppp::IValueEncodingDescription& ved) { return ved.Value() == raw; });
                             if (iter != end_ved)
                             {
-                                std::cout << sig.Name() << ": " << iter->Description() << " " << sig.Unit();
+                                std::cout << sig.Name() << ": '" << iter->Description() << "' " << sig.Unit();
                             }
                             else
                             {
                                 auto val = sig.RawToPhys(raw);
-                                std::cout << sig.Name() << ": " << val << " " << sig.Unit();
+                                std::cout << sig.Name() << ": " << val;
+                                if (sig.Unit().size())
+                                {
+                                    std::cout << " " << sig.Unit();
+                                }
+                            }
+                        };
+
+                    for (const dbcppp::ISignal& sig : msg->Signals())
+                    {
+                        if (sig.MultiplexerIndicator() != dbcppp::ISignal::EMultiplexer::MuxValue)
+                        {
+                            print_signal(sig, first);
+                            first = false;
+                        }
+                        else if (mux_sig && sig.SignalMultiplexerValues_Size() == 0 &&
+                            sig.MultiplexerSwitchValue() == mux_sig->Decode(&data[0]))
+                        {
+                            print_signal(sig, first);
+                            first = false;
+                        }
+                        else
+                        {
+                            std::function<bool(const dbcppp::ISignal&)> check_signal_multiplexer_values;
+                            check_signal_multiplexer_values =
+                                [&](const dbcppp::ISignal& sig)
+                                    -> bool
+                                {
+                                    for (const auto& smv : sig.SignalMultiplexerValues())
+                                    {
+                                        auto sig_beg = msg->Signals().begin();
+                                        auto sig_end = msg->Signals().end();
+                                        auto sig_iter = std::find_if(sig_beg, sig_end,
+                                            [&](const auto& sig)
+                                            {
+                                                return sig.Name() == smv.SwitchName();
+                                            });
+                                        if (sig_iter != sig_end)
+                                        {
+                                            for (auto ranges : smv.ValueRanges())
+                                            {
+                                                auto raw = sig_iter->Decode(&data[0]);
+                                                if (ranges.from >= raw && ranges.to <= raw)
+                                                {
+                                                    if (sig_iter->SignalMultiplexerValues_Size() != 0)
+                                                    {
+                                                        return check_signal_multiplexer_values(*sig_iter);
+                                                    }
+                                                    else
+                                                    {
+                                                        return true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    return false;
+                                };
+                            if (check_signal_multiplexer_values(sig))
+                            {
+                                print_signal(sig, first);
+                                first = false;
                             }
                         }
                     }
