@@ -27,6 +27,7 @@ namespace dbcppp
         virtual bool operator==(const INode& rhs) const override;
         virtual bool operator!=(const INode& rhs) const override;
 
+    private:
         std::string _name;
         std::string _comment;
         std::vector<AttributeImpl> _attribute_values;
