@@ -34,19 +34,52 @@ file(GLOB src
 
 target_sources(${PROJECT_NAME}
     PRIVATE ${header} 
-    PUBLIC ${header_interface}
+    PRIVATE ${header_interface}
     PRIVATE ${src} DBCX3AdaptStructs.inl
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES PUBLIC_HEADER "${header_interface}")
 
 include(GenerateExportHeader)
 generate_export_header(${PROJECT_NAME})
 
 # install
 install(
-    TARGETS ${PROJECT_NAME}
-    DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    TARGETS ${PROJECT_NAME} EXPORT ${PROJECT_NAME}Targets
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dbcppp)
 install(
     FILES
-		$<TARGET_PROPERTY:${PROJECT_NAME},INTERFACE_SOURCES>
+    $<TARGET_PROPERTY:${PROJECT_NAME},INTERFACE_SOURCES>
 	DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dbcppp)
 	
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+  VERSION ${Upstream_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+export(EXPORT ${PROJECT_NAME}Targets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Targets.cmake"
+)
+configure_file(cmake/${PROJECT_NAME}Config.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}Config.cmake"
+  @ONLY
+)
+
+set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
+install(EXPORT ${PROJECT_NAME}Targets
+  FILE
+    ${PROJECT_NAME}Targets.cmake
+  DESTINATION
+    ${ConfigPackageLocation}
+)
+install(
+  FILES
+    cmake/${PROJECT_NAME}Config.cmake
+    "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}ConfigVersion.cmake"
+  DESTINATION
+    ${ConfigPackageLocation}
+  COMPONENT
+    Devel
+)
