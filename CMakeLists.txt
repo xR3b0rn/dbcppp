@@ -45,7 +45,7 @@ target_sources("libxmlmm"
 )
 
 install(
-    TARGETS "libxmlmm"
+    TARGETS "libxmlmm" "LibXml2" EXPORT ${PROJECT_NAME}Targets
     DESTINATION ${CMAKE_INSTALL_LIBDIR})
 install(
     DIRECTORY "libxmlmm"
