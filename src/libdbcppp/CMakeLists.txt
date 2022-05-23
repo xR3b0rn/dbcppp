@@ -14,6 +14,12 @@ include_directories(
     ${CMAKE_BINARY_DIR}/src
 )
 
+target_include_directories(
+	  ${PROJECT_NAME}
+	  PUBLIC
+	  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${CMAKE_INSTALL_INCLUDEDIR}/>
+)
+
 test_big_endian(is_big_endian)
 if (is_big_endian)
     set(BYTE_ORDER Big)
@@ -67,7 +73,7 @@ configure_file(cmake/${PROJECT_NAME}Config.cmake
   @ONLY
 )
 
-set(ConfigPackageLocation lib/cmake/${PROJECT_NAME})
+set(ConfigPackageLocation ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 install(EXPORT ${PROJECT_NAME}Targets
   FILE
     ${PROJECT_NAME}Targets.cmake
