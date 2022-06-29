@@ -24,7 +24,7 @@
 #elif defined(__FreeBSD__)
 #   include <sys/endian.h>
 #   define bswap_32(x) bswap32(x)
-#   defiee bswap_64(x) bswap64(x)
+#   define bswap_64(x) bswap64(x)
 #elif defined(__OpenBSD__)
 #   include <sys/types.h>
 #   define bswap_32(x) swap32(x)
