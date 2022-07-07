@@ -109,7 +109,7 @@ DBCPPP_API std::ostream& dbcppp::Network2C::operator<<(std::ostream& os, const I
             {
                 // Alignment::signal_exceeds_64_bit_size_and_signal_does_not_fit_into_64_bit;
                 os << boost::format(
-                    "    hack.ui = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[%1%]);\n")
+                    "    data = *reinterpret_cast<const uint64_t*>(&reinterpret_cast<const uint8_t*>(nbytes)[%1%]);\n")
                     % sigi._byte_pos;
                 os << boost::format(
                     "    uint64_t data1 = reinterpret_cast<const uint8_t*>(nbytes)[%1% + 8];\n")
