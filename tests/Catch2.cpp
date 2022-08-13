@@ -3742,6 +3742,10 @@ PVOID FatalConditionHandler::exceptionHandlerHandle = nullptr;
 
 #elif defined( CATCH_CONFIG_POSIX_SIGNALS )
 
+// https://stackoverflow.com/questions/71454588/minsigstksz-error-after-update-in-my-manjaro-linux
+#undef MINSIGSTKSZ
+#define MINSIGSTKSZ 65536
+
 namespace Catch {
 
     struct SignalDefs {
@@ -3751,7 +3755,7 @@ namespace Catch {
 
     // 32kb for the alternate stack seems to be sufficient. However, this value
     // is experimentally determined, so that's not guaranteed.
-    static std::size_t sigStackSize = 32768 >= MINSIGSTKSZ ? 32768 : MINSIGSTKSZ;
+    static constexpr std::size_t sigStackSize = 32768 >= MINSIGSTKSZ ? 32768 : MINSIGSTKSZ;
 
     static SignalDefs signalDefs[] = {
         { SIGINT,  "SIGINT - Terminal interrupt signal" },
@@ -3807,7 +3811,7 @@ namespace Catch {
     bool FatalConditionHandler::isSet = false;
     struct sigaction FatalConditionHandler::oldSigActions[sizeof(signalDefs)/sizeof(SignalDefs)] = {};
     stack_t FatalConditionHandler::oldSigStack = {};
-    char FatalConditionHandler::altStackMem[65536] = {};
+    char FatalConditionHandler::altStackMem[sigStackSize] = {};
 
 
 } // namespace Catch
