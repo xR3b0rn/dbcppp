@@ -27,7 +27,7 @@ namespace dbcppp
         virtual std::unique_ptr<ISignalMultiplexerValue> Clone() const = 0;
 
         virtual ~ISignalMultiplexerValue() = default;
-        virtual std::string SwitchName() const = 0;
+        virtual std::string& SwitchName() const = 0;
         virtual const Range& ValueRanges_Get(std::size_t i) const = 0;
         virtual uint64_t ValueRanges_Size() const = 0;
 

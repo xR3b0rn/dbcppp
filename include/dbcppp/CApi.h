@@ -77,6 +77,11 @@ extern "C"
     typedef struct {} dbcppp_Attribute;
     typedef struct {} dbcppp_SignalType;
     typedef struct {} dbcppp_Signal;
+    typedef struct {} dbcppp_SignalMultiplexerValue;
+    typedef struct {
+        size_t from;
+        size_t to;
+    } dbcppp_ValueRange;
     typedef struct {} dbcppp_ValueEncodingDescription;
     
     DBCPPP_API const dbcppp_Attribute* dbcppp_AttributeCreate(

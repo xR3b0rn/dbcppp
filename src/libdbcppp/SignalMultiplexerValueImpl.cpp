@@ -25,7 +25,7 @@ std::unique_ptr<ISignalMultiplexerValue> SignalMultiplexerValueImpl::Clone() con
     return std::make_unique<SignalMultiplexerValueImpl>(*this);
 }
 
-std::string SignalMultiplexerValueImpl::SwitchName() const
+std::string& SignalMultiplexerValueImpl::SwitchName() const
 {
     return _switch_name;
 }
