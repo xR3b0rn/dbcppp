@@ -79,8 +79,8 @@ extern "C"
     typedef struct {} dbcppp_Signal;
     typedef struct {} dbcppp_SignalMultiplexerValue;
     typedef struct {
-        size_t from;
-        size_t to;
+        uint64_t from;
+        uint64_t to;
     } dbcppp_ValueRange;
     typedef struct {} dbcppp_ValueEncodingDescription;
     
@@ -240,6 +240,11 @@ extern "C"
     DBCPPP_API const char* dbcppp_SignalName(const dbcppp_Signal* sig);
     DBCPPP_API dbcppp_ESignalMultiplexer dbcppp_SignalMultiplexerIndicator(const dbcppp_Signal* sig);
     DBCPPP_API uint64_t dbcppp_SignalMultiplexerSwitchValue(const dbcppp_Signal* sig);
+    DBCPPP_API uint64_t dbcppp_SignalMultiplexerValues_Size(const dbcppp_Signal* sig);
+    DBCPPP_API const dbcppp_SignalMultiplexerValue* dbcppp_SignalMultiplexerValues_Get(const dbcppp_Signal* sig, uint64_t i);
+    DBCPPP_API const char* dbcppp_SignalMultiplexerValue_SwitchName(const dbcppp_SignalMultiplexerValue* mux_val, uint64_t i);
+    DBCPPP_API uint64_t dbcppp_ValueRanges_Size(const dbcppp_SignalMultiplexerValue* mux_val);
+    DBCPPP_API const dbcppp_ValueRange* dbcppp_ValueRanges_Get(const dbcppp_SignalMultiplexerValue* mux_val, uint64_t i);
     DBCPPP_API uint64_t dbcppp_SignalStartBit(const dbcppp_Signal* sig);
     DBCPPP_API uint64_t dbcppp_SignalBitSize(const dbcppp_Signal* sig);
     DBCPPP_API dbcppp_ESignalByteOrder dbcppp_SignalByteOrder(const dbcppp_Signal* sig);

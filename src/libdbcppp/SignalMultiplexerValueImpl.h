@@ -15,7 +15,7 @@ namespace dbcppp
             
         virtual std::unique_ptr<ISignalMultiplexerValue> Clone() const override;
 
-        virtual std::string& SwitchName() const override;
+        virtual const std::string& SwitchName() const override;
         virtual const Range& ValueRanges_Get(std::size_t i) const override;
         virtual uint64_t ValueRanges_Size() const override;
 
