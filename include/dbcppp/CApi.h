@@ -242,7 +242,7 @@ extern "C"
     DBCPPP_API uint64_t dbcppp_SignalMultiplexerSwitchValue(const dbcppp_Signal* sig);
     DBCPPP_API uint64_t dbcppp_SignalMultiplexerValues_Size(const dbcppp_Signal* sig);
     DBCPPP_API const dbcppp_SignalMultiplexerValue* dbcppp_SignalMultiplexerValues_Get(const dbcppp_Signal* sig, uint64_t i);
-    DBCPPP_API const char* dbcppp_SignalMultiplexerValue_SwitchName(const dbcppp_SignalMultiplexerValue* mux_val, uint64_t i);
+    DBCPPP_API const char* dbcppp_SignalMultiplexerValue_SwitchName(const dbcppp_SignalMultiplexerValue* mux_val);
     DBCPPP_API uint64_t dbcppp_SignalMultiplexerValue_ValueRanges_Size(const dbcppp_SignalMultiplexerValue* mux_val);
     DBCPPP_API const dbcppp_ValueRange* dbcppp_SignalMultiplexerValue_ValueRanges_Get(const dbcppp_SignalMultiplexerValue* mux_val, uint64_t i);
     DBCPPP_API uint64_t dbcppp_SignalStartBit(const dbcppp_Signal* sig);

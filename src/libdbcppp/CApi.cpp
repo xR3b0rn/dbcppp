@@ -889,7 +889,7 @@ extern "C"
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return reinterpret_cast<const dbcppp_SignalMultiplexerValue*>(&sigi->SignalMultiplexerValues_Get(i));
     }
-    DBCPPP_API const char* dbcppp_SignalMultiplexerValue_SwitchName(const dbcppp_SignalMultiplexerValue* mux_val, uint64_t i)
+    DBCPPP_API const char* dbcppp_SignalMultiplexerValue_SwitchName(const dbcppp_SignalMultiplexerValue* mux_val)
     {
         auto sigi = reinterpret_cast<const ISignalMultiplexerValue*>(mux_val);
         return sigi->SwitchName().c_str();
