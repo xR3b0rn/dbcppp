@@ -894,12 +894,12 @@ extern "C"
         auto sigi = reinterpret_cast<const ISignalMultiplexerValue*>(mux_val);
         return sigi->SwitchName().c_str();
     }
-    DBCPPP_API uint64_t dbcppp_ValueRanges_Size(const dbcppp_SignalMultiplexerValue* mux_val)
+    DBCPPP_API uint64_t dbcppp_SignalMultiplexerValue_ValueRanges_Size(const dbcppp_SignalMultiplexerValue* mux_val)
     {
         auto sigi = reinterpret_cast<const ISignalMultiplexerValue*>(mux_val);
         return sigi->ValueRanges_Size();
     }
-    DBCPPP_API const dbcppp_ValueRange* dbcppp_ValueRanges_Get(const dbcppp_SignalMultiplexerValue* mux_val, uint64_t i)
+    DBCPPP_API const dbcppp_ValueRange* dbcppp_SignalMultiplexerValue_ValueRanges_Get(const dbcppp_SignalMultiplexerValue* mux_val, uint64_t i)
     {
         auto sigi = reinterpret_cast<const ISignalMultiplexerValue*>(mux_val);
         return reinterpret_cast<const dbcppp_ValueRange*>(&sigi->ValueRanges_Get(i));
