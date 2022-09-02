@@ -231,12 +231,12 @@ static auto getSignalExtendedValueType(const G_Network& gnet, const G_Message& m
     }
     return extended_value_type;
 }
-static auto getSignalMultiplexerValues(const G_Network& gnet, const G_Signal& s)
+static auto getSignalMultiplexerValues(const G_Network& gnet, const std::string& s, const uint64_t m)
 {
     std::vector<std::unique_ptr<ISignalMultiplexerValue>> signal_multiplexer_values;
     for (const auto& gsmv : gnet.signal_multiplexer_values)
     {
-        if (gsmv.signal_name == s.name)
+        if (gsmv.signal_name == s && gsmv.message_id == m)
         {
             auto switch_name = gsmv.switch_name;
             std::vector<ISignalMultiplexerValue::Range> value_ranges;
@@ -263,7 +263,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
         auto extended_value_type = getSignalExtendedValueType(gnet, m, s);
         auto multiplexer_indicator = ISignal::EMultiplexer::NoMux;
         auto comment = getComment(gnet, m, s);
-        auto signal_multiplexer_values = getSignalMultiplexerValues(gnet, s);
+        auto signal_multiplexer_values = getSignalMultiplexerValues(gnet, s.name, m.id);
         uint64_t multiplexer_switch_value = 0;
         if (s.multiplexer_indicator)
         {
