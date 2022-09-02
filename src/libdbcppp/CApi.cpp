@@ -54,7 +54,7 @@ extern "C"
         case IAttributeDefinition::EObjectType::Node: return dbcppp_EObjectType::dbcppp_ObjectType_Node;
         case IAttributeDefinition::EObjectType::Message: return dbcppp_EObjectType::dbcppp_ObjectType_Message;
         case IAttributeDefinition::EObjectType::Signal: return dbcppp_EObjectType::dbcppp_ObjectType_Signal;
-        default: return dbcppp_EObjectType::dbcppp_ObjectType_EnvironmentVariable; 
+        default: return dbcppp_EObjectType::dbcppp_ObjectType_EnvironmentVariable;
         }
     }
     DBCPPP_API dbcppp_EAttributeValueType dbcppp_AttributeValueType(const dbcppp_Attribute* attribute)
@@ -88,7 +88,7 @@ extern "C"
         auto ai = reinterpret_cast<const AttributeImpl*>(attribute);
         return std::get<std::string>(ai->Value()).c_str();
     }
-    
+
     DBCPPP_API dbcppp_AttributeDefinition* dbcppp_AttributeDefinitionCreate(
           const char* name
         , dbcppp_EObjectType object_type
@@ -878,6 +878,31 @@ extern "C"
     {
         auto sigi = reinterpret_cast<const SignalImpl*>(sig);
         return sigi->MultiplexerSwitchValue();
+    }
+    DBCPPP_API uint64_t dbcppp_SignalMultiplexerValues_Size(const dbcppp_Signal* sig)
+    {
+        auto sigi = reinterpret_cast<const SignalImpl*>(sig);
+        return sigi->SignalMultiplexerValues_Size();
+    }
+    DBCPPP_API const dbcppp_SignalMultiplexerValue* dbcppp_SignalMultiplexerValues_Get(const dbcppp_Signal* sig, uint64_t i)
+    {
+        auto sigi = reinterpret_cast<const SignalImpl*>(sig);
+        return reinterpret_cast<const dbcppp_SignalMultiplexerValue*>(&sigi->SignalMultiplexerValues_Get(i));
+    }
+    DBCPPP_API const char* dbcppp_SignalMultiplexerValue_SwitchName(const dbcppp_SignalMultiplexerValue* mux_val)
+    {
+        auto sigi = reinterpret_cast<const ISignalMultiplexerValue*>(mux_val);
+        return sigi->SwitchName().c_str();
+    }
+    DBCPPP_API uint64_t dbcppp_SignalMultiplexerValue_ValueRanges_Size(const dbcppp_SignalMultiplexerValue* mux_val)
+    {
+        auto sigi = reinterpret_cast<const ISignalMultiplexerValue*>(mux_val);
+        return sigi->ValueRanges_Size();
+    }
+    DBCPPP_API const dbcppp_ValueRange* dbcppp_SignalMultiplexerValue_ValueRanges_Get(const dbcppp_SignalMultiplexerValue* mux_val, uint64_t i)
+    {
+        auto sigi = reinterpret_cast<const ISignalMultiplexerValue*>(mux_val);
+        return reinterpret_cast<const dbcppp_ValueRange*>(&sigi->ValueRanges_Get(i));
     }
     DBCPPP_API uint64_t dbcppp_SignalStartBit(const dbcppp_Signal* sig)
     {
