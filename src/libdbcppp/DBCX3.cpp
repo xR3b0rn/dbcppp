@@ -268,7 +268,7 @@ namespace dbcppp::DBCX3::Grammar
     
     static const auto attribute_default_def =
         (lexeme[(lit("BA_DEF_DEF_REL_") | lit("BA_DEF_DEF_")) >> omit[space]]) > attribute_name > attribute_value > ';';
-    static const auto attribute_value_def = double_ | signed_int | quoted_string;
+    static const auto attribute_value_def = signed_int | double_ | quoted_string;
     
     static const auto attribute_value_ent_def = 
             lexeme[lit("BA_") >> omit[skipper]]
