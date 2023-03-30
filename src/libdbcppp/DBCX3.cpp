@@ -267,14 +267,14 @@ namespace dbcppp::DBCX3::Grammar
     static const auto attribute_value_type_enum_def = (lit("ENUM") > (quoted_string % ','))[SetAttributeValuetypeEnum];
     
     static const auto attribute_default_def =
-        (lexeme[(lit("BA_DEF_DEF_REL_") | lit("BA_DEF_DEF_")) >> omit[space]]) > attribute_name > attribute_value > ';';
-    static const auto attribute_value_def = double_ | signed_int | quoted_string;
+        (lexeme[(lit("BA_DEF_DEF_REL_") | lit("BA_DEF_DEF_")) >> omit[space]]) > attribute_name > attribute_value;
+    static const auto attribute_value_def = (signed_int > ';') | (double_ > ';') | (quoted_string > ';') ;
     
     static const auto attribute_value_ent_def = 
             lexeme[lit("BA_") >> omit[skipper]]
         > (attribute_value_ent_network | attribute_value_ent_node
             | attribute_value_ent_message | attribute_value_ent_signal
-            | attribute_value_ent_env_var) > ';';
+            | attribute_value_ent_env_var);
     static const auto attribute_value_ent_network_def = attribute_name >> attribute_value;
     static const auto attribute_value_ent_node_def = attribute_name >> lit("BU_") > node_name > attribute_value;
     static const auto attribute_value_ent_message_def = attribute_name >> lit("BO_") > message_id > attribute_value;
