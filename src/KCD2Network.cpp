@@ -1,3 +1,4 @@
+#ifdef ENABLE_KCD
 #include <map>
 #include <memory>
 #include <vector>
@@ -412,3 +413,4 @@ std::map<std::string, std::unique_ptr<INetwork>> INetwork::LoadKCDFromIs(std::is
     KCD kcd(is);
     return std::move(kcd._networks);
 }
+#endif
