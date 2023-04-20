@@ -55,7 +55,7 @@ endif()
 
 # CREATE LIBRARY
 
-file(GLOB include "include/dbc++/*.h")
+file(GLOB include "include/dbcppp/*.h")
 file(GLOB headers "src/*.h")
 file(GLOB sources "src/*.cpp")
 
