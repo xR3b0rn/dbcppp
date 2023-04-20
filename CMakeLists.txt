@@ -4,7 +4,7 @@ project("libdbcppp" VERSION 3.8.0)
 
 # CONFIGURATION
 
-option(build_kcd "Enable support for KCD parsing" OFF)
+option(build_kcd "Enable support for KCD parsing" ON)
 option(build_tools "Build dbcppp utility application" ON)
 
 option(build_tests "Build tests" ON)
@@ -85,7 +85,7 @@ install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
-    PUBLIC_HEADER DESTINATION include/${PROJECT_NAME}
+    PUBLIC_HEADER DESTINATION include/dbcppp
 )
 
 
