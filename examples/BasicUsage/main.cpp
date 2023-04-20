@@ -55,7 +55,13 @@ int main()
         std::ifstream idbc("your.dbc");
         net = dbcppp::INetwork::LoadDBCFromIs(idbc);
     }
-    std::unordered_map<uint64_t, const dbcppp::IMessage*> messages;
+
+    if (net.get() == nullptr) {
+        std::cerr << "failed to parse!\n";
+        return -1;
+    }
+
+    std::unordered_map<uint64_t, const dbcppp::IMessage *> messages;
     for (const dbcppp::IMessage& msg : net->Messages())
     {
         messages.insert(std::make_pair(msg.Id(), &msg));
