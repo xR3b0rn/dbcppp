@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-#include "../../include/dbcppp/Node.h"
+#include "dbcppp/Node.h"
 #include "AttributeImpl.h"
 
 namespace dbcppp

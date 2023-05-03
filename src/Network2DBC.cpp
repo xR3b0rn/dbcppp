@@ -1,4 +1,4 @@
-#include "../../include/dbcppp/Network2Functions.h"
+#include "dbcppp/Network2Functions.h"
 #include "NetworkImpl.h"
 
 using namespace dbcppp;

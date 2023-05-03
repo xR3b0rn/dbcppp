@@ -1,6 +1,6 @@
 
 #include <boost/format.hpp>
-#include "../../include/dbcppp/Network2Functions.h"
+#include "dbcppp/Network2Functions.h"
 
 using namespace dbcppp;
 

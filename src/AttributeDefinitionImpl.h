@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../include/dbcppp/AttributeDefinition.h"
+#include "dbcppp/AttributeDefinition.h"
 
 namespace dbcppp
 {

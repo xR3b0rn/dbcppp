@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../include/dbcppp/BitTiming.h"
+#include "dbcppp/BitTiming.h"
 
 namespace dbcppp
 {

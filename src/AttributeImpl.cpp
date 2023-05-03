@@ -1,5 +1,5 @@
 #include "AttributeImpl.h"
-#include "../../include/dbcppp/Network.h"
+#include "dbcppp/Network.h"
 
 using namespace dbcppp;
 

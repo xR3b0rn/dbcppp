@@ -1,6 +1,6 @@
 #include <fstream>
 #include <iomanip>
-#include "../../include/dbcppp/Network.h"
+#include "dbcppp/Network.h"
 #include "NetworkImpl.h"
 
 using namespace dbcppp;
