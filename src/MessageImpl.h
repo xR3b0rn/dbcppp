@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../include/dbcppp/Message.h"
+#include "dbcppp/Message.h"
 #include "SignalImpl.h"
 #include "NodeImpl.h"
 #include "AttributeImpl.h"

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../include/dbcppp/Network.h"
+#include "dbcppp/Network.h"
 #include "BitTimingImpl.h"
 #include "ValueTableImpl.h"
 #include "MessageImpl.h"

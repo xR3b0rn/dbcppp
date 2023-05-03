@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cstdint>
-#include "../../include/dbcppp/SignalType.h"
+#include "dbcppp/SignalType.h"
 
 namespace dbcppp
 {

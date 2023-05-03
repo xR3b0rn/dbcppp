@@ -6,8 +6,8 @@
 
 #include <boost/variant.hpp>
 
-#include "../../include/dbcppp/Network.h"
-#include "../../include/dbcppp/CApi.h"
+#include "dbcppp/Network.h"
+#include "dbcppp/CApi.h"
 
 #include "DBCX3.h"
 

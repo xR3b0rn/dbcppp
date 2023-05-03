@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../include/dbcppp/EnvironmentVariable.h"
+#include "dbcppp/EnvironmentVariable.h"
 #include "NodeImpl.h"
 #include "AttributeImpl.h"
 #include "ValueEncodingDescriptionImpl.h"

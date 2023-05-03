@@ -2,7 +2,7 @@
 #pragma once
 
 #include <iostream>
-#include "../../include/dbcppp/Attribute.h"
+#include "dbcppp/Attribute.h"
 
 namespace dbcppp
 {

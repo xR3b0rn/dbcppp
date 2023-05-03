@@ -7,7 +7,7 @@
 #include <ostream>
 
 #include "Export.h"
-#include "../../include/dbcppp/Network.h"
+#include "dbcppp/Network.h"
 
 namespace dbcppp
 {

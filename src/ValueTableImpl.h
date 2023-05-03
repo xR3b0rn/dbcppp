@@ -5,7 +5,7 @@
 #include <optional>
 #include <functional>
 
-#include "../../include/dbcppp/ValueTable.h"
+#include "dbcppp/ValueTable.h"
 #include "SignalTypeImpl.h"
 #include "ValueEncodingDescriptionImpl.h"
 
