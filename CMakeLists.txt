@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 
-project("libdbcppp" VERSION 3.8.0)
+project("dbcppp" VERSION 3.8.0)
 
 # CONFIGURATION
 
+set(CMAKE_CXX_STANDARD 17)
 option(build_kcd "Enable support for KCD parsing" ON)
 option(build_tools "Build dbcppp utility application" ON)
 
@@ -12,10 +13,6 @@ option(build_examples "Build examples" ON)
 
 
 # DEPENDENCIES & Requirements
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_STATIC_LIBRARY_PREFIX "")
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 find_package(Boost)
 
@@ -74,6 +71,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/dbcppp>
     $<INSTALL_INTERFACE:include/dbcppp>
+    include/
 )
 
 # INSTALL LIBRARY
