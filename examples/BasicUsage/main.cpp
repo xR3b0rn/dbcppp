@@ -2,8 +2,8 @@
 #include <fstream>
 #include <unordered_map>
 
-#include "../../include/dbcppp/CApi.h"
-#include "../../include/dbcppp/Network.h"
+#include "dbcppp/CApi.h"
+#include "dbcppp/Network.h"
 
 // from uapi/linux/can.h
 using canid_t = uint32_t;

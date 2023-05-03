@@ -10,8 +10,8 @@
 
 #include <cxxopts.hpp>
 
-#include "../../include/dbcppp/Network.h"
-#include "../../include/dbcppp/Network2Functions.h"
+#include "dbcppp/Network.h"
+#include "dbcppp/Network2Functions.h"
 
 void print_help()
 {

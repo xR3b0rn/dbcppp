@@ -17,7 +17,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
-
 find_package(Boost)
 
 if(NOT Boost_FOUND)
@@ -49,7 +48,6 @@ if(build_kcd)
 
     add_subdirectory("third-party/libxmlmm")
     target_include_directories(libxmlmm PUBLIC third-party/libxmlmm/libxmlmm ${LIBXML2_INCLUDE_DIR})
-    # target_link_libraries(libxmlmm LibXml2)
 endif()
 
 
@@ -74,9 +72,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/dbcppp>
-    $<INSTALL_INTERFACE:include/dbcppp>
-    include/
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
 )
 
 # INSTALL LIBRARY
@@ -103,20 +100,6 @@ endif()
 if (build_examples)
   add_subdirectory(examples)
 endif()
-
-set(CMAKE_STATIC_LIBRARY_PREFIX "")
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-CONFIGURE_FILE(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-  IMMEDIATE @ONLY
-)
-
-ADD_CUSTOM_TARGET(uninstall
-  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-)
 
 # PACKAGE (useful for debugging install, use make package)
 
