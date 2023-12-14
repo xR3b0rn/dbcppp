@@ -380,6 +380,7 @@ void print_compiler_macros()
   PRINT_MACRO(__clang_minor__);
   PRINT_MACRO(__clang_version__);
   PRINT_MACRO(__clang_patchlevel__);
+  PRINT_MACRO(__apple_build_version__);
 
   // misc compilers not covered so far:
   PRINT_MACRO(__USLC__);
@@ -1088,6 +1089,7 @@ void print_boost_macros()
    PRINT_MACRO(BOOST_NO_CXX11);
    PRINT_MACRO(BOOST_NO_CXX11_ADDRESSOF);
    PRINT_MACRO(BOOST_NO_CXX11_ALIGNAS);
+   PRINT_MACRO(BOOST_NO_CXX11_ALIGNOF);
    PRINT_MACRO(BOOST_NO_CXX11_ALLOCATOR);
    PRINT_MACRO(BOOST_NO_CXX11_ATOMIC_SMART_PTR);
    PRINT_MACRO(BOOST_NO_CXX11_AUTO_DECLARATIONS);
@@ -1166,6 +1168,7 @@ void print_boost_macros()
    PRINT_MACRO(BOOST_NO_CXX14_STD_EXCHANGE);
    PRINT_MACRO(BOOST_NO_CXX14_VARIABLE_TEMPLATES);
    PRINT_MACRO(BOOST_NO_CXX17);
+   PRINT_MACRO(BOOST_NO_CXX17_DEDUCTION_GUIDES);
    PRINT_MACRO(BOOST_NO_CXX17_FOLD_EXPRESSIONS);
    PRINT_MACRO(BOOST_NO_CXX17_HDR_ANY);
    PRINT_MACRO(BOOST_NO_CXX17_HDR_CHARCONV);
@@ -1181,6 +1184,30 @@ void print_boost_macros()
    PRINT_MACRO(BOOST_NO_CXX17_STD_APPLY);
    PRINT_MACRO(BOOST_NO_CXX17_STD_INVOKE);
    PRINT_MACRO(BOOST_NO_CXX17_STRUCTURED_BINDINGS);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_BARRIER);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_BIT);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_COMPARE);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_CONCEPTS);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_COROUTINE);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_FORMAT);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_LATCH);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_NUMBERS);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_RANGES);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_SEMAPHORE);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_SOURCE_LOCATION);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_SPAN);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_STOP_TOKEN);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_SYNCSTREAM);
+   PRINT_MACRO(BOOST_NO_CXX20_HDR_VERSION);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_EXPECTED);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_FLAT_MAP);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_FLAT_SET);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_GENERATOR);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_MDSPAN);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_PRINT);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_SPANSTREAM);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_STACKTRACE);
+   PRINT_MACRO(BOOST_NO_CXX23_HDR_STDFLOAT);
    PRINT_MACRO(BOOST_NO_CXX98_BINDERS);
    PRINT_MACRO(BOOST_NO_CXX98_FUNCTION_BASE);
    PRINT_MACRO(BOOST_NO_CXX98_RANDOM_SHUFFLE);
@@ -1243,13 +1270,33 @@ void print_boost_macros()
    PRINT_MACRO(BOOST_NO_USING_DECLARATION_OVERLOADS_FROM_TYPENAME_BASE);
    PRINT_MACRO(BOOST_NO_USING_TEMPLATE);
    PRINT_MACRO(BOOST_NO_VOID_RETURNS);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
    // END GENERATED BLOCK
 
    PRINT_MACRO(BOOST_CXX_VERSION);
    PRINT_MACRO(BOOST_INTEL);
    PRINT_MACRO(BOOST_MSVC);
    PRINT_MACRO(BOOST_GCC);
+   PRINT_MACRO(BOOST_CLANG);
+   PRINT_MACRO(BOOST_CLANG_VERSION);
    PRINT_MACRO(BOOST_LIBSTDCXX_VERSION);
+   PRINT_MACRO(BOOST_MSSTL_VERSION);
    PRINT_MACRO(BOOST_STD_EXTENSION_NAMESPACE);
    PRINT_MACRO(BOOST_UNREACHABLE_RETURN(0));
    PRINT_MACRO(BOOST_CONSTEXPR);
@@ -1270,6 +1317,9 @@ void print_boost_macros()
 #ifdef __has_include
 #if __has_include(<version>)
 #  include <version>
+#endif
+#if __has_include(<atomic>) && (BOOST_CXX_VERSION > 201100)
+#  include <atomic>
 #endif
 #endif
 
@@ -1327,9 +1377,13 @@ void print_sd6_macros()
     PRINT_MACRO(__cpp_lib_erase_if);
     PRINT_MACRO(__cpp_lib_exchange_function);
     PRINT_MACRO(__cpp_lib_execution);
+    PRINT_MACRO(__cpp_lib_expected);
     PRINT_MACRO(__cpp_lib_filesystem);
+    PRINT_MACRO(__cpp_lib_flat_map);
+    PRINT_MACRO(__cpp_lib_flat_set);
     PRINT_MACRO(__cpp_lib_format);
     PRINT_MACRO(__cpp_lib_gcd_lcm);
+    PRINT_MACRO(__cpp_lib_generator);
     PRINT_MACRO(__cpp_lib_generic_associative_lookup);
     PRINT_MACRO(__cpp_lib_generic_unordered_lookup);
     PRINT_MACRO(__cpp_lib_hardware_interference_size);
@@ -1362,6 +1416,7 @@ void print_sd6_macros()
     PRINT_MACRO(__cpp_lib_map_try_emplace);
     PRINT_MACRO(__cpp_lib_math_constants);
     PRINT_MACRO(__cpp_lib_math_special_functions);
+    PRINT_MACRO(__cpp_lib_mdspan);
     PRINT_MACRO(__cpp_lib_memory_resource);
     PRINT_MACRO(__cpp_lib_node_extract);
     PRINT_MACRO(__cpp_lib_nonmember_container_access);
@@ -1370,6 +1425,7 @@ void print_sd6_macros()
     PRINT_MACRO(__cpp_lib_optional);
     PRINT_MACRO(__cpp_lib_parallel_algorithm);
     PRINT_MACRO(__cpp_lib_polymorphic_allocator);
+    PRINT_MACRO(__cpp_lib_print);
     PRINT_MACRO(__cpp_lib_quoted_string_io);
     PRINT_MACRO(__cpp_lib_ranges);
     PRINT_MACRO(__cpp_lib_raw_memory_algorithms);
@@ -1387,7 +1443,9 @@ void print_sd6_macros()
     PRINT_MACRO(__cpp_lib_smart_ptr_for_overwrite);
     PRINT_MACRO(__cpp_lib_source_location);
     PRINT_MACRO(__cpp_lib_span);
+    PRINT_MACRO(__cpp_lib_spanstream);
     PRINT_MACRO(__cpp_lib_ssize);
+    PRINT_MACRO(__cpp_lib_stacktrace);
     PRINT_MACRO(__cpp_lib_starts_ends_with);
     PRINT_MACRO(__cpp_lib_string_udls);
     PRINT_MACRO(__cpp_lib_string_view);
@@ -1471,6 +1529,18 @@ void print_sd6_macros()
     // C++98:
     PRINT_MACRO(__cpp_rtti);
     PRINT_MACRO(__cpp_exceptions);
+
+    // <atomic>:
+    PRINT_MACRO(ATOMIC_INT_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_SHORT_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_LONG_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_LLONG_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_POINTER_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_CHAR_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_WCHAR_T_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_CHAR8_T_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_CHAR16_T_LOCK_FREE);
+    PRINT_MACRO(ATOMIC_CHAR32_T_LOCK_FREE);
 }
 
 void print_separator()
