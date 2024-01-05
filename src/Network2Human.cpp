@@ -22,39 +22,33 @@ bool bit_is_inbetween(const ISignal& sig, std::size_t i_bit, uint64_t switch_val
     }
     case ISignal::EByteOrder::BigEndian:
     {
+        std::vector<size_t> match_bits;
         std::size_t start = sig.StartBit();
         std::size_t n = sig.BitSize();
-        while (n)
-        {
-            if (start == i_bit)
+        while (n-- > 0) {
+            match_bits.push_back(start);
+            if (start > 15 && (start + 1) % 8 == 0)
             {
-                return true;
-            }
-            if (start % 8 == 0)
-            {
-                start += 15;
+                start -= 15;
             }
             else
             {
-                start--;
+                start++;
             }
-            n--;
         }
-        return true;
+        if (std::find(match_bits.begin(), match_bits.end(), i_bit) != match_bits.end()) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
     }
     return false;
 }
 bool is_start_bit(const ISignal& sig, std::size_t i_bit)
 {
-    switch (sig.ByteOrder())
-    {
-    case ISignal::EByteOrder::LittleEndian:
-        return sig.StartBit() == i_bit;
-    case ISignal::EByteOrder::BigEndian:
-        break;
-    }
-    return false;
+    return sig.StartBit() == i_bit;
 }
 bool is_end_bit(const ISignal& sig, std::size_t i_bit)
 {
@@ -63,7 +57,27 @@ bool is_end_bit(const ISignal& sig, std::size_t i_bit)
     case ISignal::EByteOrder::LittleEndian:
         return sig.StartBit() + sig.BitSize() - 1 == i_bit;
     case ISignal::EByteOrder::BigEndian:
-        break;
+    {
+        std::size_t start = sig.StartBit();
+        std::size_t n = sig.BitSize();
+        std::size_t end = start;
+        if (n > 0) {
+            while (--n > 0) {
+                if (end > 15 && (end + 1) % 8 == 0)
+                {
+                    end -= 15;
+                }
+                else
+                {
+                    end++;
+                }
+            }
+            return end == i_bit;
+        }
+        else {
+            return false;
+        }
+    }
     }
     return false;
 }
