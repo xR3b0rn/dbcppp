@@ -30,11 +30,11 @@ ldconfig # on Unix-systems only
 ### dbc2
 ```
 # generate C source from DBC/KCD
-dbcppp dbc2 --dbc=file.dbc --format=C
+dbcparser dbc2 --dbc=file.dbc --format=C
 # beauty or merge DBC/KCD
-dbcppp dbc2 --dbc=file1.dbc --dbc=file2.kcd --format=DBC
+dbcparser dbc2 --dbc=file1.dbc --dbc=file2.kcd --format=DBC
 # print DBC/KCD in human readable format
-dbcppp dbc2 --dbc=file1.dbc --dbc=file2.kcd --format=human
+dbcparser dbc2 --dbc=file1.dbc --dbc=file2.kcd --format=human
 ```
 ### decode
 [cantools](https://github.com/eerimoq/cantools) like decoding:
