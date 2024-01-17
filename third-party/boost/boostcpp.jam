@@ -206,8 +206,10 @@ rule tag ( name : type ? : property-set )
         # version suffix is not needed -- the linker expects the
         # libFoo.1.2.3.dylib format. AIX linkers do not accept version suffixes
         # either. Pgi compilers can not accept a library with version suffix.
+        # For android, if we link to libFoo.so, which is a soft link to libFoo.so.1.2.3,
+        # the android studio will only pack the former into the final apk.
         if $(type) = SHARED_LIB &&
-          ! [ $(property-set).get <target-os> ] in windows cygwin darwin aix &&
+          ! [ $(property-set).get <target-os> ] in windows cygwin darwin aix android &&
           ! [ $(property-set).get <toolset> ] in pgi
         {
             result = $(result).$(BOOST_VERSION)  ;
@@ -278,9 +280,24 @@ rule declare_install_and_stage_proper_targets ( libraries * )
 #
 ################################################################################
 
+rule emit-shared-static-warning ( )
+{
+    if ! $(.shared-static-warning-emitted)
+    {
+        ECHO "" ;
+        ECHO "warning: The configuration link=shared, runtime-link=static is disabled" ;
+        ECHO "warning: by default as being too dangerous to use, and will not be built." ;
+        ECHO "warning: To enable it, use --allow-shared-static." ;
+        ECHO "" ;
+
+        .shared-static-warning-emitted = 1 ;
+    }
+}
+
 class top-level-target : alias-target-class
 {
     import modules ;
+    import boostcpp ;
 
     rule __init__ ( name : project : sources * : requirements *
         : default-build * : usage-requirements * )
@@ -373,21 +390,33 @@ class top-level-target : alias-target-class
             local expanded = [ targets.apply-default-build $(property-set)
                 : $(build-type-set) ] ;
 
-            # Filter inappopriate combinations.
+            # Filter inappropriate combinations.
+
             local filtered ;
+            local skipped ;
+
+            local argv = [ modules.peek : ARGV ] ;
+
             for local p in $(expanded)
             {
                 # See comment in handle-static-runtime regarding this logic.
                 if [ $(p).get <link> ] = shared
                     && [ $(p).get <runtime-link> ] = static
                     && [ $(p).get <toolset> ] != cw
+                    && ! --allow-shared-static in $(argv)
                 {
                     # Skip this.
+                    skipped += $(p) ;
                 }
                 else
                 {
                     filtered += $(p) ;
                 }
+            }
+
+            if $(expanded) = $(skipped)
+            {
+                boostcpp.emit-shared-static-warning ;
             }
 
             return [ build-multiple $(filtered) ] ;
@@ -594,7 +623,7 @@ rule deduce-address-model ( properties * )
     if $(result)
     {
         # Normally, returning composite feature here is equivalent to forcing
-        # consituent properties as well. But we only want to indicate toolset
+        # constituent properties as well. But we only want to indicate toolset
         # deduced default, so also pick whatever address-model is explicitly
         # specified, if any.
         result = <deduced-address-model>$(result) [ property.select <address-model> : $(properties) ] ;
@@ -607,7 +636,7 @@ rule address-model ( )
     return <conditional>@boostcpp.deduce-address-model ;
 }
 
-local deducable-architectures = arm mips1 power riscv s390x sparc x86 combined ;
+local deducable-architectures = arm loongarch mips power riscv s390x sparc x86 combined ;
 feature.feature deduced-architecture : $(deducable-architectures) : propagated optional composite hidden ;
 for a in $(deducable-architectures)
 {
@@ -618,10 +647,11 @@ rule deduce-architecture ( properties * )
 {
     local result ;
     local filtered = [ toolset-properties $(properties) ] ;
-    local names = arm mips1 power riscv s390x sparc x86 combined ;
+    local names = arm loongarch mips power riscv s390x sparc x86 combined ;
     local idx = [ configure.find-builds "default architecture" : $(filtered)
         : /boost/architecture//arm
-        : /boost/architecture//mips1
+        : /boost/architecture//loongarch
+        : /boost/architecture//mips
         : /boost/architecture//power
         : /boost/architecture//riscv
         : /boost/architecture//s390x

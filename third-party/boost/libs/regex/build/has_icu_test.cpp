@@ -28,6 +28,10 @@ void print_error(UErrorCode err, const char* func)
 
 int main()
 {
+#ifdef ICU_DATA_DIR
+   ::u_setDataDirectory(ICU_DATA_DIR);
+#endif
+
    // To detect possible binary mismatches between the installed ICU build, and whatever
    // C++ std lib's we're using, we need to:
    // * Make sure we call ICU C++ API's

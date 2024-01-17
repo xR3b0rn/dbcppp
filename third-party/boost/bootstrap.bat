@@ -12,7 +12,7 @@ ECHO Building Boost.Build engine
 if exist ".\tools\build\src\engine\b2.exe" del tools\build\src\engine\b2.exe
 pushd tools\build\src\engine
 
-call .\build.bat
+call .\build.bat %*
 @ECHO OFF
 
 popd
@@ -34,7 +34,7 @@ SET TOOLSET=msvc
 
 IF "%1"=="gcc" SET TOOLSET=gcc
 IF "%1"=="clang" SET TOOLSET=clang
-
+IF "%1"=="borland" SET TOOLSET=embarcadero
 IF "%1"=="vc71" SET TOOLSET=msvc : 7.1
 IF "%1"=="vc8" SET TOOLSET=msvc : 8.0
 IF "%1"=="vc9" SET TOOLSET=msvc : 9.0
@@ -44,6 +44,7 @@ IF "%1"=="vc12" SET TOOLSET=msvc : 12.0
 IF "%1"=="vc14" SET TOOLSET=msvc : 14.0
 IF "%1"=="vc141" SET TOOLSET=msvc : 14.1
 IF "%1"=="vc142" SET TOOLSET=msvc : 14.2
+IF "%1"=="vc143" SET TOOLSET=msvc : 14.3
 
 ECHO.
 ECHO Generating Boost.Build configuration in project-config.jam for %TOOLSET%...
