@@ -1,4 +1,4 @@
-
+#include <algorithm>
 #include "SignalGroupImpl.h"
 
 using namespace dbcppp;

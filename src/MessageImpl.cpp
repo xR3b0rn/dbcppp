@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "MessageImpl.h"
 
 using namespace dbcppp;

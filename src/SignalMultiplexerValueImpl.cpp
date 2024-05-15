@@ -1,4 +1,4 @@
-
+#include <algorithm>
 #include "SignalMultiplexerValueImpl.h"
 
 using namespace dbcppp;
