@@ -7,7 +7,7 @@ using namespace dbcppp;
 
 TEST_CASE("API Test: AttributeDefinition", "[]")
 {
-    constexpr char* test_dbc =
+    constexpr const char* test_dbc =
         "VERSION \"\"\n"
         "NS_ :\n"
         "BS_:\n"
@@ -44,7 +44,7 @@ TEST_CASE("API Test: AttributeDefinition", "[]")
 }
 TEST_CASE("API Test: BitTiming", "[]")
 {
-    constexpr char* test_dbc =
+    constexpr const char* test_dbc =
         "VERSION \"\"\n"
         "NS_ :\n"
         "BS_: 1 : 2, 3\n"
@@ -74,7 +74,7 @@ TEST_CASE("API Test: BitTiming", "[]")
 }
 TEST_CASE("API Test: EnvironmentVariable", "[]")
 {
-    constexpr char* test_dbc =
+    constexpr const char* test_dbc =
         "VERSION \"\"\n"
         "NS_ :\n"
         "BS_:\n"
@@ -122,7 +122,7 @@ TEST_CASE("API Test: EnvironmentVariable", "[]")
 }
 TEST_CASE("API Test: Signal", "[]")
 {
-    constexpr char* test_dbc =
+    constexpr const char* test_dbc =
         "VERSION \"\"\n"
         "NS_ :\n"
         "BS_: 1 : 2, 3\n"
@@ -211,7 +211,7 @@ TEST_CASE("API Test: Signal", "[]")
 }
 TEST_CASE("API Test: Message", "[]")
 {
-    constexpr char* test_dbc =
+    constexpr const char* test_dbc =
         "VERSION \"\"\n"
         "NS_ :\n"
         "BS_: 1 : 2, 3\n"
