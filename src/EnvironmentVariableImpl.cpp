@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "EnvironmentVariableImpl.h"
 
 using namespace dbcppp;

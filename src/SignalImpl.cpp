@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <limits>
 #include "Helper.h"
 #include "SignalImpl.h"

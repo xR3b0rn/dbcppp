@@ -1,4 +1,4 @@
-
+#include <algorithm>
 #include "dbcppp/Network.h"
 #include "ValueTableImpl.h"
 
