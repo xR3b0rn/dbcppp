@@ -3,6 +3,8 @@
 #include <fstream>
 #include <variant>
 #include <sstream>
+#include <unordered_map>
+#include <cassert>
 
 #include <boost/variant.hpp>
 
@@ -13,6 +15,49 @@
 
 using namespace dbcppp;
 using namespace dbcppp::DBCX3::AST;
+
+namespace
+{
+using AttributeList = std::vector<variant_attribute_t const*>;
+using Description = boost::variant<G_ValueDescriptionSignal, G_ValueDescriptionEnvVar>;
+
+struct SignalCache
+{
+    AttributeList Attributes;
+    Description const* Description_ = nullptr;
+    variant_comment_t const* Comment = nullptr;
+};
+
+struct MessageCache
+{
+    std::unordered_map<std::string_view, SignalCache> Signals;
+    AttributeList Attributes;
+    variant_comment_t const* Comment = nullptr;
+};
+
+struct EnvVarCache
+{
+    AttributeList Attributes;
+    Description const* Description_;
+    variant_comment_t const* Comment = nullptr;
+};
+
+struct NodeCache
+{
+    AttributeList Attributes;
+    variant_comment_t const* Comment = nullptr;
+};
+
+struct Cache
+{
+    AttributeList NetworkAttributes;
+    variant_comment_t const* NetworkComment = nullptr;
+    std::unordered_map<std::string_view, EnvVarCache> EnvVars;
+    std::unordered_map<std::string_view, NodeCache> Nodes;
+    std::unordered_map<uint64_t, MessageCache> Messages;
+};
+
+} // anon
 
 static auto getVersion(const G_Network& gnet)
 {
@@ -113,103 +158,139 @@ auto boost_variant_to_std_variant(const boost::variant<Args...>& old)
     return new_;
 }
 
-static auto getAttributeValues(const G_Network& gnet, const G_Node& n)
+inline auto boost_variant_to_std_variant(variant_attr_value_t const& attr)
+{
+    IAttribute::value_t value;
+
+    switch (attr.which()) {
+    case 0: {
+        IAttribute::value_t v(std::in_place_type<int64_t>, boost::get<int64_t>(attr));
+        value.swap(v);
+    } break;
+    case 1: {
+        IAttribute::value_t v(std::in_place_type<double>, boost::get<double>(attr));
+        value.swap(v);
+    } break;
+    case 2: {
+        IAttribute::value_t v(std::in_place_type<std::string>, boost::get<std::string>(attr));
+        value.swap(v);
+    } break;
+    default:
+        assert(false && "Unhandled variant member");
+        break;
+    }
+
+    return value;
+}
+
+static auto getAttributeValues(const G_Network& gnet, const G_Node& n, Cache const& cache)
 {
     std::vector<std::unique_ptr<IAttribute>> attribute_values;
-    for (const variant_attribute_t& av : gnet.attribute_values)
-    {
-        auto av_ = boost_variant_to_std_variant(av);
-        if (auto pav = std::get_if<G_AttributeNode>(&av_); pav && pav->node_name == n.name)
-        {
-            auto name = pav->attribute_name;
-            auto value = boost_variant_to_std_variant(pav->value);
+
+    auto node_it = cache.Nodes.find(n.name);
+
+    if (node_it != cache.Nodes.end()) {
+        attribute_values.reserve(node_it->second.Attributes.size());
+
+        for (auto av : node_it->second.Attributes) {
+            auto const& attr = boost::get<G_AttributeNode>(*av);
+            auto name = attr.attribute_name;
+            auto value{boost_variant_to_std_variant(attr.value)};
             auto attribute = IAttribute::Create(std::move(name), IAttributeDefinition::EObjectType::Node, std::move(value));
-            attribute_values.push_back(std::move(attribute));
+            attribute_values.emplace_back(std::move(attribute));
         }
     }
+
     return attribute_values;
 }
-static auto getComment(const G_Network& gnet, const G_Node& n)
+static auto getComment(const G_Network& gnet, const G_Node& n, Cache const& cache)
 {
     std::string comment;
-    auto iter_comment = std::find_if(gnet.comments.begin(), gnet.comments.end(),
-        [&](const auto& c)
-        {
-            auto c_ = boost_variant_to_std_variant(c.comment);
-            auto pcn = std::get_if<G_CommentNode>(&c_);
-            return pcn && pcn->node_name == n.name;
-        });
-    if (iter_comment != gnet.comments.end())
-    {
-        auto comment_ = boost_variant_to_std_variant(iter_comment->comment);
-        comment = std::get<G_CommentNode>(comment_).comment;
+    auto node_it = cache.Nodes.find(n.name);
+
+    if (node_it != cache.Nodes.end()) {
+        if (node_it->second.Comment) {
+            comment = boost::get<G_CommentNode>(*node_it->second.Comment).comment;
+        }
     }
+
     return comment;
 }
-static auto getNodes(const G_Network& gnet)
+static auto getNodes(const G_Network& gnet, Cache const& cache)
 {
     std::vector<std::unique_ptr<INode>> nodes;
     for (const auto& n : gnet.nodes)
     {
-        auto comment = getComment(gnet, n);
-        auto attribute_values = getAttributeValues(gnet, n);
+        auto comment = getComment(gnet, n, cache);
+        auto attribute_values = getAttributeValues(gnet, n, cache);
         auto nn = INode::Create(std::string(n.name), std::move(comment), std::move(attribute_values));
         nodes.push_back(std::move(nn));
     }
     return nodes;
 }
-static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const G_Signal& s)
+static auto getAttributeValues(const G_Network& gnet, const G_Message& m, const G_Signal& s, Cache const& cache)
 {
     std::vector<std::unique_ptr<IAttribute>> attribute_values;
-    for (const auto& vav : gnet.attribute_values)
-    {
-        auto vav_ = boost_variant_to_std_variant(vav);
-        if (auto pas = std::get_if<G_AttributeSignal>(&vav_))
-        {
-            const auto& av = *pas;
-            if (av.message_id == m.id && av.signal_name == s.name)
+    auto const message_it = cache.Messages.find(m.id);
+
+    if (message_it != cache.Messages.end()) {
+        auto const signal_it = message_it->second.Signals.find(s.name);
+
+        if (signal_it != message_it->second.Signals.end()) {
+            attribute_values.reserve(signal_it->second.Attributes.size());
+
+            for (auto av : signal_it->second.Attributes)
             {
-                auto value = boost_variant_to_std_variant(av.value);
-                auto attribute = IAttribute::Create(std::string(av.attribute_name), IAttributeDefinition::EObjectType::Signal, std::move(value));
-                attribute_values.push_back(std::move(attribute));
+                auto const& attr = boost::get<G_AttributeSignal>(*av);
+                auto value{boost_variant_to_std_variant(attr.value)};
+                auto attribute = IAttribute::Create(std::string(attr.attribute_name), IAttributeDefinition::EObjectType::Signal, std::move(value));
+                attribute_values.emplace_back(std::move(attribute));
             }
         }
+
     }
+
     return attribute_values;
 }
-static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, const G_Signal& s)
+static auto getValueDescriptions(const G_Network& gnet, const G_Message& m, const G_Signal& s, Cache const& cache)
 {
     std::vector<std::unique_ptr<IValueEncodingDescription>> value_descriptions;
-    for (const auto& vds : gnet.value_descriptions_sig_env_var)
-    {
-        auto vds_description_ = boost_variant_to_std_variant(vds.description);
-        if (auto pvds = std::get_if<G_ValueDescriptionSignal>(&vds_description_);
-            pvds && pvds->message_id == m.id && pvds->signal_name == s.name)
-        {
-            auto vds = std::get<G_ValueDescriptionSignal>(vds_description_).value_descriptions;
-            for (const auto& vd : vds)
-            {
-                auto desc = vd.description;
-                auto pvd = IValueEncodingDescription::Create(vd.value, std::move(desc));
-                value_descriptions.push_back(std::move(pvd));
+    auto const message_it = cache.Messages.find(m.id);
+
+    if (message_it != cache.Messages.end()) {
+        auto const signal_it = message_it->second.Signals.find(s.name);
+
+        if (signal_it != message_it->second.Signals.end()) {
+            if (signal_it->second.Description_) {
+                auto const& vds = boost::get<G_ValueDescriptionSignal>(*signal_it->second.Description_).value_descriptions;
+
+                value_descriptions.reserve(vds.size());
+
+                for (const auto& vd : vds)
+                {
+                    auto desc = vd.description;
+                    auto pvd = IValueEncodingDescription::Create(vd.value, std::move(desc));
+                    value_descriptions.push_back(std::move(pvd));
+                }
             }
-            break;
         }
     }
     return value_descriptions;
 }
-static auto getComment(const G_Network& gnet, const G_Message& m, const G_Signal& s)
+static auto getComment(const G_Network& gnet, const G_Message& m, const G_Signal& s, Cache const& cache)
 {
     std::string comment;
-    for (const auto& c : gnet.comments)
-    {
-        auto c_ = boost_variant_to_std_variant(c.comment);
-        if (auto pcs = std::get_if<G_CommentSignal>(&c_);
-            pcs && pcs->message_id == m.id && pcs->signal_name == s.name)
-        {
-            comment = std::get<G_CommentSignal>(c_).comment;
-            break;
+    auto message_it = cache.Messages.find(m.id);
+
+    if (message_it != cache.Messages.end()) {
+        auto signal_it = message_it->second.Signals.find(s.name);
+
+        if (signal_it != message_it->second.Signals.end()) {
+            if (signal_it->second.Comment) {
+                comment = boost::get<G_CommentSignal>(*signal_it->second.Comment).comment;
+            }
         }
+
     }
     return comment;
 }
@@ -252,17 +333,20 @@ static auto getSignalMultiplexerValues(const G_Network& gnet, const std::string&
     }
     return signal_multiplexer_values;
 }
-static auto getSignals(const G_Network& gnet, const G_Message& m)
+static auto getSignals(const G_Network& gnet, const G_Message& m, Cache const& cache)
 {
     std::vector<std::unique_ptr<ISignal>> signals;
+
+    signals.reserve(m.signals.size());
+
     for (const G_Signal& s : m.signals)
     {
         std::vector<std::string> receivers;
-        auto attribute_values = getAttributeValues(gnet, m, s);
-        auto value_descriptions = getValueDescriptions(gnet, m, s);
+        auto attribute_values = getAttributeValues(gnet, m, s, cache);
+        auto value_descriptions = getValueDescriptions(gnet, m, s, cache);
         auto extended_value_type = getSignalExtendedValueType(gnet, m, s);
         auto multiplexer_indicator = ISignal::EMultiplexer::NoMux;
-        auto comment = getComment(gnet, m, s);
+        auto comment = getComment(gnet, m, s, cache);
         auto signal_multiplexer_values = getSignalMultiplexerValues(gnet, s.name, m.id);
         uint64_t multiplexer_switch_value = 0;
         if (s.multiplexer_indicator)
@@ -279,9 +363,12 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
                 multiplexer_switch_value = std::atoi(value.c_str());
             }
         }
+
+        receivers.reserve(s.receivers.size());
+
         for (const auto& n : s.receivers)
         {
-            receivers.push_back(n);
+            receivers.emplace_back(n);
         }
 
         auto ns = ISignal::Create(
@@ -324,7 +411,7 @@ static auto getSignals(const G_Network& gnet, const G_Message& m)
             std::cout << "Warning: Signal '" << m.name << "::" << s.name << "'"
                 << " This warning appears when a signal uses type double but the system this programm is running on does not uses IEEE 754 encoding for doubles." << std::endl;
         }
-        signals.push_back(std::move(ns));
+        signals.emplace_back(std::move(ns));
     }
     return signals;
 }
@@ -345,36 +432,32 @@ static auto getMessageTransmitters(const G_Network& gnet, const G_Message& m)
     }
     return message_transmitters;
 }
-static auto getAttributeValues(const G_Network& gnet, const G_Message& m)
+static auto getAttributeValues(const G_Network& gnet, const G_Message& m, Cache const& cache)
 {
     std::vector<std::unique_ptr<IAttribute>> attribute_values;
-    for (const auto& vav : gnet.attribute_values)
-    {
-        auto vav_ = boost_variant_to_std_variant(vav);
-        if (auto pam = std::get_if<G_AttributeMessage>(&vav_))
-        {
-            const auto& av = *pam;
-            if (av.message_id == m.id)
-            {
-                auto value = boost_variant_to_std_variant(av.value);
-                auto attribute = IAttribute::Create(std::string(av.attribute_name), IAttributeDefinition::EObjectType::Message, std::move(value));
-                attribute_values.push_back(std::move(attribute));
-            }
+
+    auto message_it = cache.Messages.find(m.id);
+
+    if (message_it != cache.Messages.end()) {
+        attribute_values.reserve(message_it->second.Attributes.size());
+
+        for (auto av: message_it->second.Attributes) {
+            auto const& attr = boost::get<G_AttributeMessage>(*av);
+            auto value{boost_variant_to_std_variant(attr.value)};
+            auto attribute = IAttribute::Create(std::string(attr.attribute_name), IAttributeDefinition::EObjectType::Message, std::move(value));
+            attribute_values.emplace_back(std::move(attribute));
         }
     }
     return attribute_values;
 }
-static auto getComment(const G_Network& gnet, const G_Message& m)
+static auto getComment(const G_Network& gnet, const G_Message& m, Cache const& cache)
 {
     std::string comment;
-    for (const auto& c : gnet.comments)
-    {
-        auto c_ = boost_variant_to_std_variant(c.comment);
-        if (auto pcm = std::get_if<G_CommentMessage>(&c_);
-            pcm && pcm->message_id == m.id)
-        {
-            comment = std::get<G_CommentMessage>(c_).comment;
-            break;
+    auto message_it = cache.Messages.find(m.id);
+
+    if (message_it != cache.Messages.end()) {
+        if (message_it->second.Comment) {
+            comment = boost::get<G_CommentMessage>(*message_it->second.Comment).comment;
         }
     }
     return comment;
@@ -398,15 +481,18 @@ static auto getSignalGroups(const G_Network& gnet, const G_Message& m)
     }
     return signal_groups;
 }
-static auto getMessages(const G_Network& gnet)
+static auto getMessages(const G_Network& gnet, Cache const& cache)
 {
     std::vector<std::unique_ptr<IMessage>> messages;
+
+    messages.reserve(cache.Messages.size());
+
     for (const auto& m : gnet.messages)
     {
         auto message_transmitters = getMessageTransmitters(gnet, m);
-        auto signals = getSignals(gnet, m);
-        auto attribute_values = getAttributeValues(gnet, m);
-        auto comment = getComment(gnet, m);
+        auto signals = getSignals(gnet, m, cache);
+        auto attribute_values = getAttributeValues(gnet, m, cache);
+        auto comment = getComment(gnet, m, cache);
         auto signal_groups = getSignalGroups(gnet, m);
         auto msg = IMessage::Create(
               m.id
@@ -422,66 +508,63 @@ static auto getMessages(const G_Network& gnet)
         {
             std::cout << "Warning: Message " << msg->Name() << " does have mux value but no mux signal!" << std::endl;
         }
-        messages.push_back(std::move(msg));
+        messages.emplace_back(std::move(msg));
     }
     return messages;
 }
-static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVariable& ev)
+static auto getValueDescriptions(const G_Network& gnet, const G_EnvironmentVariable& ev, Cache const& cache)
 {
     std::vector<std::unique_ptr<IValueEncodingDescription>> value_descriptions;
-    for (const auto& vds : gnet.value_descriptions_sig_env_var)
-    {
-        auto vds_description = boost_variant_to_std_variant(vds.description);
-        if (auto pvde = std::get_if<G_ValueDescriptionEnvVar>(&vds_description);
-            pvde && pvde->env_var_name == ev.name)
-        {
-            auto vds = std::get<G_ValueDescriptionEnvVar>(vds_description).value_descriptions;
+    auto env_it = cache.EnvVars.find(ev.name);
+
+    if (env_it != cache.EnvVars.end()) {
+        if (env_it->second.Description_) {
+            auto const& vds = boost::get<G_ValueDescriptionEnvVar>(*env_it->second.Description_).value_descriptions;
+
+            value_descriptions.reserve(vds.size());
+
             for (const auto& vd : vds)
             {
                 auto desc = vd.description;
                 auto pvd = IValueEncodingDescription::Create(vd.value, std::move(desc));
                 value_descriptions.push_back(std::move(pvd));
             }
-            break;
         }
     }
     return value_descriptions;
 }
-static auto getAttributeValues(const G_Network& gnet, const G_EnvironmentVariable& ev)
+static auto getAttributeValues(const G_Network& gnet, const G_EnvironmentVariable& ev, const Cache& cache)
 {
     std::vector<std::unique_ptr<IAttribute>> attribute_values;
-    for (const auto& vav : gnet.attribute_values)
-    {
-        auto vav_ = boost_variant_to_std_variant(vav);
-        if (auto paev = std::get_if<G_AttributeEnvVar>(&vav_))
-        {
-            const auto& av = *paev;
-            if (av.env_var_name == ev.name)
-            {
-                auto value = boost_variant_to_std_variant(av.value);
-                auto attribute = IAttribute::Create(std::string(av.attribute_name), IAttributeDefinition::EObjectType::EnvironmentVariable, std::move(value));
-                attribute_values.push_back(std::move(attribute));
-            }
+
+    auto env_it = cache.EnvVars.find(ev.name);
+
+    if (env_it != cache.EnvVars.end()) {
+        attribute_values.reserve(env_it->second.Attributes.size());
+
+        for (auto av : env_it->second.Attributes) {
+            auto const& attr = boost::get<G_AttributeEnvVar>(*av);
+            auto value = boost_variant_to_std_variant(attr.value);
+            auto attribute = IAttribute::Create(std::string(attr.attribute_name), IAttributeDefinition::EObjectType::EnvironmentVariable, std::move(value));
+            attribute_values.push_back(std::move(attribute));
         }
     }
+
     return attribute_values;
 }
-static auto getComment(const G_Network& gnet, const G_EnvironmentVariable& ev)
+static auto getComment(const G_Network& gnet, const G_EnvironmentVariable& ev, Cache const& cache)
 {
     std::string comment;
-    for (const auto& c : gnet.comments)
-    {
-        auto c_ = boost_variant_to_std_variant(c.comment);
-        if (auto pce = std::get_if<G_CommentEnvVar>(&c_);
-            pce && pce->env_var_name == ev.name)
-        {
-            comment = std::get<G_CommentEnvVar>(c_).comment;
-            break;
+    auto envvar_it = cache.EnvVars.find(ev.name);
+
+    if (envvar_it != cache.EnvVars.end()) {
+        if (envvar_it->second.Comment) {
+            comment = boost::get<G_CommentEnvVar>(*envvar_it->second.Comment).comment;
         }
     }
     return comment;
 }
-static auto getEnvironmentVariables(const G_Network& gnet)
+static auto getEnvironmentVariables(const G_Network& gnet, Cache const& cache)
 {
     std::vector<std::unique_ptr<IEnvironmentVariable>> environment_variables;
     for (const auto& ev : gnet.environment_variables)
@@ -489,9 +572,9 @@ static auto getEnvironmentVariables(const G_Network& gnet)
         IEnvironmentVariable::EVarType var_type;
         IEnvironmentVariable::EAccessType access_type;
         std::vector<std::string> access_nodes = ev.access_nodes;
-        auto value_descriptions = getValueDescriptions(gnet, ev);
-        auto attribute_values = getAttributeValues(gnet, ev);
-        auto comment = getComment(gnet, ev);
+        auto value_descriptions = getValueDescriptions(gnet, ev, cache);
+        auto attribute_values = getAttributeValues(gnet, ev, cache);
+        auto comment = getComment(gnet, ev, cache);
         uint64_t data_size = 0;
         switch (ev.var_type)
         {
@@ -575,6 +658,7 @@ static auto getAttributeDefinitions(const G_Network& gnet)
             return vt;
         }
     };
+
     for (const auto& ad : gnet.attribute_definitions)
     {
         IAttributeDefinition::EObjectType object_type;
@@ -618,54 +702,184 @@ static auto getAttributeDefaults(const G_Network& gnet)
     }
     return attribute_defaults;
 }
-static auto getAttributeValues(const G_Network& gnet)
+static auto getAttributeValues(const G_Network& gnet, Cache const& cache)
 {
     std::vector<std::unique_ptr<IAttribute>> attribute_values;
-    for (const auto& av : gnet.attribute_values)
+
+    attribute_values.reserve(cache.NetworkAttributes.size());
+
+    for (auto av : cache.NetworkAttributes)
     {
-        auto av_ = boost_variant_to_std_variant(av);
-        if (auto pan = std::get_if<G_AttributeNetwork>(&av_))
-        {
-            auto av_ = *pan;
-            auto value = boost_variant_to_std_variant(av_.value);
-            auto attribute = IAttribute::Create(
-                std::string(av_.attribute_name)
-                , IAttributeDefinition::EObjectType::Network
-                , std::move(value));
-            attribute_values.push_back(std::move(attribute));
-        }
+        auto const& attr = boost::get<G_AttributeNetwork>(*av);
+        auto value{boost_variant_to_std_variant(attr.value)};
+        auto attribute = IAttribute::Create(
+            std::string(attr.attribute_name)
+            , IAttributeDefinition::EObjectType::Network
+            , std::move(value));
+        attribute_values.emplace_back(std::move(attribute));
     }
     return attribute_values;
 }
-static auto getComment(const G_Network& gnet)
+static auto getComment(const G_Network& gnet, Cache const& cache)
 {
     std::string comment;
-    for (const auto& c : gnet.comments)
-    {
-        auto c_ = boost_variant_to_std_variant(c.comment);
-        if (auto pcn = std::get_if<G_CommentNetwork>(&c_))
-        {
-            comment = pcn->comment;
-            break;
-        }
+    if (cache.NetworkComment) {
+        comment = boost::get<G_CommentNetwork>(*cache.NetworkComment).comment;
     }
     return comment;
 }
 
 std::unique_ptr<INetwork> DBCAST2Network(const G_Network& gnet)
 {
+    Cache cache;
+
+    for (const auto& av : gnet.attribute_values)
+    {
+        switch (av.which()) {
+        case 0: {
+            auto const& attr = boost::get<G_AttributeNetwork>(av);
+            cache.NetworkAttributes.emplace_back(&av);
+        } break;
+        case 1: {
+            auto const& attr = boost::get<G_AttributeNode>(av);
+            auto node_it = cache.Nodes.find(attr.node_name);
+            if (node_it == cache.Nodes.end()) {
+                node_it = cache.Nodes.emplace(attr.node_name, NodeCache()).first;
+            }
+            node_it->second.Attributes.emplace_back(&av);
+        } break;
+        case 2: {
+            auto const& attr = boost::get<G_AttributeMessage>(av);
+            auto it = cache.Messages.find(attr.message_id);
+            if (it == cache.Messages.end()) {
+                it = cache.Messages.emplace(attr.message_id, MessageCache()).first;
+            }
+
+            it->second.Attributes.emplace_back(&av);
+        } break;
+        case 3: {
+            auto const& attr = boost::get<G_AttributeSignal>(av);
+            auto message_it = cache.Messages.find(attr.message_id);
+            if (message_it == cache.Messages.end()) {
+                message_it = cache.Messages.emplace(attr.message_id, MessageCache()).first;
+            }
+
+            auto& signals = message_it->second.Signals;
+            auto signal_it = signals.find(attr.signal_name);
+            if (signal_it == signals.end()) {
+                signal_it = signals.emplace(attr.signal_name, SignalCache()).first;
+            }
+
+            signal_it->second.Attributes.emplace_back(&av);
+        } break;
+        case 4: {
+            auto const& attr = boost::get<G_AttributeEnvVar>(av);
+            auto envvar_it = cache.EnvVars.find(attr.env_var_name);
+            if (envvar_it == cache.EnvVars.end()) {
+                envvar_it = cache.EnvVars.emplace(attr.env_var_name, EnvVarCache()).first;
+            }
+            envvar_it->second.Attributes.emplace_back(&av);
+        } break;
+        default:
+            assert(false && "Unhandled variant member");
+            break;
+        }
+    }
+
+    for (const auto& vd : gnet.value_descriptions_sig_env_var)
+    {
+        switch (vd.description.which()) {
+        case 0: {
+            auto const& desc = boost::get<G_ValueDescriptionSignal>(vd.description);
+            auto message_it = cache.Messages.find(desc.message_id);
+            if (message_it == cache.Messages.end()) {
+                message_it = cache.Messages.emplace(desc.message_id, MessageCache()).first;
+            }
+
+            auto& signals = message_it->second.Signals;
+            auto signal_it = signals.find(desc.signal_name);
+            if (signal_it == signals.end()) {
+                signal_it = signals.emplace(desc.signal_name, SignalCache()).first;
+            }
+
+            signal_it->second.Description_ = &vd.description;
+        } break;
+        case 1: {
+            auto const& desc = boost::get<G_ValueDescriptionEnvVar>(vd.description);
+            auto envvar_it = cache.EnvVars.find(desc.env_var_name);
+            if (envvar_it == cache.EnvVars.end()) {
+                envvar_it = cache.EnvVars.emplace(desc.env_var_name, EnvVarCache()).first;
+            }
+            envvar_it->second.Description_ = &vd.description;
+        } break;
+        default:
+            assert(false && "Unhandled variant member");
+            break;
+        }
+    }
+
+    for (const auto& comment : gnet.comments)
+    {
+        switch (comment.comment.which()) {
+        case 0: {
+            auto const& c = boost::get<G_CommentNetwork>(comment.comment);
+            cache.NetworkComment = &comment.comment;
+        } break;
+        case 1: {
+            auto const& c = boost::get<G_CommentNode>(comment.comment);
+            auto node_it = cache.Nodes.find(c.node_name);
+            if (node_it == cache.Nodes.end()) {
+                node_it = cache.Nodes.emplace(c.node_name, NodeCache()).first;
+            }
+            node_it->second.Comment = &comment.comment;
+        } break;
+        case 2: {
+            auto const& c = boost::get<G_CommentMessage>(comment.comment);
+            auto message_it = cache.Messages.find(c.message_id);
+            if (message_it == cache.Messages.end()) {
+                message_it = cache.Messages.emplace(c.message_id, MessageCache()).first;
+            }
+            message_it->second.Comment = &comment.comment;
+        } break;
+        case 3: {
+            auto const& c = boost::get<G_CommentSignal>(comment.comment);
+            auto message_it = cache.Messages.find(c.message_id);
+            if (message_it == cache.Messages.end()) {
+                message_it = cache.Messages.emplace(c.message_id, MessageCache()).first;
+            }
+
+            auto signal_it = message_it->second.Signals.find(c.signal_name);
+            if (signal_it == message_it->second.Signals.end()) {
+                signal_it = message_it->second.Signals.emplace(c.signal_name, SignalCache()).first;
+            }
+            signal_it->second.Comment = &comment.comment;
+        } break;
+        case 4: {
+            auto const& c = boost::get<G_CommentEnvVar>(comment.comment);
+            auto envvar_it = cache.EnvVars.find(c.env_var_name);
+            if (envvar_it == cache.EnvVars.end()) {
+                envvar_it = cache.EnvVars.emplace(c.env_var_name, EnvVarCache()).first;
+            }
+            envvar_it->second.Comment = &comment.comment;
+        } break;
+        default:
+            assert(false && "Unhandled variant member");
+            break;
+        }
+    }
+
     return INetwork::Create(
           getVersion(gnet)
         , getNewSymbols(gnet)
         , getBitTiming(gnet)
-        , getNodes(gnet)
+        , getNodes(gnet, cache)
         , getValueTables(gnet)
-        , getMessages(gnet)
-        , getEnvironmentVariables(gnet)
+        , getMessages(gnet, cache)
+        , getEnvironmentVariables(gnet, cache)
         , getAttributeDefinitions(gnet)
         , getAttributeDefaults(gnet)
-        , getAttributeValues(gnet)
-        , getComment(gnet));
+        , getAttributeValues(gnet, cache)
+        , getComment(gnet, cache));
 }
 
 std::unique_ptr<INetwork> INetwork::LoadDBCFromIs(std::istream& is)
