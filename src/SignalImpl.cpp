@@ -418,6 +418,7 @@ SignalImpl::SignalImpl(
     }
 
     // save some additional values to speed up decoding
+    // CAN signals can be upto 64 bits in size but doing a shift of more than 63 bytes is undefined behavior
     _mask =  (1ull << (_bit_size - 1ull) << 1ull) - 1;
     _mask_signed = ~((1ull << (_bit_size - 1ull)) - 1);
 
