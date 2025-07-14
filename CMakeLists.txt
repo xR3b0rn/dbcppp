@@ -22,7 +22,7 @@ if(NOT Boost_FOUND)
 endif()
 
 # kcd is an xml based can database
-message("kcd enabled: ${build_kcd}")
+message(STATUS "kcd enabled: ${build_kcd}")
 
 if(build_kcd)
     add_compile_definitions(ENABLE_KCD)
