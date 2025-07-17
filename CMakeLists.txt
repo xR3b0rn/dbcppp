@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project("dbcppp" VERSION 3.8.0)
+project("dbcppp" VERSION 3.2.6)
 
 # CONFIGURATION
 
@@ -69,20 +69,54 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/dbcppp>
-    $<INSTALL_INTERFACE:include/dbcppp>
-    include/
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
+    $<INSTALL_INTERFACE:include/>
 )
 
 # INSTALL LIBRARY
 
 install(TARGETS ${PROJECT_NAME}
+    EXPORT ${PROJECT_NAME}-targets
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
     PUBLIC_HEADER DESTINATION include/dbcppp
 )
 
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+set(install_cmake_dir "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+
+configure_package_config_file(
+    ${CMAKE_SOURCE_DIR}/cmake/Config.cmake.in
+    ${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake
+    INSTALL_DESTINATION ${install_cmake_dir}
+)
+
+write_basic_package_version_file(
+    ${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake
+    VERSION ${VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+# Export targets for build tree
+export(TARGETS ${PROJECT_NAME}
+    FILE cmake/${PROJECT_NAME}Targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+)
+
+# Export targets for install tree
+install(EXPORT ${PROJECT_NAME}-targets
+    FILE ${PROJECT_NAME}Targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION ${install_cmake_dir}
+)
+
+install(FILES
+    ${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake
+    ${CMAKE_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake
+    DESTINATION ${install_cmake_dir}
+)
 
 # ADDITIONAL: Tools, Tests & Examples
 
