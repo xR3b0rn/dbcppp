@@ -351,16 +351,20 @@ static auto getSignals(const G_Network& gnet, const G_Message& m, Cache const& c
         uint64_t multiplexer_switch_value = 0;
         if (s.multiplexer_indicator)
         {
-            auto m = *s.multiplexer_indicator;
-            if (m.substr(0, 1) == "M")
+            const auto& m = *s.multiplexer_indicator;
+            if (auto mux_value_pos = m.find('m', 0); mux_value_pos != std::string::npos)
             {
-                multiplexer_indicator = ISignal::EMultiplexer::MuxSwitch;
+                multiplexer_indicator = ISignal::EMultiplexer(
+                    std::underlying_type_t<ISignal::EMultiplexer>(multiplexer_indicator) |
+                    std::underlying_type_t<ISignal::EMultiplexer>(ISignal::EMultiplexer::MuxValue));
+                multiplexer_switch_value = std::atoi(m.c_str() + mux_value_pos + 1);
             }
-            else
+            if (m.find('M', 0) != std::string::npos)
             {
-                multiplexer_indicator = ISignal::EMultiplexer::MuxValue;
-                std::string value = m.substr(1, m.size());
-                multiplexer_switch_value = std::atoi(value.c_str());
+                multiplexer_indicator =
+                    ISignal::EMultiplexer(
+                        std::underlying_type_t<ISignal::EMultiplexer>(multiplexer_indicator) |
+                        std::underlying_type_t<ISignal::EMultiplexer>(ISignal::EMultiplexer::MuxSwitch));
             }
         }
 

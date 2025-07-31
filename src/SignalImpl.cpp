@@ -612,11 +612,11 @@ uint64_t SignalImpl::SignalMultiplexerValues_Size() const
 }
 bool SignalImpl::Error(EErrorCode code) const
 {
-    return code == _error || (uint64_t(_error) & uint64_t(code));
+    return code == _error || (std::underlying_type_t<EErrorCode>(_error) & std::underlying_type_t<EErrorCode>(code));
 }
 void SignalImpl::SetError(EErrorCode code)
 {
-    _error = EErrorCode(uint64_t(_error) | uint64_t(code));
+    _error = EErrorCode(std::underlying_type_t<EErrorCode>(_error) | std::underlying_type_t<EErrorCode>(code));
 }
 bool SignalImpl::operator==(const ISignal& rhs) const
 {

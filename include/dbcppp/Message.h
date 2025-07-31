@@ -50,6 +50,9 @@ namespace dbcppp
         virtual const std::string& Comment() const = 0;
         virtual const ISignalGroup& SignalGroups_Get(std::size_t i) const = 0;
         virtual uint64_t SignalGroups_Size() const = 0;
+        /// \brief Optional multiplexor signal when this message is using simple multiplexing with a single switch.
+        ///
+        /// For advanced multiplexing support, ISignal::SignalMultiplexerValues needs to be followed instead.
         virtual const ISignal* MuxSignal() const = 0;
         
         DBCPPP_MAKE_ITERABLE(IMessage, MessageTransmitters, std::string);

@@ -499,10 +499,19 @@ DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const
 DBCPPP_API std::ostream& dbcppp::Network2DBC::operator<<(std::ostream& os, const ISignal& s)
 {
     os << "\tSG_ " << s.Name() << " ";
-    switch (s.MultiplexerIndicator())
+    if (s.MultiplexerIndicator() != ISignal::EMultiplexer::NoMux)
     {
-    case ISignal::EMultiplexer::MuxSwitch: os << "M "; break;
-    case ISignal::EMultiplexer::MuxValue: os << "m" << s.MultiplexerSwitchValue() << " "; break;
+        if (std::underlying_type_t<ISignal::EMultiplexer>(s.MultiplexerIndicator()) &
+            std::underlying_type_t<ISignal::EMultiplexer>(ISignal::EMultiplexer::MuxValue))
+        {
+            os << "m" << s.MultiplexerSwitchValue();
+        }
+        if (std::underlying_type_t<ISignal::EMultiplexer>(s.MultiplexerIndicator()) &
+            std::underlying_type_t<ISignal::EMultiplexer>(ISignal::EMultiplexer::MuxSwitch))
+        {
+            os << "M";
+        }
+        os << " ";
     }
     os << ": " << s.StartBit() << "|" << s.BitSize() << "@";
     switch (s.ByteOrder())

@@ -6,12 +6,12 @@
 #include <memory>
 #include <vector>
 #include <functional>
-#include <cstdint>
 
 #include "Iterator.h"
 
 namespace dbcppp
 {
+    // Map from values of the multiplexor signal ISignalMultiplexerValue::SwitchName to the parent multiplexed ISignal.
     class ISignalMultiplexerValue
     {
     public:

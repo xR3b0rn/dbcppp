@@ -67,22 +67,68 @@ MessageImpl::MessageImpl(
     , _mux_signal(nullptr)
     , _error(EErrorCode::NoError)
 {
-    bool have_mux_value = false;
+    bool have_mux_values = false;
+    size_t num_mux_switches = 0;
+    bool have_mux_values_without_advanced_mapping = false;
     for (const auto& sig : _signals)
     {
-        switch (sig.MultiplexerIndicator())
+        if (std::underlying_type_t<ISignal::EMultiplexer>(sig.MultiplexerIndicator()) &
+            std::underlying_type_t<ISignal::EMultiplexer>(ISignal::EMultiplexer::MuxValue))
         {
-        case ISignal::EMultiplexer::MuxValue:
-            have_mux_value = true;
-            break;
-        case ISignal::EMultiplexer::MuxSwitch:
-            _mux_signal = &sig;
-            break;
+            have_mux_values = true;
+            if (sig.SignalMultiplexerValues_Size() == 0)
+            {
+                have_mux_values_without_advanced_mapping = true;
+            }
+            else
+            {
+                for (const auto& multiplexor : sig.SignalMultiplexerValues())
+                {
+                    if (!std::any_of(_signals.begin(), _signals.end(), [&multiplexor](const SignalImpl& sig)
+                        { return sig.Name() == multiplexor.SwitchName(); }))
+                    {
+                        _error = EErrorCode::MuxValeWithoutMuxSignal;
+                    }
+                }
+            }
+        }
+        if (std::underlying_type_t<ISignal::EMultiplexer>(sig.MultiplexerIndicator()) &
+            std::underlying_type_t<ISignal::EMultiplexer>(ISignal::EMultiplexer::MuxSwitch))
+        {
+            ++num_mux_switches;
         }
     }
-    if (have_mux_value && _mux_signal == nullptr)
+    if (num_mux_switches > 1)
     {
-        _error = EErrorCode::MuxValeWithoutMuxSignal;
+        if (have_mux_values_without_advanced_mapping)
+        {
+            _error = EErrorCode::MuxValeWithoutMuxSignal;
+        }
+    }
+    // MuxSignal property can be populated for simple multiplexing only.
+    else if (num_mux_switches == 1)
+    {
+        for (const auto& sig : _signals)
+        {
+            if (uint64_t(sig.MultiplexerIndicator()) & uint64_t(ISignal::EMultiplexer::MuxSwitch))
+            {
+                _mux_signal = &sig;
+            }
+        }
+        for (const auto& sig : _signals)
+        {
+            if (uint64_t(sig.MultiplexerIndicator()) & uint64_t(ISignal::EMultiplexer::MuxValue))
+            {
+                _mux_signal = &sig;
+            }
+        }
+    }
+    else if (num_mux_switches == 0)
+    {
+        if (have_mux_values)
+        {
+            _error = EErrorCode::MuxValeWithoutMuxSignal;
+        }
     }
 }
 MessageImpl::MessageImpl(const MessageImpl& other)
