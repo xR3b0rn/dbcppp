@@ -36,8 +36,13 @@
 #       define bswap_32(x) bswap32(x)
 #       define bswap_64(x) bswap64(x)
 #   endif
-#else
+#elif defined(__linux__)
 #   include <byteswap.h>
+#elif defined(__GNUC__) || defined(__clang__)
+#   define bswap_32(x) __builtin_bswap32(x)
+#   define bswap_64(x) __builtin_bswap64(x)
+#else
+#   error Unsupported platform
 #endif
 
 #include <cstdint>
