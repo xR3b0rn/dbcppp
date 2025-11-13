@@ -8,7 +8,7 @@
 
 #include "EndianConfig.h"
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 #   include <stdlib.h>
 #   define bswap_32(x) _byteswap_ulong(x)
 #   define bswap_64(x) _byteswap_uint64(x)
