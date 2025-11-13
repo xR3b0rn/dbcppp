@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 
 project("dbcppp" VERSION 3.8.0)
 
+add_compile_definitions(DBCPPP_EXPORT)
+
 # CONFIGURATION
 
 set(CMAKE_CXX_STANDARD 17)
