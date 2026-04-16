@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include <dbcppp/Signal.h>
+#include <dbcppp/DBCSignal.h>
 #include <dbcppp/Node.h>
 #include "AttributeImpl.h"
 #include "SignalMultiplexerValueImpl.h"

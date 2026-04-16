@@ -1,5 +1,6 @@
 
 #include "ValueEncodingDescriptionImpl.h"
+#include <cstdint>
 
 using namespace dbcppp;
 

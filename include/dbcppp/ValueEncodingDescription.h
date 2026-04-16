@@ -3,7 +3,7 @@
 
 #include <string>
 #include <memory>
-
+#include <cstdint>
 #include "Export.h"
 
 namespace dbcppp

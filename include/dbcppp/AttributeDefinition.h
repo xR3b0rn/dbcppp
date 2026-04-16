@@ -6,7 +6,7 @@
 #include <functional>
 #include <variant>
 #include <memory>
-
+#include <cstdint>
 #include "Export.h"
 #include "Iterator.h"
 

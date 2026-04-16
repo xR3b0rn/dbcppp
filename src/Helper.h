@@ -12,6 +12,11 @@
 #   include <stdlib.h>
 #   define bswap_32(x) _byteswap_ulong(x)
 #   define bswap_64(x) _byteswap_uint64(x)
+#elif defined(__GNUC__) || defined(__clang__)
+    // 覆盖 MSYS2 (MinGW), Linux, 和新版 macOS/FreeBSD
+#   define bswap_16(x) __builtin_bswap16(x)
+#   define bswap_32(x) __builtin_bswap32(x)
+#   define bswap_64(x) __builtin_bswap64(x)
 #elif defined(__APPLE__)
     // Mac OS X / Darwin features
 #   include <libkern/OSByteOrder.h>

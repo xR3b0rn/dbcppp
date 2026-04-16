@@ -5,7 +5,7 @@
 #include <memory>
 
 #include "Export.h"
-#include "Signal.h"
+#include "DBCSignal.h"
 
 namespace dbcppp
 {

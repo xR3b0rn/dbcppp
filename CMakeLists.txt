@@ -5,7 +5,7 @@ project("dbcppp" VERSION 3.8.0)
 # CONFIGURATION
 
 set(CMAKE_CXX_STANDARD 17)
-option(build_kcd "Enable support for KCD parsing" ON)
+option(build_kcd "Enable support for KCD parsing" OFF)
 option(build_tools "Build dbcppp utility application" ON)
 
 option(build_tests "Build tests" ON)
@@ -55,6 +55,7 @@ file(GLOB headers "src/*.h")
 file(GLOB sources "src/*.cpp")
 
 add_library(${PROJECT_NAME} SHARED ${include} ${headers} ${sources})
+target_compile_definitions(${PROJECT_NAME} PRIVATE DBCPPP_EXPORT)
 
 
 # CONFIGURE LIBRARY
